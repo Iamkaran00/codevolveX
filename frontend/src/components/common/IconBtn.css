@@ -1,0 +1,41 @@
+.icon-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 6px;
+    padding: 8px 20px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+  }
+  
+  .icon-btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+  
+  .filled-btn {
+    background-color: #ffec3d; /* Yellow */
+    color: #0f172a; /* Rich Black */
+    border: none;
+  }
+  
+  .filled-btn:hover {
+    background-color: #fadb14;
+  }
+  
+  .outline-btn {
+    border: 2px solid #ffec3d;
+    background: transparent;
+    color: #ffec3d;
+  }
+  
+  .outline-btn:hover {
+    background: #ffec3d;
+    color: #0f172a;
+  }
+  
+  .outline-text {
+    color: #ffec3d;
+  }
+  

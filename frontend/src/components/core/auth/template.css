@@ -1,0 +1,69 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&family=Ysabeau+SC:wght@1..1000&display=swap");
+
+.templateWrapper{
+    height : 100vh;
+    width : 100vw;
+    background-color: rgb(18, 18, 18);
+    color:white;
+    padding:1rem;
+    display: flex;
+    align-items: center;
+    gap:3rem;
+    justify-content: start;
+}
+/* HTML: <div class="loader"></div> */
+.loader {
+    height: 15px;
+    aspect-ratio: 4;
+    --_g: no-repeat radial-gradient(farthest-side,#000 90%,#0000);
+    background: 
+      var(--_g) left, 
+      var(--_g) right;
+    background-size: 25% 100%;
+    display: grid;
+  }
+  .loader:before,
+  .loader:after {
+    content: "";
+    height: inherit;
+    aspect-ratio: 1;
+    grid-area: 1/1;
+    margin: auto;
+    border-radius: 50%;
+    transform-origin: -100% 50%;
+    background: #000;
+    animation: l49 1s infinite linear;
+  }
+  .loader:after {
+    transform-origin: 200% 50%;
+    --s:-1;
+    animation-delay: -.5s;
+  }
+  
+  @keyframes l49 {
+    58%,
+    100% {transform: rotate(calc(var(--s,1)*1turn))}
+  }
+h1{
+    font-family:"roboto";
+    font-size:3rem;
+    font-weight:400;
+    font-family: "Roboto", "sans-serif";
+  font-style: normal;
+}
+.leftdiv{
+
+}
+.rightdiv{
+   
+    position: relative;
+}
+ 
+ #img{
+    position:absolute;
+width:558px;
+right:1rem;
+
+bottom:1rem;
+height:504px;
+ }

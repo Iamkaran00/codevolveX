@@ -1,0 +1,33 @@
+#languagesection{
+    height : 100%;
+    width : 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+#imgdiv{
+    height: fit-content;
+    max-width: 100vw;     
+}
+#i1{
+    position: relative;
+    left : 7rem;
+}
+#i3{
+    position: relative;
+    right : 8rem; 
+ }
+#t1{
+    font-size : 2.5rem;
+    font-weight : 500;
+color : black
+}
+#t2{
+    color: black;
+    font-size : 1.5rem;
+}
+#textmdiv{
+    max-width : 60rem;
+    text-align: center;
+}

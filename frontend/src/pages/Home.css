@@ -1,0 +1,196 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&family=Ysabeau+SC:wght@1..1000&display=swap");
+#container {
+  min-height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+ overflow: hidden;
+  color: white;
+}
+ 
+button {
+  color: white;
+}
+.sec1 {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-image: url("../assets//background.jpg.jpg");
+  background-size: cover;  
+  background-position: center; /* Center the image */
+  background-repeat: no-repeat; /* Prevent repetition */
+  gap: 4rem;
+  padding: 4rem;
+}
+#sec1text1 {
+  font-family: "Roboto", "sans-serif";
+  font-style: normal;
+  font-size: 5rem;
+  font-weight: 430;
+}
+#sec1text1 span {
+  color: #00bfff;
+}
+#div1 {
+  width: 75rem;
+}
+#text2 {
+  font-size: 1.5rem;
+  font-family: "Times New Roman", Times, serif;
+  font-style: normal;
+}
+#bdiv1 {
+  width: 20rem;
+  height: 4rem;
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  gap: 1.8rem;
+}
+
+#bdiv1 button:hover {
+  background-color: rgb(50, 50, 50); /* Slightly lighter background on hover */
+  transform: scale(1.03); /* Slightly enlarge the button */
+  border: 1.1px solid white;
+}
+#instdiv {
+  position: relative;
+  top: 3rem;
+  width: 16rem;
+  height: 4rem;
+}
+#instructbt {
+  background-color: rgb(41, 41, 41);
+  height: 100%;
+  width: 100%;
+  text-decoration: none;
+  border-radius: 90px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  border-style: none;
+  font-size: 1.3rem;
+  transition: all 0.2s linear;
+}
+#instructbt p{
+  text-decoration: none;
+}
+#instructbt:hover {
+  border: 1.3px solid white;
+  transform: scale(1.03);
+}
+#sec2 {
+  min-height: 260vh;
+  width: 100vw;
+  background-color: rgb(2, 2, 2);
+}
+.type {
+  max-width: 30rem;
+}
+.blockdiv {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: fit-content;
+  width: 100%;
+}
+#line {
+  height: 0.1rem;
+  width: 95vw;
+  margin: auto;
+  background-color: rgba(255, 255, 255, 0.214);
+}
+.sec3 {
+  display: flex;
+  justify-content:start;
+  align-items: center;
+ min-height: 270vh;
+padding-left:10rem;
+ 
+padding-right: 10rem;
+  width: 100vw;
+  flex-direction: column;
+  background-color: #f8f8f8;
+}
+.sec3but {
+  display: flex;
+  height: fit-content;
+  align-items: center;
+  gap: 5rem;
+  padding: 1rem;
+  flex-direction: row;
+  text-align: center;
+}
+#sec3div2 {
+  color: black;
+  display: flex;
+  justify-content: center;
+  padding: 4rem;;
+  align-items: center;
+  width: 100vw;
+  height: fit-content;
+  gap: 5rem;
+}
+#sec3t1 {
+  font-size: 4rem;
+  font-weight: 545;
+  line-height: 4.3rem;
+
+  max-width: 60rem;
+}
+#sec3div3 {
+  height: fit-content;
+  width: 40rem;
+  display: flex;
+  justify-content: center;
+  align-items: start;
+  flex-direction: column;
+  gap: 3rem;
+}
+#sec3div3 p {
+  font-size: 1.3rem;
+}
+#sec4 {
+  background-color: rgb(2, 2, 2);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: 80vh;
+  padding: 5rem;
+  padding-top: 2rem;
+  width: 100vw;
+}
+#text4 {
+  font-size: 3.5rem;
+  font-weight: 530;
+}
+#sec4 img {
+  box-shadow: 0px 0px 5px 5px #00bfff;
+  height :30rem;
+  width : 30rem;
+
+}
+#timelines{
+ 
+ 
+padding:10rem;
+height :100vh;
+display: flex;
+justify-content: center;
+align-items: center;;
+width: 100vw;
+}
+#lang{
+padding:10rem;
+height:fit-content;
+display: flex;
+justify-content: center;
+align-items: center;;
+width: 100vw;
+padding:2rem;
+
+}

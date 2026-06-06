@@ -1,0 +1,41 @@
+ 
+.active{
+  border-radius: 9px;
+border-style: none;
+background-color: rgb(41, 41, 41);
+height: 3rem;
+display: flex;
+justify-content: center;
+align-items: center;
+width:fit-content;
+padding: 0.9rem;
+border-radius: 90px;
+gap : 0.9rem;
+background-color: #208282;
+font-size: 1.2rem;
+ color: white; /* Ensure text is visible */
+transition: all 0.2s linear 0s;
+cursor: pointer; /* Makes it clear the element is clickable */
+}
+ 
+.active:hover{
+  background-color: rgb(50, 50, 50); /* Slightly lighter background on hover */
+  transform: scale(1.03); /* Slightly enlarge the button */
+  border : 1.1px solid white;
+}
+.unactive{
+  border-style: none;
+  background-color: rgb(41, 41, 41);
+  height: 3rem;
+  border-radius: 90px;
+  width: 8rem;
+  font-size: 1.2rem;
+  color: white; /* Ensure text is visible */
+  transition: all 0.2s linear 0s;
+  cursor: pointer; /* Makes it clear the element is clickable */
+}
+.unactive:hover{
+  background-color: rgb(50, 50, 50); /* Slightly lighter background on hover */
+  transform: scale(1.03); /* Slightly enlarge the button */
+  border : 1.1px solid white;
+}

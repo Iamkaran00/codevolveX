@@ -1,0 +1,135 @@
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&display=swap');
+#nav{
+
+    width : 100vw;
+    height : 5rem;
+    display: flex;
+    gap : 4rem;
+    align-items: center;
+    justify-content: space-evenly;
+    box-shadow: 4px 4px 4px black;
+    background: linear-gradient(135deg, #000000,#575757ae, #000000);
+    color: #00BFFF;
+    
+}
+#navbar{
+    display : flex; justify-content:center;
+    align-items: center;
+    gap : 4rem;
+    width : fit-content;
+
+}
+#t{
+    font-family: "Exo 2", serif;
+    font-optical-sizing: auto;
+    font-weight: 550;
+    background: linear-gradient(to right, #00d0ff, #15bdc6, #b7f4ff);
+    -webkit-background-clip: text;
+    color: transparent;
+    font-style: normal;
+    text-shadow: 1px 1px 1px ;
+    font-size : 3rem;
+  
+}
+#butt{
+    font-family: "Exo 2", serif;
+    font-optical-sizing: auto;
+  border-style: none;
+    font-size : 1.3rem;
+  color : #00bfff;
+ transform: scale(1.08);
+ transition: all 0.2s linear;
+   background: transparent;
+ 
+    
+}
+#butts{
+    border-style: none;
+    font-size : 1.3rem;
+  color : #ffffff;
+  font-family: "Exo 2", serif;
+  font-optical-sizing: auto;
+   background: transparent;
+  
+}
+#ls{
+    display : flex;
+    justify-content : center;
+    align-items: center;
+    gap:2rem;
+
+}
+#lsbut {
+     border-style: none;
+     background : transparent;
+     font-size : 1.5rem;
+     color : #00bfff;
+}
+.b{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+}
+#cat{
+    font-size: 1.3rem;
+    color :white;
+    position: relative;
+    top:0.2rem;
+}
+#c{
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: row;
+    height : fit-content;
+    width : fit-content;
+    cursor:alias;
+    position: relative;
+
+}
+#ar{
+    position: relative;
+    top:0.2rem;
+    font-size : 1.8rem;
+    color : white;
+}
+  #category{
+    display:hidden;
+position: absolute;
+    background-color: rgba(0, 0, 0, 0.699);
+    border : 1.5px solid mediumaquamarine;
+    transition: all 0.1s linear;
+  transform: scale(0);
+  padding : 2rem;
+  top:2rem;
+}
+ #c:hover #category{
+    opacity:1;
+    display:flex;
+    flex-direction: column;
+    border-radius: 4px;
+    height :fit-content;
+ gap:1rem;
+  list-style: none;
+  align-items:start;
+  justify-content: center;
+  transform: scale(1);
+  cursor:pointer;
+  max-width: 19rem;
+    padding : 0.3rem;
+    transition: all 0.2s linear;
+ top:2rem;
+ overflow: hidden;
+    width : 14rem;
+
+ }
+ #l:hover{
+color:white;
+transform:scale3d(1.5);
+padding:0.4rem;
+width : 100%;
+border-radius: 20px;
+transition: all 0.2s linear;
+background-color: rgb(65, 65, 65);
+ }
