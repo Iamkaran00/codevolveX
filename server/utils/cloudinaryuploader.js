@@ -5,8 +5,7 @@ import dotenv from "dotenv";
 dotenv.config({
   path: './.env',
 });
-
-// Cloudinary configuration
+ 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -23,11 +22,9 @@ const uploadOnCloudinary = async (localFilePath) => {
     // Check if file exists
     await fs.access(localFilePath);
 
-    // Upload the file to Cloudinary
-    const response = await cloudinary.uploader.upload(localFilePath, {
-      resource_type: "auto", // Automatically handles images, videos, etc.
-    });
-
+  const response = await cloudinary.uploader.upload(localFilePath.replace(/\\/g, "/"), {
+  resource_type: "auto",
+});
     // Clean up the local file after successful upload
     await fs.unlink(localFilePath);
 

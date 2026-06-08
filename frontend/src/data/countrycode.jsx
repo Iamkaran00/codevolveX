@@ -1,4 +1,4 @@
-export const countryCode = 
+ const countryCode = 
 [
     {
         "country": "Afghanistan",
@@ -781,3 +781,4 @@ export const countryCode =
         "code": "+263"
     }
 ]
+export default countryCode;

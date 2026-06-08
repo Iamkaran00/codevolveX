@@ -302,9 +302,7 @@ export default function HeroSection() {
                 <div className="w-20 h-1.5 bg-gray-400/50 rounded-b-md mt-0.5" />
               </div>
 
-              {/* ── UI OVERLAYS (Locked to Top-Left / Bottom-Right) ── */}
-              
-              {/* Streak Card */}
+               
               <FloatLoop y={10} duration={5} delay={0.2} className="absolute -bottom-15 -left-12 sm:-left-20 z-50">
                 <div className="bg-gradient-to-br from-indigo-950 to-indigo-900 border border-indigo-500/30 shadow-xl shadow-indigo-900/20 rounded-2xl p-4 text-white w-36">
                   <div className="flex items-center gap-2 mb-2">
@@ -343,7 +341,6 @@ export default function HeroSection() {
 
             </motion.div>
 
-            {/* ── ORBITING TECH BADGES (Spaced perfectly away from UI Overlays) ── */}
             {BADGES.map((badge, i) => (
               <FloatLoop key={i} y={15} duration={badge.dur} delay={badge.delay} className={`absolute ${badge.pos} z-0 hidden sm:block`}>
                 <motion.div 

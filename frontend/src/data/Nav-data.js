@@ -6,15 +6,14 @@ export const NavbarLinks = [
     },
     {
       title: "Catalog",
-      // path: '/catalog',
     },
     {
       title: "About Us",
-      path: "/about",
+      path: "/about-us",
     },
     {
       title: "Contact Us",
-      path: "/contact",
+      path: "/contact-us",
     },
   ];
   

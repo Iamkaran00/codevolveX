@@ -1,7 +1,7 @@
  
 import React, { useEffect, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
-import { NavbarLinks } from "../../data/nav-data";
+import { NavbarLinks } from "../../data/Nav-data";
 import { FaShoppingCart } from "react-icons/fa";
 import { MdKeyboardArrowDown } from "react-icons/md";
 import { useSelector } from "react-redux";
@@ -52,13 +52,11 @@ useEffect(() => {
   };
    
   return (
-    // Outer fixed container pushing it from the top slightly when scrolled
     <div
       className={`fixed z-50 w-full flex justify-center transition-all duration-500 ease-in-out ${
         isScrolled ? "top-4" : "top-0"
       }`}
     >
-      {/* Inner container that shrinks and becomes frosted glass */}
       <div
         className={`flex items-center justify-between px-6 transition-all duration-500 ease-in-out h-16 ${
           isScrolled
@@ -149,9 +147,13 @@ useEffect(() => {
             </div>
           )}
           {user?.accountType !== "Student" && user !== null && (
-            <button className="px-4 py-2 text-[14px] font-medium text-gray-700 bg-gray-100/50 backdrop-blur-sm border border-gray-200 rounded-full hover:bg-gray-200/50 transition-colors">
+            <Link to = '/dashboard' >
+ <button className="px-4 py-2 text-[14px] font-medium text-gray-700 bg-gray-100/50 backdrop-blur-sm border border-gray-200 rounded-full hover:bg-gray-200/50 transition-colors">
               Dashboard
             </button>
+
+            </Link>
+           
           )}
           {token != null && <ProfileDropdown/>}
         </div>

@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import { AiOutlineCaretDown } from "react-icons/ai";
-import { VscDashboard, VscSignOut } from "react-icons/vsc";
+import { VscSignOut, VscAccount } from "react-icons/vsc"; // Swapped VscDashboard for VscAccount
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 
@@ -13,11 +13,13 @@ const ProfileDropdown = () => {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
+  
   useOnClickOutside(ref, () => setOpen(false));
+  
   if (!user) return null;
+  
   return (
     <div className="relative" ref={ref}>
-      
       <button
         onClick={() => setOpen((prev) => !prev)}
         className="flex items-center gap-x-2 rounded-full border border-transparent p-1 transition-all duration-200 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
@@ -50,28 +52,27 @@ const ProfileDropdown = () => {
             </p>
           </div>
 
-          {/* Links Section */}
+          {/* Links Section: Replaced Dashboard with My Profile */}
           <div className="py-1">
-            <Link to="/dashboard/my-profile" onClick={() => setOpen(false)}>
+            <Link to="/my-profile" onClick={() => setOpen(false)}>
               <div className="flex w-full items-center gap-x-3 px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors duration-200 hover:bg-blue-50 hover:text-blue-600">
-                <VscDashboard className="text-lg" />
-                Dashboard
+                <VscAccount className="text-lg" />
+                My Profile
               </div>
             </Link>
           </div>
 
-        
-          <div className="py-1 ">
+          {/* Logout Section */}
+          <div className="py-1">
             <button
               onClick={() => {
                 dispatch(logout(navigate));
                 setOpen(false);
               }}
-              className="flex  cursor-pointer w-full items-center gap-x-3 px-4 py-2.5 text-sm font-medium text-black/60 transition-colors duration-200 bg-red-500/70 rounded hover:text-white"
+              className="flex cursor-pointer w-full items-center gap-x-3 px-4 py-2.5 text-sm font-medium text-black/60 transition-colors duration-200 hover:bg-red-500 hover:text-white group"
             >
-              <VscSignOut className="text-lg text-white" />
-              <p className="text-white text-sm">Logout</p>
-             
+              <VscSignOut className="text-lg text-red-500 group-hover:text-white transition-colors" />
+              <p className="group-hover:text-white transition-colors">Logout</p>
             </button>
           </div>
         </div>

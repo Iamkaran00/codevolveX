@@ -3,9 +3,7 @@ const router = express.Router();
 import { uploadVideo,uploadImage } from "../middleware/multer.middleware.js";
 import {auth ,isInstructor, isStudent} from '../middleware/auth.middleware.js';
 import {updateProfile,deleteAccount,getAllUserDetails,updateDisplayPicture,getEnrolledCourses,instructorDashboard} from "../controller/profile.controller.js";
-// ********************************************************************************************************
-//                                      Profile routes
-// ********************************************************************************************************
+ 
 // Delete User Account
 router.delete("/deleteProfile", auth,isStudent, deleteAccount);
 router.put("/updateProfile", auth, updateProfile );

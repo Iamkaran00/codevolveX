@@ -30,6 +30,7 @@ app.use("/api/v1/auth", userRoutes);
 app.use("/api/v1/profile", profileRoute);
 app.use("/api/v1/course", courseRoute);
 app.use("/api/v1/payment", paymentRoute);
+app.use('/api/v1/contact' , contactRoute);
 //default route
 app.get("/", (req, res) => {
   return res.json({

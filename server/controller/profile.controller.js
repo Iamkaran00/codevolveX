@@ -29,8 +29,6 @@ const updateProfile = async (req, res) => {
     profileDetails.contactNumber = contactNumber;
     profileDetails.about = about;
     await profileDetails.save();
-console.log(req.user.email);
-    //return respone
     return res.status(200).json({
       success: true,
       message: "Profile Details updated",
@@ -103,22 +101,21 @@ const getAllUserDetails = async (req, res) => {
 };
 const updateDisplayPicture = async (req, res) => {
   try {
-    console.log("hello1");
     console.log(req.file);
     const displayPicture = req.file?.path;
     console.log(displayPicture);
     const userId = req.user.id;
-    console.log("before cloudinary")
-    const image = await uploadOnCloudinary(
-     displayPicture
-    )
-    console.log(image)
-    console.log("hello ");
-    const updatedProfile = await User.findByIdAndUpdate(
-      { _id: userId },
-      { image: image.secure_url },
-      { new: true }
-    )
+ const image = await uploadOnCloudinary(displayPicture);
+
+if (!image || !image.secure_url) {
+  return res.status(500).json({ success: false, message: "Cloudinary upload failed" });
+}
+
+const updatedProfile = await User.findByIdAndUpdate(
+  { _id: userId },
+  { image: image.secure_url },
+  { new: true }
+);
     res.send({
       success: true,
       message: `Image Updated successfully`,
