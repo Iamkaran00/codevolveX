@@ -2,14 +2,11 @@
 import express from "express";
 const router = express.Router();
 
-// Import the Controllers
-
-// Course Controllers Import
-
+ import { updateCourseProgress } from "../controller/courseProgress.controller.js";
 import {
   createCourse,editCourse,showAllCourses,deleteCourse,getInstructorCourses,getFullCourseDetails,getCourseDetails
 } from "../controller/course.controller.js";
-// Categories Controllers Import
+ 
 import {
   showAllCategory,
   createCategory,
@@ -78,6 +75,6 @@ router.post("/getCategoryPageDetails", categoryPageDetails);
 router.post("/createRating", auth, isStudent, createRating);
 router.get("/getAverageRating", averageRatings);
 router.get("/getReviews", gettingAllRatings);
-router.get("/get",reviewsAndRatingForCourse);
-
+router.get("/getReviewForCourse",reviewsAndRatingForCourse);
+router.post('/updatecourseprogress',auth,isStudent,updateCourseProgress);
 export default router;

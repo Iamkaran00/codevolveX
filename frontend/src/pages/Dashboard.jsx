@@ -18,19 +18,18 @@ const Dashboard = () => {
 
   return (
      
-    <div className="relative flex min-h-[calc(100vh-3.5rem)] bg-slate-50 text-slate-900">
-      
-      <Sidebar />
 
-      {/* Main Content Area: Scrollable independently */}
-      <div className="h-[calc(100vh-3.5rem)] flex-1 overflow-auto bg-slate-50">
-        <div className="mx-auto w-11/12 max-w-[1000px] py-10">
-          <Outlet />
-        </div>
+  <div className="relative flex min-h-[calc(100vh-4rem)] pt-16 bg-slate-50 text-slate-900">
+    <Sidebar />
+
+    <div className="h-[calc(100vh-4rem)] flex-1 overflow-auto bg-slate-50">
+      <div className="mx-auto w-11/12 max-w-[1000px] py-10">
+        <Outlet />
       </div>
-
     </div>
-  )
+  </div>
+);
+  
 }
 
 export default Dashboard

@@ -1,16 +1,16 @@
 import { toast } from "react-toastify";
-import { setUser, setLoading } from "../../slices/profile.slice";
+import { setUser, setLoading ,setEnrolledCourses} from "../../slices/profile.slice";
 import { apiConnector } from "../apiconnector";
 import { endpoints } from "../apis";
-
 const {
   UPDATE_PROFILE_PICTURE,
   GET_ENROLLED_COURSES,
   INSTRUCTOR_DASHBOARD,
   GET_USER_DETAILS,
   UPDATE_PROFILE_DETAILS,
+  DELETE_PROFILE
 } = endpoints;
-
+  
 export function updateDisplayPicture(token, formData) {
   return async (dispatch) => {
     const toastId = toast.loading("Uploading image...");
@@ -40,6 +40,7 @@ export function updateProfile(token, formData) {
     const toastId = toast.loading("Updating Profile...");
     dispatch(setLoading(true));
     try {
+      
       const response = await apiConnector("PUT", UPDATE_PROFILE_DETAILS, formData,null, {
         Authorization: `Bearer ${token}`,
       });
@@ -55,8 +56,56 @@ export function updateProfile(token, formData) {
     } catch (error) {
       console.log("failed to update details", error);
       toast.error(error.message || "failed to update profile details");
+        console.log("status →", error.response?.status);
+      console.log("error data →", error.response?.data);
     }
     dispatch(setLoading(false));
     toast.dismiss(toastId);
   };
+} 
+
+export function deleteProfile (token,navigate) { 
+  console.log(DELETE_PROFILE);
+  return async (dispatch) =>{
+    const toastId = toast.loading('Deleting Profile...') ;
+    dispatch(setLoading(true));
+    try {
+       const response = await apiConnector('DELETE' , DELETE_PROFILE,null ,null, {
+        Authorization : `Bearer ${token}` 
+       } );
+
+       if(!response.data.success) throw new Error(response.data.message) ;
+       localStorage.removeItem("token");
+      dispatch(setUser(null));
+      localStorage.removeItem("user");
+    navigate('/');
+    } catch (error) {
+      console.log('Failed To Delete User' , error) ;
+
+      toast.error(error.message ||  'An Error Occured');
+    }
+  dispatch(setLoading(false)) ;
+  toast.dismiss(toastId);
+  }
+} 
+export function getEnrolledCourse (token) {
+  return async dispatch => {
+    try {
+   console.log(GET_ENROLLED_COURSES)
+      const response = await apiConnector('GET' , GET_ENROLLED_COURSES , null , null , {
+        Authorization : `Bearer ${token}`
+      });
+
+      if(!response.data.success) throw new Error(response.data.message) ;
+     dispatch(setEnrolledCourses(response.data.data));
+      
+    } catch (error) {
+      console.log(error) ; 
+      toast.error('Could not fetch enrolled courses');
+      console.log(error.response.status) ;
+      console.log(error.response.message);
+    }
+    dispatch(setLoading(false)) ;
+  }
+
 }

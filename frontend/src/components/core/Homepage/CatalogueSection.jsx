@@ -148,7 +148,7 @@ export const CatalogueSection = () => {
 
           <div className="flex items-center gap-5 flex-wrap">
             {/* Filter Tabs */}
-            <div className="flex flex-wrap gap-1 p-1 bg-black rounded-2xl border border-gray-200/50 shadow-inner">
+            <div className="flex flex-wrap gap-1 p-1 bg-black rounded-2xl border border-gray-200/50  shadow-2xl">
               {TABS.map((t) => (
                 <button
                   key={t.key}
@@ -156,8 +156,8 @@ export const CatalogueSection = () => {
                   className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ease-out outline-none focus-visible:ring-2 focus-visible:ring-indigo-500
                     ${
                       active === t.key
-                        ? "bg-white/70 text-white-900 shadow-sm"
-                        : "text-gray-500 hover:text-gray-900 hover:bg-gray-200/50"
+                        ? "bg-white text-black shadow-sm"
+                        : "text-white "
                     }`}
                 >
                   {t.label}
@@ -173,7 +173,6 @@ export const CatalogueSection = () => {
           </div>
         </div>
 
-        {/* ── Grid ─────────────────────────────────── */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {filtered.map((course, i) => (
             <div
@@ -183,7 +182,6 @@ export const CatalogueSection = () => {
               }`}
               style={{ transitionDelay: `${i * 100}ms` }}
             >
-              {/* CARD: Handles instant hover animations */}
               <div className="group flex flex-col h-full bg-white rounded-3xl border border-gray-200/75 overflow-hidden hover:border-indigo-200 hover:-translate-y-1.5 hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] transition-all duration-300 ease-out cursor-pointer">
                 
                 {/* Thumbnail */}

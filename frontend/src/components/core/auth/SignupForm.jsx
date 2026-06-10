@@ -60,14 +60,14 @@ export const SignupForm = () => {
   return (
     <div className="w-full">
      
-      <div className="relative flex w-max bg-black p-1.5 rounded-full mb-8 backdrop-blur-sm border border-gray-200/50">
+      <div className="relative flex w-max bg-black/100 text-white shadow-2xl p-1.5 rounded-full mb-8 backdrop-blur-sm border border-gray-200/50">
         {Object.values([ACCOUNT_TYPE.STUDENT, ACCOUNT_TYPE.INSTRUCTOR]).map((type) => (
           <button
             key={type}
             type="button"
             onClick={() => setAccountType(type)}
             className={`relative z-10 px-6 py-2 rounded-full text-sm font-semibold transition-colors duration-300  ${
-              accountType === type ? "text-indigo-700" : "text-black-500 hover:text-black-700"
+              accountType === type ? "text-white" : "text-black-500 hover:text-black-700"
             }`}
           >
             {accountType === type && (

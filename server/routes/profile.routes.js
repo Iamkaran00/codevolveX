@@ -5,7 +5,13 @@ import {auth ,isInstructor, isStudent} from '../middleware/auth.middleware.js';
 import {updateProfile,deleteAccount,getAllUserDetails,updateDisplayPicture,getEnrolledCourses,instructorDashboard} from "../controller/profile.controller.js";
  
 // Delete User Account
-router.delete("/deleteProfile", auth,isStudent, deleteAccount);
+const isStudentOrInstructor = (req, res, next) => {
+  if (req.user.accountType === "Student" || req.user.accountType === "Instructor") {
+    return next();
+  }
+  return res.status(403).json({ success: false, message: "Access denied" });
+};
+router.delete('/deleteProfile',auth,isStudentOrInstructor,deleteAccount)
 router.put("/updateProfile", auth, updateProfile );
 router.get("/getUserDetails", auth, getAllUserDetails);
 // Get Enrolled Courses->

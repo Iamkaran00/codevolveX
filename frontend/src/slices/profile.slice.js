@@ -3,7 +3,7 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState = {
  loading : false,
  user : localStorage.getItem('user') ? JSON.parse(localStorage.getItem("user")) : null,
-
+enrolledCourses : [], 
 }
 const profileSlice = createSlice({
     name : "profile",
@@ -14,8 +14,11 @@ const profileSlice = createSlice({
         },
         setLoading(state,value){
             state.loading = value.payload;
-        }
+        } , 
+        setEnrolledCourses(state,action) {
+            state.enrolledCourses = action.payload ;
+        },
     },
 });
-export const {setUser,setLoading} = profileSlice.actions;
+export const {setUser,setLoading, setEnrolledCourses} = profileSlice.actions;
 export default profileSlice.reducer;

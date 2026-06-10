@@ -90,8 +90,16 @@ console.log("sections in ")
         }
          await Section.findByIdAndDelete(id);
          //do we need to delete objectId from schema of course
+         await Course.findOneAndUpdate({
+          courseContent : id
+          },
+          {
+            $pull : {courseContent : id}
+          }
+        
+        );
          return res.status(200).json(
-            {    success : false,
+            {    success : true,
                 message : "Section Deletion Successfully"
             }
          )

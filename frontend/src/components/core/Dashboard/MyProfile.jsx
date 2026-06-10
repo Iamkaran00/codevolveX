@@ -44,12 +44,10 @@ const MyProfile = () => {
   return (
      
     <div
-      className="min-h-screen w-full bg-white pt-24 pb-20"
+      className="min-h-screen w-full bg-gray-50 pt-24 pb-20"
       style={{ fontFamily: "'Inter', sans-serif" }}
     >
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-      `}</style>
+      
 
       <motion.div
         variants={stagger}
@@ -60,7 +58,7 @@ const MyProfile = () => {
 
         <motion.div
           variants={fadeUp}
-          className="mb-10 flex flex-col gap-6 border-b border-gray-100 pb-8 sm:flex-row sm:items-end sm:justify-between"
+          className="mb-10 flex flex-col gap-6 border-b border-black/50 pb-8 sm:flex-row sm:items-end sm:justify-between"
         >
           <div>
             <p className="mb-1 text-2xl font-bold  text-black-500">
@@ -76,18 +74,18 @@ const MyProfile = () => {
         <Link to = '/settings' >
           <button
             onClick={() => navigate('/settings')}
-            className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-indigo-700 shadow-none transition-all duration-150  cursor-pointer hover:border-indigo-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 active:scale-[0.98]"
+            className="inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-600 hover:shadow-2xl px-4 py-2.5 text-sm font-semibold text-white-700 shadow-none transition-all duration-150  cursor-pointer  focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 active:scale-[0.98] text-white"
           >
             <VscEdit className="text-base" />
             Edit Profile
           </button>
           </Link>
         </motion.div>
-
+ 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
 
           <motion.div variants={fadeUp} className="col-span-1 flex flex-col gap-6">
-            <div className="relative overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-[0_1px_3px_0_rgba(0,0,0,0.06),0_1px_2px_-1px_rgba(0,0,0,0.04)]">
+            <div className="relative overflow-hidden rounded-2xl border border-black/30 hover:shadow-black/60 transition-all bg-white shadow-[0_1px_3px_0_rgba(0,0,0,0.06),0_1px_2px_-1px_rgba(0,0,0,0.04)]">
               <div className="h-[5px] w-full bg-gradient-to-r from-indigo-500 via-indigo-400 to-violet-400" />
 
               <div className="flex flex-col items-center px-6 py-7 text-center">
@@ -140,7 +138,7 @@ const MyProfile = () => {
             {/* About */}
             <motion.div
               variants={fadeUp}
-              className="rounded-2xl border border-gray-100 bg-white shadow-[0_1px_3px_0_rgba(0,0,0,0.06),0_1px_2px_-1px_rgba(0,0,0,0.04)]"
+              className="rounded-2xl border-black/30 hover:shadow-black/60 transition-all bg-white shadow-[0_1px_3px_0_rgba(0,0,0,0.06),0_1px_2px_-1px_rgba(0,0,0,0.04)]"
             >
               <div className="flex items-center justify-between border-b border-gray-100 px-7 py-4">
                 <h3 className="text-[13px] font-bold uppercase tracking-widest text-gray-900">
@@ -163,7 +161,7 @@ const MyProfile = () => {
             {/* Personal Details */}
             <motion.div
               variants={fadeUp}
-              className="rounded-2xl border border-gray-100 bg-white shadow-[0_1px_3px_0_rgba(0,0,0,0.06),0_1px_2px_-1px_rgba(0,0,0,0.04)]"
+              className="rounded-2xl border-black/30 hover:shadow-black/60 transition-all bg-white shadow-[0_1px_3px_0_rgba(0,0,0,0.06),0_1px_2px_-1px_rgba(0,0,0,0.04)]"
             >
               <div className="flex items-center justify-between border-b border-gray-100 px-7 py-4">
                 <h3 className="text-[13px] font-bold uppercase tracking-widest text-gray-900">
@@ -210,7 +208,7 @@ const MyProfile = () => {
             {/* Security / Account row */}
             <motion.div
               variants={fadeUp}
-              className="rounded-2xl border border-gray-100 bg-white shadow-[0_1px_3px_0_rgba(0,0,0,0.06),0_1px_2px_-1px_rgba(0,0,0,0.04)]"
+              className="rounded-2xl border-black/30 hover:shadow-black/60 transition-all bg-white shadow-[0_1px_3px_0_rgba(0,0,0,0.06),0_1px_2px_-1px_rgba(0,0,0,0.04)]"
             >
               <div className="flex items-center justify-between border-b border-gray-100 px-7 py-4">
                 <h3 className="text-[13px] font-bold uppercase tracking-widest text-gray-900">

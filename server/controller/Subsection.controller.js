@@ -101,8 +101,14 @@ const updateSubSection = async (req, res) => {
  const deleteSubSection = async(req,res)=>{
      
 try {
-  const id = request.params;
+  const id = req.params.id;
     await SubSection.findByIdAndDelete(id);
+    await Section.findOneAndUpdate({
+      SubSection : id
+    } ,
+  {
+    $pull : {SubSection : id}
+  });
     return res.status(200).json(
       {
         success : true,

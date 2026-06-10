@@ -15,6 +15,9 @@ import MyProfile from "./components/core/Dashboard/MyProfile";
 import Dashboard from "./pages/Dashboard";
 import Settings from "./pages/Settings";
 import PrivateRoute from "./components/core/auth/PrivateRoute";
+import PurchaseHistory from "./components/core/Dashboard/PurchaseHistory";
+import EnrolledCourse from "./components/core/Dashboard/EnrolledCourse";
+import Cart from "./components/core/Dashboard/Cart";
 function App() {
   return (
     <div id="wrapper">
@@ -35,7 +38,11 @@ function App() {
               <Dashboard />
             </PrivateRoute>
           }
-        ></Route>
+        >
+      <Route path = "purchase-history" element = {<PurchaseHistory />} />
+      <Route path = 'enrolled-courses' element = {<EnrolledCourse />} />
+      <Route path = 'mycart' element = {<Cart/>} />
+        </Route>
         <Route
           path="my-profile"
           element={

@@ -24,7 +24,7 @@ const createCourse = async (req, res) => {
     console.log("1");
    
      let thumbnail = req.file.path;
-     const thumbnail1 = toString(thumbnail);
+     const thumbnail1 = thumbnail.toString();
      console.log(thumbnail,"thumbnail");
      const arr = [
       courseName,
@@ -44,7 +44,6 @@ const createCourse = async (req, res) => {
     if(!status || status === undefined){
       status = "Draft"
     }
-    //check for instructor
     const userId = req.user.id;
     const instructorDetails = await User.findById(userId,{
       accountType : "Instructor",
@@ -182,11 +181,11 @@ const editCourse  = async(req,res)=>{
         _id : courseId,
       }
     ).populate({
-      path : "Instructor",
+      path : "instructor",
       populate : {
-        path : "additionalDetials"
+        path : "additionalDetails"
       }
-    }).populate("Category").populate("ratingAndReviews").populate({
+    }).populate("category").populate("ratingAndReviews").populate({
       path : "courseContent",
       populate : {
         path : "subSection",
@@ -250,7 +249,7 @@ const deleteCourse = async (req, res) => {
       })
     }
 
-    // Delete sections and sub-sections
+     
     const courseSections = course.courseContent
     for (const sectionId of courseSections) {
       // Delete sub-sections of the section
@@ -312,12 +311,7 @@ const getCourseDetails = async (req, res) => {
       })
     }
 
-    // if (courseDetails.status === "Draft") {
-    //   return res.status(403).json({
-    //     success: false,
-    //     message: `Accessing a draft course is forbidden`,
-    //   });
-    // }
+    
 
     let totalDurationInSeconds = 0
     courseDetails.courseContent.forEach((content) => {

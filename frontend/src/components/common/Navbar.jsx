@@ -64,7 +64,7 @@ useEffect(() => {
             : "w-full bg-white/95 backdrop-blur-md border-b border-gray-200"
         }`}
       >
-        {/* Logo */}
+       
         <Link to="/">
           <p className="text-2xl font-bold tracking-tighter text-gray-900">
             codevolve<span className="text-blue-600">X</span>
@@ -118,10 +118,10 @@ useEffect(() => {
           </ul>
         </nav>
 
-        {/* Action Buttons: Login / Signup / Cart */}
+       
         <div className="flex items-center gap-x-4">
           {token && user?.accountType !== "Instructor" && (
-            <Link to="/dashboard/cart" className="relative group p-2">
+            <Link to="/dashboard/mycart" className="relative group p-2">
               <FaShoppingCart className="text-xl text-gray-600 group-hover:text-blue-600 transition-colors" />
               {totalItems > 0 && (
                 <span className="absolute top-0 right-0 grid h-5 w-5 place-items-center rounded-full bg-blue-600 text-[10px] font-bold text-white shadow-sm ring-2 ring-white">
@@ -146,9 +146,9 @@ useEffect(() => {
               </Link>
             </div>
           )}
-          {user?.accountType !== "Student" && user !== null && (
+          { user !== null && (
             <Link to = '/dashboard' >
- <button className="px-4 py-2 text-[14px] font-medium text-gray-700 bg-gray-100/50 backdrop-blur-sm border border-gray-200 rounded-full hover:bg-gray-200/50 transition-colors">
+       <button className="px-4 py-2 text-[14px] font-medium text-gray-700 bg-gray-100/50 backdrop-blur-sm border border-gray-200 rounded-full hover:bg-gray-200/50 transition-colors">
               Dashboard
             </button>
 
