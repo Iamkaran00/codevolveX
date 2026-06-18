@@ -7,7 +7,7 @@ import courseEnrollmentEmail from "../mail/templates/courseEnrollmentEmail.js"
 import mongoose from "mongoose";
 import crypto from "crypto";
 import paymentSuccessEmail from '../mail/templates/payementSuccessEmail.js';
-import { courseProgress } from "../models/CourseProgress.js";
+import { CourseProgress } from "../models/CourseProgress.js";
 //Capture payment and intitate razorpay order->create order for multiple items buy
 const capturePayment=async(req,res)=>{
   

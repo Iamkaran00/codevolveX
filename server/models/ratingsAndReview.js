@@ -1,4 +1,4 @@
-import { mongoose,Schema } from "mongoose";
+import  mongoose,{Schema } from "mongoose";
 
 const ratingsAndReviewSchema = new Schema (
     {
@@ -24,4 +24,4 @@ const ratingsAndReviewSchema = new Schema (
     }
 )
 
-export const ratingsAndReview = mongoose.model("ratingsAndReview",ratingsAndReviewSchema);
+export const ratingsAndReview = mongoose.model("RatingsAndReview",ratingsAndReviewSchema);

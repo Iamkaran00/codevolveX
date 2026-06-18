@@ -7,8 +7,8 @@ import { HiClock } from "react-icons/hi";
 import { FaCheck } from "react-icons/fa";
 import { RiDeleteBin6Line } from "react-icons/ri";
 
-import { formatDate } from "../../../../services/formatDate";
-import { deleteCourse, fetchInstructorCourses } from "../../../../services/operations/courseDetailsAPI";
+import { formatDate } from "../../../../services/formateDate";
+import { deleteCourse,fetchInstructorCourses } from "../../../../services/operations/courseApi";
 import { COURSE_STATUS } from "../../../../utils/constants";
 import ConfirmationModal from "../../../common/ConfirmationModal";
 

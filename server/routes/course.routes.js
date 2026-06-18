@@ -39,7 +39,7 @@ import { uploadVideo,uploadImage } from "../middleware/multer.middleware.js";
  
  
 // Courses can Only be Created by Instructors
-router.post("/createCourse", auth, isInstructor,uploadImage.single("thumbnail"), createCourse);
+router.post("/createCourse", auth, isInstructor,uploadImage.single("thumbnailImage"), createCourse);
 //Add a Section to a Course
 router.post("/addSection", auth, isInstructor, createSection);
 // Update a Section
@@ -62,7 +62,7 @@ router.get("/getCourseDetails", getCourseDetails);
 router.post("/getFullCourseDetails", auth, getFullCourseDetails)
 // router.post("/getFullCourseDetails", auth, getFullCourseDetails);
 // Edit Course routes
-router.post("/editCourse", auth, isInstructor, editCourse);
+router.post("/editCourse", auth, isInstructor,uploadImage.single('thumbnailImage'),editCourse);
 // Get all Courses Under a Specific Instructor
 router.get("/getInstructorCourses", auth, isInstructor, getInstructorCourses);
 // Delete a Course

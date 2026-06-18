@@ -5,8 +5,8 @@ import { IoAddCircleOutline } from "react-icons/io5";
 import { MdNavigateNext, MdOutlineArrowBackIos } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 
-import { createSection, updateSection } from "../../../../../services/operations/courseDetailsAPI";
-import { setCourse, setEditCourse, setStep } from "../../../../../slices/courseSlice";
+import { createSection, updateSection } from "../../../../../services/operations/courseApi";
+import { setCourse, setEditCourse, setStep } from "../../../../../slices/course.slice";
 import NestedView from "./NestedView";
 
 export default function CourseBuilderForm() {
@@ -23,7 +23,6 @@ export default function CourseBuilderForm() {
   const [editSectionName, setEditSectionName] = useState(null);
   const dispatch = useDispatch();
 
-  // handle form submission
   const onSubmit = async (data) => {
     setLoading(true);
     let result;
@@ -46,7 +45,7 @@ export default function CourseBuilderForm() {
         token
       );
     }
-    
+
     if (result) {
       dispatch(setCourse(result));
       setEditSectionName(null);
@@ -74,7 +73,7 @@ export default function CourseBuilderForm() {
       toast.error("Please add at least one section");
       return;
     }
-    if (course.courseContent.some((section) => section.subSection.length === 0)) {
+    if (course.courseContent.some((section) => section.SubSection.length === 0)) {
       toast.error("Please add at least one lecture in each section");
       return;
     }
@@ -91,8 +90,7 @@ export default function CourseBuilderForm() {
       <h2 className="text-xl font-bold text-slate-900 tracking-tight mb-6">
         Course Builder
       </h2>
-      
-      {/* SECTION MANIPULATION FORM SUBMISSION CANVAS */}
+
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
         <div className="flex flex-col gap-2">
           <label className="text-xs font-bold uppercase tracking-wider text-slate-400" htmlFor="sectionName">
@@ -112,7 +110,6 @@ export default function CourseBuilderForm() {
           )}
         </div>
 
-        {/* Form Action Controls Section */}
         <div className="flex items-center gap-x-4">
           <button
             type="submit"
@@ -122,7 +119,7 @@ export default function CourseBuilderForm() {
             <IoAddCircleOutline size={16} />
             <span>{editSectionName ? "Edit Section Name" : "Create Section"}</span>
           </button>
-          
+
           {editSectionName && (
             <button
               type="button"
@@ -135,24 +132,24 @@ export default function CourseBuilderForm() {
         </div>
       </form>
 
-      {/* DYNAMIC LIST LAYER SUB-VIEWPORT CONTEXT */}
       {course.courseContent.length > 0 && (
         <div className="mt-8 border-t border-slate-100 pt-6">
           <NestedView handleChangeEditSectionName={handleChangeEditSectionName} />
         </div>
       )}
 
-      {/* FOOTER WIZARD NAVIGATION NAVIGATION BAR */}
       <div className="mt-8 flex justify-end items-center gap-x-3 border-t border-slate-100 pt-5">
         <button
+          type="button"
           onClick={goBack}
           className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-xs font-bold text-slate-600 transition-all hover:bg-slate-50 hover:text-slate-900 active:scale-[0.98]"
         >
           <MdOutlineArrowBackIos className="text-[10px]" />
           <span>Back</span>
         </button>
-        
+
         <button
+          type="button"
           onClick={goToNext}
           disabled={loading}
           className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-indigo-600 px-5 py-2.5 text-xs font-bold text-white shadow-sm shadow-indigo-100 transition-all hover:bg-indigo-700 active:scale-[0.98]"

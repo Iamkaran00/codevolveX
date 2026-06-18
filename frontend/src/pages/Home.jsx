@@ -21,7 +21,6 @@ export const Home = () => {
       <HowItWorks />
       <FeaturesSection />
       <InstructorCTA />
-      <Footer />
     </div>
   );
 };

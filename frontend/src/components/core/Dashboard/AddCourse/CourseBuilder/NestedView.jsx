@@ -6,8 +6,8 @@ import { RiDeleteBin6Line } from "react-icons/ri";
 import { RxDropdownMenu } from "react-icons/rx";
 import { useDispatch, useSelector } from "react-redux";
 
-import { deleteSection, deleteSubSection } from "../../../../../services/operations/courseDetailsAPI";
-import { setCourse } from "../../../../../slices/courseSlice";
+import { deleteSection,deleteSubSection } from "../../../../../services/operations/courseApi";
+import { setCourse } from "../../../../../slices/course.slice";
 import ConfirmationModal from "../../../../common/ConfirmationModal";
 import SubSectionModal from "./SubSectionModal";
 
@@ -16,19 +16,16 @@ export default function NestedView({ handleChangeEditSectionName }) {
   const { token } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   
-  // States to keep track of mode of modal [add, view, edit]
   const [addSubSection, setAddSubsection] = useState(null);
   const [viewSubSection, setViewSubSection] = useState(null);
   const [editSubSection, setEditSubSection] = useState(null);
-  // to keep track of confirmation modal
   const [confirmationModal, setConfirmationModal] = useState(null);
 
   const handleDeleleSection = async (sectionId) => {
     const result = await deleteSection({
       sectionId,
       courseId: course._id,
-      token,
-    });
+    },token);
     if (result) {
       dispatch(setCourse(result));
     }
@@ -36,7 +33,7 @@ export default function NestedView({ handleChangeEditSectionName }) {
   };
 
   const handleDeleteSubSection = async (subSectionId, sectionId) => {
-    const result = await deleteSubSection({ subSectionId, sectionId, token });
+    const result = await deleteSubSection({ subSectionId, sectionId},token);
     if (result) {
       const updatedCourseContent = course.courseContent.map((section) =>
         section._id === sectionId ? result : section
@@ -52,7 +49,6 @@ export default function NestedView({ handleChangeEditSectionName }) {
       <div className="w-full flex flex-col gap-y-4" id="nestedViewContainer">
         {course?.courseContent?.map((section) => (
           
-          /* SECTION ACCORDION WRAPPER: Clean light slate enclosure with sharp borders */
           <details 
             key={section._id} 
             open 
@@ -96,9 +92,8 @@ export default function NestedView({ handleChangeEditSectionName }) {
               </div>
             </summary>
 
-            {/* LECTURE CONTENTS SUB-VIEWPORT EXPANSION LAYER */}
             <div className="px-5 py-3 bg-white flex flex-col gap-y-2">
-              {section?.subSection?.map((data) => (
+              {section?.SubSection?.map((data) => (
                 <div
                   key={data?._id}
                   onClick={() => setViewSubSection(data)}

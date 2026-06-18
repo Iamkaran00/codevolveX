@@ -5,8 +5,8 @@ import { HiOutlineCurrencyRupee } from "react-icons/hi2";
 import { MdNavigateNext } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 
-import { addCourseDetails, editCourseDetails, fetchCourseCategories } from "../../../../../services/operations/courseDetailsAPI";
-import { setCourse, setStep } from "../../../../../slices/courseSlice";
+import { addCourseDetails, editCourseDetails, fetchCourseCategories } from "../../../../../services/operations/courseApi";
+import { setCourse, setStep } from "../../../../../slices/course.slice";
 import { COURSE_STATUS } from "../../../../../utils/constants";
 import Upload from "../Upload";
 import ChipInput from "./ChipInput";
@@ -37,72 +37,81 @@ export default function CourseInformationForm() {
       setLoading(false);
     };
     
-    if (editCourse) {
-      setValue("courseTitle", course.courseName);
-      setValue("courseShortDesc", course.courseDescription);
-      setValue("coursePrice", course.price);
-      setValue("courseTags", course.tag);
-      setValue("courseBenefits", course.whatYouWillLearn);
-      setValue("courseCategory", course.category);
-      setValue("courseRequirements", course.instructions);
-      setValue("courseImage", course.thumbnail);
+    if (editCourse && course) {
+      setValue("courseTitle", course.courseName || "");
+      setValue("courseShortDesc", course.courseDescription || "");
+      setValue("coursePrice", course.price || "");
+      setValue("courseTags", course.tag || []);
+      setValue("courseBenefits", course.whatYouWillLearn || "");
+      
+      const categoryId = course.category?._id ? course.category._id : course.category;
+      setValue("courseCategory", categoryId || "");
+      
+      setValue("courseRequirements", course.instructions || []);
+      setValue("courseImage", course.thumbnail || null);
     }
     getCategories();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [editCourse, course, setValue]);
 
   const isFormUpdated = () => {
     const currentValues = getValues();
-    if (
-      currentValues.courseTitle !== course.courseName ||
-      currentValues.courseShortDesc !== course.courseDescription ||
-      currentValues.coursePrice !== course.price ||
-      currentValues.courseTags.toString() !== course.tag.toString() ||
-      currentValues.courseBenefits !== course.whatYouWillLearn ||
-      currentValues.courseCategory._id !== course.category._id ||
-      currentValues.courseRequirements.toString() !== course.instructions.toString() ||
-      currentValues.courseImage !== course.thumbnail
-    ) {
-      return true;
-    }
+    
+    if (currentValues.courseTitle !== course?.courseName) return true;
+    if (currentValues.courseShortDesc !== course?.courseDescription) return true;
+    if (currentValues.coursePrice !== course?.price) return true;
+    if (currentValues.courseTags?.toString() !== course?.tag?.toString()) return true;
+    if (currentValues.courseBenefits !== course?.whatYouWillLearn) return true;
+    
+    const originalCategoryId = course?.category?._id ? course.category._id : course?.category;
+    if (currentValues.courseCategory !== originalCategoryId) return true;
+    
+    if (currentValues.courseRequirements?.toString() !== course?.instructions?.toString()) return true;
+    if (currentValues.courseImage !== course?.thumbnail) return true;
+    
     return false;
   };
 
   const onSubmit = async (data) => {
+     
+    console.log(editCourse);
     if (editCourse) {
+      console.log(editCourse,'hi there ')
       if (isFormUpdated()) {
-        const currentValues = getValues();
         const formData = new FormData();
-        
         formData.append("courseId", course._id);
-        if (currentValues.courseTitle !== course.courseName) {
+        
+        if (data.courseTitle !== course.courseName) {
           formData.append("courseName", data.courseTitle);
         }
-        if (currentValues.courseShortDesc !== course.courseDescription) {
+        if (data.courseShortDesc !== course.courseDescription) {
           formData.append("courseDescription", data.courseShortDesc);
         }
-        if (currentValues.coursePrice !== course.price) {
+        if (data.coursePrice !== course.price) {
           formData.append("price", data.coursePrice);
         }
-        if (currentValues.courseTags.toString() !== course.tag.toString()) {
+        if (data.courseTags?.toString() !== course.tag?.toString()) {
           formData.append("tag", JSON.stringify(data.courseTags));
         }
-        if (currentValues.courseBenefits !== course.whatYouWillLearn) {
+        if (data.courseBenefits !== course.whatYouWillLearn) {
           formData.append("whatYouWillLearn", data.courseBenefits);
         }
-        if (currentValues.courseCategory._id !== course.category._id) {
+        
+        const originalCategoryId = course.category?._id ? course.category._id : course.category;
+        if (data.courseCategory !== originalCategoryId) {
           formData.append("category", data.courseCategory);
         }
-        if (currentValues.courseRequirements.toString() !== course.instructions.toString()) {
+        if (data.courseRequirements?.toString() !== course.instructions?.toString()) {
           formData.append("instructions", JSON.stringify(data.courseRequirements));
         }
-        if (currentValues.courseImage !== course.thumbnail) {
+        if (data.courseImage !== course.thumbnail) {
           formData.append("thumbnailImage", data.courseImage);
         }
         
         setLoading(true);
+        console.log("Dispatching API call to editCourseDetails...");
         const result = await editCourseDetails(formData, token);
         setLoading(false);
+        
         if (result) {
           dispatch(setStep(2));
           dispatch(setCourse(result));
@@ -112,7 +121,7 @@ export default function CourseInformationForm() {
       }
       return;
     }
-
+ 
     const formData = new FormData();
     formData.append("courseName", data.courseTitle);
     formData.append("courseDescription", data.courseShortDesc);
@@ -139,9 +148,8 @@ export default function CourseInformationForm() {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-md"
+      className="space-y-6 rounded-2xl border w-full border-slate-200 bg-white p-6 shadow-md"
     >
-      {/* Course Title Field */}
       <div className="flex flex-col gap-2">
         <label className="text-xs font-bold uppercase tracking-wider text-slate-500" htmlFor="courseTitle">
           Course Title <sup className="text-red-500">*</sup>
@@ -202,7 +210,7 @@ export default function CourseInformationForm() {
         )}
       </div>
 
-      {/* Course Category Dropdown Selection Selection */}
+      {/* Course Category Dropdown Selection */}
       <div className="flex flex-col gap-2">
         <label className="text-xs font-bold uppercase tracking-wider text-slate-500" htmlFor="courseCategory">
           Course Category <sup className="text-red-500">*</sup>
@@ -228,7 +236,6 @@ export default function CourseInformationForm() {
         )}
       </div>
 
-      {/* Custom Sub-Input Blocks */}
       <ChipInput
         label="Tags"
         name="courseTags"
@@ -291,7 +298,7 @@ export default function CourseInformationForm() {
         <button
           type="submit"
           disabled={loading}
-          className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-indigo-600 px-6 py-2.5 text-xs font-bold text-white shadow-sm shadow-indigo-100 transition-all hover:bg-indigo-700 active:scale-[0.98]"
+          className="inline-flex items-center cursor-pointer justify-center gap-1.5 rounded-xl bg-indigo-600 px-6 py-2.5 text-xs font-bold text-white shadow-sm shadow-indigo-100 transition-all hover:bg-indigo-700 active:scale-[0.98]"
         >
           <span>{!editCourse ? "Next" : "Save Changes"}</span>
           <MdNavigateNext className="text-base" />

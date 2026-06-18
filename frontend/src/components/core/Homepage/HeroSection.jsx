@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { SiReact, SiPython, SiKubernetes } from "react-icons/si";
 import { FaAws, FaTrophy } from "react-icons/fa6";
 import { HiArrowRight, HiPlay, HiStar, HiFire } from "react-icons/hi2";
+import { useSelector } from "react-redux";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -25,7 +26,7 @@ const BADGES = [
     bg: "bg-sky-50",
     label: "React",
     sub: "18K learners",
-    pos: "top-[-10%] left-[-15%]", // Tailwind responsive positioning
+    pos: "top-[-10%] left-[-15%]",  
     delay: 0,
     dur: 6,
   },
@@ -72,7 +73,6 @@ const STREAK_DAYS = ["M", "T", "W", "T", "F", "S", "S"];
 const STREAK_DONE = [0, 1, 2, 3];
 const STREAK_TODAY = 4;
 
-// ─── SUB-COMPONENTS ──────────────────────────────────────────────────────────
 
 function FloatLoop({ children, y = 14, duration = 6, delay = 0, className }) {
   return (
@@ -89,7 +89,6 @@ function FloatLoop({ children, y = 14, duration = 6, delay = 0, className }) {
 function ScreenContent() {
   return (
     <div className="h-full w-full flex flex-col p-4 bg-gray-950 text-white relative overflow-hidden">
-      {/* Background glow in screen */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/20 blur-2xl rounded-full" />
       
       {/* Topbar */}
@@ -105,7 +104,7 @@ function ScreenContent() {
         </div>
       </div>
 
-      {/* Code / Video Area */}
+      
       <div className="relative h-24 bg-gradient-to-br from-indigo-900/50 to-slate-900 rounded-lg border border-white/10 flex-shrink-0 mb-4 flex flex-col justify-end p-3 z-10">
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="w-8 h-8 rounded-full bg-white/10 backdrop-blur border border-white/20 flex items-center justify-center pl-0.5">
@@ -149,10 +148,12 @@ function ScreenContent() {
 
 
 export default function HeroSection() {
+  const {user} = useSelector(state => state.profile);
+
   return (
     <section className="relative overflow-hidden bg-gray-50 px-4 py-20 sm:px-6 lg:px-8 lg:py-32">
       
-      {/* Background Gradients */}
+     
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
         <div className="absolute -top-[20%] right-[10%] w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-[120px]" />
         <div className="absolute bottom-[-10%] left-[-5%] w-[500px] h-[500px] bg-sky-500/10 rounded-full blur-[100px]" />
@@ -218,18 +219,26 @@ export default function HeroSection() {
 
 
           <motion.div variants={itemVariants} className="mt-10 flex flex-col sm:flex-row gap-4">
-
-            <NavLink to="/catalogue">
+    {user?.accountType == 'Instructor' ? (   <NavLink to="/dashboard/my-courses">
 
               <button className="flex w-full sm:w-auto items-center justify-center gap-2 rounded-2xl bg-gray-900 px-8 py-4 text-sm font-bold text-white transition-all hover:bg-indigo-600 hover:shadow-lg hover:shadow-indigo-500/25 hover:-translate-y-0.5 active:scale-95">
-
-                Explore Courses
+               Your Courses
 
                 <HiArrowRight className="h-4 w-4" />
 
               </button>
 
-            </NavLink>
+            </NavLink>) : (   <NavLink to="/catalogue">
+
+              <button className="flex w-full sm:w-auto items-center justify-center gap-2 rounded-2xl bg-gray-900 px-8 py-4 text-sm font-bold text-white transition-all hover:bg-indigo-600 hover:shadow-lg hover:shadow-indigo-500/25 hover:-translate-y-0.5 active:scale-95">
+
+               Explore Catalogue
+                <HiArrowRight className="h-4 w-4" />
+
+              </button>
+
+            </NavLink>)}
+         
 
 
 
@@ -245,7 +254,7 @@ export default function HeroSection() {
 
 
 
-          {/* Stats Bar */}
+       
 
           <motion.div variants={itemVariants} className="mt-14 flex items-center gap-8 border-t border-gray-100 pt-8">
 
@@ -274,30 +283,26 @@ export default function HeroSection() {
         </motion.div>
 <div className="relative w-full h-[500px] lg:h-[600px] flex items-center justify-center [perspective:1200px]">
           
-          {/* Main 3D Container */}
+           
           <motion.div
             initial={{ opacity: 0, scale: 0.8, y: 40 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 0.9, type: "spring" }}
             className="relative z-10 w-full max-w-sm"
           >
-            {/* The Laptop Animation Wrapper */}
             <motion.div
               animate={{ y: [0, -15, 0], rotateY: [-8, -12, -8], rotateX: [12, 8, 12] }}
               transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
               className="relative [transform-style:preserve-3d]"
             >
               
-              {/* Laptop Screen */}
               <div className="relative w-full aspect-[16/11] bg-gray-900 rounded-t-2xl border-[4px] border-gray-800 shadow-2xl overflow-hidden [transform-style:preserve-3d]">
-                {/* Webcam Notch */}
                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-16 h-3 bg-gray-800 rounded-b-md z-20 flex justify-center items-center">
                   <div className="w-1 h-1 rounded-full bg-blue-900/50" />
                 </div>
                 <ScreenContent />
               </div>
 
-              {/* Laptop Base (Hinge + Keyboard Deck) */}
               <div className="relative w-[110%] -ml-[5%] h-5 bg-gradient-to-b from-gray-300 to-gray-400 rounded-b-xl shadow-[0_20px_40px_rgba(0,0,0,0.4)] flex justify-center [transform:translateZ(10px)] border-t border-gray-200">
                 <div className="w-20 h-1.5 bg-gray-400/50 rounded-b-md mt-0.5" />
               </div>

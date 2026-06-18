@@ -34,6 +34,7 @@ const createSection = async (req, res) => {
  
 console.log("sections in ")
     return res.status(201).json({
+      data : updatedCourseDetails,
       success: true,
       message: " Section created Successfully",
     });
@@ -79,31 +80,26 @@ console.log("sections in ")
 
  const deleteSection = async(req,res)=>{
     try {
-        const {id} = req.params;
-        if(!id){
-            return res.status(404).json(
-                {
-                    success : false,
-                    message : "failed to delete section"
-                }
-            )
-        }
-         await Section.findByIdAndDelete(id);
-         //do we need to delete objectId from schema of course
-         await Course.findOneAndUpdate({
-          courseContent : id
-          },
-          {
-            $pull : {courseContent : id}
-          }
-        
-        );
-         return res.status(200).json(
-            {    success : true,
-                message : "Section Deletion Successfully"
-            }
-         )
-    } catch (error) {
+        const { sectionId, courseId } = req.body;  // add courseId
+
+await Section.findByIdAndDelete(sectionId);
+await Course.findByIdAndUpdate(courseId, {
+  $pull: { courseContent: sectionId },
+});
+
+const updatedCourse = await Course.findById(courseId)
+  .populate({
+    path: "courseContent",
+    populate: { path: "SubSection" },
+  })
+  .exec();
+
+return res.status(200).json({
+  success: true,
+  message: "Section Deleted Successfully",
+  data: updatedCourse,
+})
+} catch (error) {
         return res.status(500).json(
             {
                 success : false,

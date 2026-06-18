@@ -19,9 +19,7 @@ export function sendOtp(email, navigate) {
         email,
         checkUserPresent: true,
       });
-      console.log("email is ->", email);
-      console.log("Send otp response", response);
-      console.log(response.data.success);
+      
       if (!response.data.success) {
         console.log("hey there",response.data.message)
         throw new Error(response.data.message);
@@ -61,9 +59,7 @@ export function signup(
         confirmPassword,
         otp,
       });
-      console.log("SIGNUP api response =>", response);
       if (!response.data.success) {
-        console.log("hey they",response.data.message);
         throw new Error(response.data.message);
       }
       toast.success("Signup Succeed");
@@ -87,7 +83,6 @@ export function login(email, password, navigate) {
         email,
         password,
       });
-console.log(response, "response in login");
 
       if (!response.data.success) {
         throw new Error(response.data.message);
@@ -110,26 +105,20 @@ console.log(response, "response in login");
   };
 }
 export function logout(navigate) {
-   localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    
-    toast.success("User Logged Out");
   return (dispatch) => {
-     
     dispatch(setToken(null));
     dispatch(setUser(null));
-    // dispatch(resetCart());
-    
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    toast.success("User Logged Out");
     navigate("/");
   };
-  
 }
 export function getPasswordResetToken(email, setEmailSent) {
   return async (dispatch) => {
     dispatch(setLoading(true));
     try {
       const response = await apiConnector("POST", RESETPASSTOKEN_API, { email });
-      console.log("Reset Password Token Response ..", response);
       if (!response.data.success) {
         throw new Error(response.data.message);
       }

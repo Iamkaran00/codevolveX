@@ -30,7 +30,7 @@ const courseSchema = new Schema ({
 ratingsAndReview : [
     {
         type : Schema.Types.ObjectId,
-        ref :" RatingsAndReview"
+        ref :"RatingsAndReview"
     }
 ],
 price : {

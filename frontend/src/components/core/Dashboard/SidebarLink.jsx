@@ -32,8 +32,6 @@ const SidebarLink = ({ link, iconName }) => {
           transition={{ duration: 0.2 }}
         />
       )}
-      
-      
       {Icon && (
         <Icon 
           className={`text-lg transition-transform duration-200 group-hover:scale-105 

@@ -99,7 +99,6 @@ export default function RequirementsField({
         </div>
       )}
 
-      {/* Form Validation Exception Wrappers */}
       {errors[name] && (
         <span className="text-xs font-semibold text-red-500 mt-0.5">
           Please initialize at least one item row within {label.toLowerCase()} settings.

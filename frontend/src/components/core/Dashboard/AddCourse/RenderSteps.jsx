@@ -8,7 +8,7 @@ import PublishCourse from "./PublishCourse";
 
 export default function RenderSteps() {
   const { step } = useSelector((state) => state.course);
-
+console.log("hi there" , step);
   const steps = [
     { id: 1, title: "Course Information" },
     { id: 2, title: "Course Builder" },
@@ -18,12 +18,12 @@ export default function RenderSteps() {
   return (
     <div className="w-full flex flex-col items-center">
       
-      {/* 1. VISUAL STEPPER TRACK (CIRCLES & CONNECTOR LINES) */}
+       
       <div className="relative mb-4 flex w-full max-w-[600px] items-center justify-between px-4">
         {steps.map((item, index) => (
           <React.Fragment key={item.id}>
             <div className="flex items-center">
-              {/* Animated Progress Circle Indicator */}
+            
               <div
                 className={`grid h-9 w-9 place-items-center rounded-full border-2 font-bold text-sm transition-all duration-300 shadow-sm
                   ${step === item.id
@@ -52,7 +52,7 @@ export default function RenderSteps() {
         ))}
       </div>
 
-      {/* 2. STEP TITLE TEXT LABELS */}
+      
       <div className="relative mb-12 flex w-full max-w-[660px] select-none justify-between px-1 text-center">
         {steps.map((item) => (
           <div key={item.id} className="flex min-w-[140px] flex-col items-center">
@@ -66,8 +66,7 @@ export default function RenderSteps() {
         ))}
       </div>
 
-      {/* 3. DYNAMIC STEP DATA RENDERING INJECTOR COMPONENT CANVAS */}
-      <div className="w-full animate-fadeIn">
+      <div className="w-150 animate-fadeIn">
         {step === 1 && <CourseInformationForm />}
         {step === 2 && <CourseBuilderForm />}
         {step === 3 && <PublishCourse />}

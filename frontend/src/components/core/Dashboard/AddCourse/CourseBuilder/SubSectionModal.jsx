@@ -4,8 +4,8 @@ import { toast } from "react-hot-toast";
 import { RxCross2 } from "react-icons/rx";
 import { useDispatch, useSelector } from "react-redux";
 
-import { createSubSection, updateSubSection } from "../../../../../services/operations/courseDetailsAPI";
-import { setCourse } from "../../../../../slices/courseSlice";
+import { createSubSection, updateSubSection } from "../../../../../services/operations/courseApi";
+import { setCourse } from "../../../../../slices/course.slice";
 import Upload from "../Upload";
 
 export default function SubSectionModal({
@@ -36,7 +36,6 @@ export default function SubSectionModal({
     }
   }, [view, edit, modalData, setValue]);
 
-  // detect whether form is updated or not
   const isFormUpdated = () => {
     const currentValues = getValues();
     if (
@@ -49,7 +48,6 @@ export default function SubSectionModal({
     return false;
   };
 
-  // handle the editing of subsection
   const handleEditSubsection = async () => {
     const currentValues = getValues();
     const formData = new FormData();
@@ -64,7 +62,7 @@ export default function SubSectionModal({
       formData.append("description", currentValues.lectureDesc);
     }
     if (currentValues.lectureVideo !== modalData.videoUrl) {
-      formData.append("video", currentValues.lectureVideo);
+      formData.append("videoFile", currentValues.lectureVideo);
     }
     
     setLoading(true);
@@ -97,7 +95,7 @@ export default function SubSectionModal({
     formData.append("sectionId", modalData);
     formData.append("title", data.lectureTitle);
     formData.append("description", data.lectureDesc);
-    formData.append("video", data.lectureVideo);
+    formData.append("videoFile", data.lectureVideo);
     
     setLoading(true);
     const result = await createSubSection(formData, token);
@@ -113,92 +111,97 @@ export default function SubSectionModal({
     setLoading(false);
   };
 
+  const inputStyle = 
+    "w-full rounded-xl border border-slate-200/70 bg-slate-50 px-4 py-3.5 text-sm font-semibold text-slate-900 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.03)] outline-none transition-all duration-200 placeholder:text-slate-400 focus:border-indigo-500 focus:bg-white focus:ring-[3px] focus:ring-indigo-500/15 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed";
+  
+  const labelStyle = "text-[11px] font-extrabold uppercase tracking-widest text-slate-500 mb-2 block";
+
   return (
-    // Fixed screen overlay with backdrop blur for immersion
-    <div className="fixed inset-0 z-[1000] !mt-0 grid h-screen w-screen place-items-center overflow-auto bg-slate-900/40 backdrop-blur-sm p-4 animate-fadeIn">
+    <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-slate-900/30 backdrop-blur-md p-4 sm:p-6 animate-fadeIn font-sans">
       
-      {/* Modal Card Base */}
-      <div className="my-10 w-full max-w-[700px] rounded-2xl border border-slate-200 bg-white shadow-2xl animate-scaleUp overflow-hidden">
+      {/* Modal Card Base: Added max-h-[95vh] and flex-col for internal scrolling */}
+      <div className="w-full max-w-[700px] flex flex-col max-h-[95vh] rounded-3xl border border-slate-200/60 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.08)] animate-scaleUp overflow-hidden">
         
-        {/* Modal Header */}
-        <div className="flex items-center justify-between border-b border-slate-100 bg-slate-50/80 px-7 py-5">
-          <p className="text-xl font-bold text-slate-900 tracking-tight">
-            {view && "Viewing"} {add && "Adding"} {edit && "Editing"} Lecture
+        {/* Modal Header: Shrink-0 keeps it pinned to the top */}
+        <div className="flex items-center justify-between border-b border-slate-200/80 bg-slate-50/50 px-8 py-5 shrink-0">
+          <p className="text-xl font-black text-slate-900 tracking-tight">
+            {view && "Viewing"} {add && "Adding New"} {edit && "Editing"} Lecture
           </p>
           <button 
             onClick={() => (!loading ? setModalData(null) : {})}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-200/50 transition-all"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-200/80 transition-all active:scale-95"
           >
-            <RxCross2 className="text-2xl" />
+            <RxCross2 className="text-xl" />
           </button>
         </div>
         
-        {/* Modal Form */}
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 px-7 py-8">
+        {/* Modal Form: overflow-y-auto allows tall content to scroll inside safely */}
+        <form onSubmit={handleSubmit(onSubmit)} className="flex-1 overflow-y-auto p-8 space-y-8 custom-scrollbar">
           
           {/* Lecture Video Upload */}
-          <Upload
-            name="lectureVideo"
-            label="Lecture Video"
-            register={register}
-            setValue={setValue}
-            errors={errors}
-            video={true}
-            viewData={view ? modalData.videoUrl : null}
-            editData={edit ? modalData.videoUrl : null}
-          />
+          <div className="rounded-2xl bg-slate-50/50 p-2 sm:p-6 border border-slate-100">
+            <Upload
+              name="lectureVideo"
+              label="Lecture Video File"
+              register={register}
+              setValue={setValue}
+              errors={errors}
+              video={true}
+              viewData={view ? modalData.videoUrl : null}
+              editData={edit ? modalData.videoUrl : null}
+            />
+          </div>
           
           {/* Lecture Title Input */}
-          <div className="flex flex-col gap-2">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-500" htmlFor="lectureTitle">
-              Lecture Title {!view && <sup className="text-red-500">*</sup>}
+          <div className="flex flex-col">
+            <label className={labelStyle} htmlFor="lectureTitle">
+              Lecture Title {!view && <sup className="text-red-500 text-sm top-[-0.2em]">*</sup>}
             </label>
             <input
               disabled={view || loading}
               id="lectureTitle"
-              placeholder="Enter Lecture Title"
+              placeholder="e.g., Introduction to Component State"
               {...register("lectureTitle", { required: true })}
-              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-800 placeholder:text-slate-300 outline-none transition-all focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50/60 disabled:bg-slate-50 disabled:cursor-not-allowed"
+              className={inputStyle}
             />
             {errors.lectureTitle && (
-              <span className="text-xs font-semibold tracking-wide text-red-500 mt-0.5">
+              <span className="text-xs font-semibold tracking-wide text-red-500 mt-1.5">
                 Lecture title is required
               </span>
             )}
           </div>
           
-          {/* Lecture Description Textarea */}
-          <div className="flex flex-col gap-2">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-500" htmlFor="lectureDesc">
-              Lecture Description {!view && <sup className="text-red-500">*</sup>}
+          <div className="flex flex-col">
+            <label className={labelStyle} htmlFor="lectureDesc">
+              Lecture Description {!view && <sup className="text-red-500 text-sm top-[-0.2em]">*</sup>}
             </label>
             <textarea
               disabled={view || loading}
               id="lectureDesc"
-              placeholder="Enter Lecture Description"
+              placeholder="Provide a brief overview of what this video covers..."
               {...register("lectureDesc", { required: true })}
-              className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-800 placeholder:text-slate-300 outline-none transition-all focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50/60 disabled:bg-slate-50 disabled:cursor-not-allowed resize-none min-h-[130px]"
+              className={`${inputStyle} resize-none min-h-[140px] leading-relaxed`}
             />
             {errors.lectureDesc && (
-              <span className="text-xs font-semibold tracking-wide text-red-500 mt-0.5">
+              <span className="text-xs font-semibold tracking-wide text-red-500 mt-1.5">
                 Lecture Description is required
               </span>
             )}
           </div>
           
-           
           {!view && (
-            <div className="flex items-center justify-end border-t border-slate-100 pt-5 mt-4">
+            <div className="flex items-center justify-end border-t border-slate-100 pt-6 mt-4">
               <button
                 type="submit"
                 disabled={loading}
-                className="inline-flex items-center justify-center rounded-xl bg-indigo-600 px-7 py-3 text-sm font-bold text-white shadow-sm shadow-indigo-100 transition-all hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
+                className="inline-flex items-center justify-center rounded-xl bg-slate-900 px-8 py-3.5 text-sm font-bold text-white shadow-[0_4px_14px_0_rgba(0,0,0,0.1)] transition-all duration-300 hover:bg-slate-800 hover:shadow-[0_6px_20px_rgba(0,0,0,0.15)] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? "Saving..." : edit ? "Save Changes" : "Create Lecture"}
+                {loading ? "Processing..." : edit ? "Save Changes" : "Create Lecture"}
               </button>
             </div>
           )}
         </form>
+
       </div>
     </div>
   );

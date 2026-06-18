@@ -65,7 +65,6 @@ export function updateProfile(token, formData) {
 } 
 
 export function deleteProfile (token,navigate) { 
-  console.log(DELETE_PROFILE);
   return async (dispatch) =>{
     const toastId = toast.loading('Deleting Profile...') ;
     dispatch(setLoading(true));
@@ -91,7 +90,6 @@ export function deleteProfile (token,navigate) {
 export function getEnrolledCourse (token) {
   return async dispatch => {
     try {
-   console.log(GET_ENROLLED_COURSES)
       const response = await apiConnector('GET' , GET_ENROLLED_COURSES , null , null , {
         Authorization : `Bearer ${token}`
       });

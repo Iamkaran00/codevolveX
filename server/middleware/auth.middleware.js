@@ -2,7 +2,6 @@ import jwt from "jsonwebtoken";
 //auth
 const auth = async (req, res, next) => {
   try {
-    console.log(req);
     const authHeader = req.header("Authorization");
     const token =
       req.cookies?.token ||
@@ -10,7 +9,7 @@ const auth = async (req, res, next) => {
       (authHeader && authHeader.startsWith("Bearer ")
         ? authHeader.replace("Bearer ", "")
         : null);
- 
+       
     if (!token) {
       return res.status(401).json({
         success: false,
@@ -19,7 +18,6 @@ const auth = async (req, res, next) => {
     }
     try {
       const decode = jwt.verify(token, process.env.JWT_SECRET);
-      console.log(decode);
       req.user = decode;
     } catch (error) {
       //verification - issue
@@ -56,6 +54,7 @@ const isStudent = async (req, res, next) => {
 
 //isInstructor
 const isInstructor = async (req, res, next) => {
+  console.log('hi');
   try {
     if (req.user.accountType !== "Instructor")
       return res.status(401).json({

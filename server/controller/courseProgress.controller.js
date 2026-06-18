@@ -1,8 +1,8 @@
-const mongoose = require("mongoose")
- import {Course} from '../models/Course'
-import { SubSection } from "../models/SubSection"
-import { Section } from "../models/Sections"
-import { CourseProgress } from '../models/CourseProgress'
+import mongoose from "mongoose";
+import { Section } from "../models/Sections.js"
+import { CourseProgress } from "../models/CourseProgress.js";
+import { Course } from '../models/Course.js' ;
+import { SubSection } from "../models/SubSection.js"
 const updateCourseProgress = async (req, res) => {
   const { courseId, subsectionId } = req.body
   const userId = req.user.id

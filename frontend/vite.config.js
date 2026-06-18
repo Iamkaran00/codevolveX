@@ -16,5 +16,11 @@ export default defineConfig({
   },
   optimizeDeps: {
     exclude: ['nodemailer'],
+    include: [
+      '@emotion/react',
+      '@emotion/styled',
+      '@mui/material',
+      '@mui/x-data-grid',
+    ],
   },
 })
