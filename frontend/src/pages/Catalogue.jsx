@@ -385,13 +385,11 @@ export default function Catalogue() {
               </div>
             </div>
 
-            {/* Sort */}
             <SortDropdown value={sortBy} onChange={setSortBy} />
           </div>
         </div>
       </div>
 
-      {/* Main Grid Area */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {!loading && !error && (
           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
@@ -408,7 +406,6 @@ export default function Catalogue() {
             )}
           </div>
         )}
-
         {error && (
           <div className="flex flex-col items-center justify-center py-24 text-center bg-white rounded-3xl border border-rose-100 shadow-sm">
             <div className="w-16 h-16 rounded-full bg-rose-50 flex items-center justify-center mb-6">
@@ -419,7 +416,6 @@ export default function Catalogue() {
           </div>
         )}
 
-        {/* Note the shift to a 3-column grid max (lg:grid-cols-3) to make cards wider */}
         {loading && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 xl:gap-10">
             {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
@@ -437,7 +433,7 @@ export default function Catalogue() {
                 <CourseCard
                   key={course._id}
                   course={course}
-                  onClick={(id) => navigate(`/courses/${id}`)}
+                  onClick={(id) => navigate(`/catalogue/${id}`)}
                 />
               ))}
             </AnimatePresence>

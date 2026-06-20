@@ -109,6 +109,7 @@ export const getAllCourses = async () => {
     result = response?.data?.data;
   } catch (error) {
     console.log("GET_ALL_COURSE_API ERROR", error);
+    console.log(error.response);
     toast.error(error.message);
   }
   toast.dismiss(toastId);
@@ -130,6 +131,7 @@ export const fetchCourseDetails = async (courseId) => {
   } catch (error) {
     console.log("COURSE_DETAILS_API ERROR", error);
     result = error?.response?.data;
+    console.log(error.response);
   }
   toast.dismiss(toastId);
   return result;
@@ -152,6 +154,7 @@ export const getFullDetailsOfCourse = async (courseId, token) => {
       throw new Error(response?.data?.message);
     }
     result = response?.data?.data;
+    console.log(result);
   } catch (error) {
     console.log("GET_FULL_COURSE_DETAILS_AUTHENTICATED ERROR", error);
     result = error?.response?.data;
@@ -326,6 +329,7 @@ result = response.data.allCategory;
   } catch (error) {
     console.log("COURSE_CATEGORIES_API ERROR", error);
     toast.error(error.message);
+    console.log(error.response);
   }
   return result;
 };
@@ -446,27 +450,26 @@ export const getReviewsForCourse = async (courseid) => {
   return result;
 };
  
-
 export const markLectureAsComplete = async (data, token) => {
   let result = null;
-  const toastId = toast.loading("Marking complete...");
+  const toastId = toast.loading("Updating progress...");
   try {
     const response = await apiConnector(
       "POST",
       LECTURE_COMPLETION_API,
-      data,null,
+      data, null,
       { Authorization: `Bearer ${token}` }
     );
     console.log("LECTURE_COMPLETION_API RESPONSE", response);
     if (!response?.data?.message) {
       throw new Error(response?.data?.error);
     }
-    toast.success("Lecture completed");
-    result = true;
+    toast.success(response.data.completed ? "Lecture completed" : "Marked as incomplete");
+    result = response.data.completed;
   } catch (error) {
     console.log("LECTURE_COMPLETION_API ERROR", error);
     toast.error(error.message);
-    result = false;
+    result = null;
   }
   toast.dismiss(toastId);
   return result;

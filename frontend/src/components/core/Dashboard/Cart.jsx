@@ -5,7 +5,9 @@ import { FaStar } from "react-icons/fa";
 import { HiOutlineTrash, HiOutlineShoppingBag } from "react-icons/hi2";
 import ReactStars from "react-rating-stars-component";
 import { removeFromCart,resetCart } from "../../../slices/cart.slice";
-
+import { ShoppingCart } from "lucide-react";
+import { buyCourse } from "../../../services/operations/paymentAPI";
+import { toast } from "react-toastify";
 
 const Cart = () => {
   const { total, totalItems, cart } = useSelector((state) => state.cart);
@@ -16,7 +18,11 @@ const Cart = () => {
   const navigate = useNavigate();
 
   const handleBuyCourse = () => {
-    if (!token) return;
+    if (!token) {
+      toast.error('Login First') ;
+      navigate('/login') ;
+      return;
+    };
     const courses = cart.map((course) => course._id);
     buyCourse(token, courses, user, navigate, dispatch);
   };
@@ -51,7 +57,7 @@ const Cart = () => {
                       {course?.courseName}
                     </h3>
                     <p className="text-xs font-semibold text-indigo-600">
-                      {course?.category?.name || "Programming Route"}
+                      {course?.category?.name || "Programming"}
                     </p>
                     
                     <div className="flex items-center gap-2 pt-1">
@@ -124,21 +130,8 @@ const Cart = () => {
         <div className="flex h-[360px] flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white p-8 shadow-md text-center overflow-hidden relative">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(79,70,229,0.02),transparent_60%)] pointer-events-none" />
           
-          <div className="relative mb-5 flex h-16 w-16 animate-bounce items-center justify-center rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-600">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={2}
-              stroke="currentColor"
-              className="w-6 h-6"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"
-              />
-            </svg>
+          <div className="relative mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-600">
+            <ShoppingCart />
           </div>
 
           <h3 className="text-xl font-bold text-slate-900 tracking-tight">
@@ -149,7 +142,7 @@ const Cart = () => {
           </p>
           
           <button
-            onClick={() => navigate("/")}
+            onClick={() => navigate("/catalogue")}
             className="mt-6 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 shadow-sm transition-all active:scale-[0.98]"
           >
             Explore Catalog Pathways

@@ -28,6 +28,8 @@ import MyCourses from "./components/core/Dashboard/InstructorCourses/MyCourses";
 import AddCourse from "./components/core/Dashboard/AddCourse/AddCourse";
 import EditCourse from "./components/core/Dashboard/EditCourse/index";
 import { Footer } from "./components/common/Footer";
+import CourseDetails from "./pages/CourseDetails";
+import ViewCourse from "./pages/ViewCourse";
 
 
 function App() {
@@ -45,7 +47,6 @@ function App() {
         <Route path="update-password/:id" element={<UpdatePassword />} />
         <Route path="about-us" element={<About />} />
         <Route path="contact-us" element={<Contact />} />
-
         <Route
           path="dashboard"
           element={
@@ -57,8 +58,6 @@ function App() {
           <Route path="purchase-history" element={<PurchaseHistory />} />
           <Route path="enrolled-courses" element={<EnrolledCourse />} />
           <Route path="mycart" element={<Cart />} />
-
-        
           <Route
             path="my-courses"
             element={
@@ -90,7 +89,6 @@ function App() {
             }
           />
         </Route>
-
         <Route
           path="my-profile"
           element={
@@ -100,12 +98,17 @@ function App() {
           }
         />
         <Route path="settings" element={<Settings />} />
-         {
+         { 
           user?.accountType == 'Student' && (
+         <>
             <Route path = 'catalogue' element = {<Catalogue/>} />
+            <Route path = 'catalogue/:courseId' element = {<CourseDetails/>} />
+            <Route path = 'dashboard/view-courses/:courseId' element = {<ViewCourse/>} />
+         </>
+
+         
           )
          }
-        
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Footer/>

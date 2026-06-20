@@ -1,9 +1,10 @@
 import { Profile } from "../models/Profile.js";
 import { User } from "../models/User.js";
-import { Course } from "../models/Course.js";
 import { uploadOnCloudinary } from "../utils/cloudinaryuploader.js";
 import mongoose, { mongo } from "mongoose";
-
+import { Course } from "../models/Course.js";
+import { CourseProgress } from "../models/CourseProgress.js";
+import convertSecondsToDuration from "../utils/secToDuration.js";
 const updateProfile = async (req, res) => {
   try {
     const { gender, dateOfBirth, contactNumber, about } = req.body;
@@ -47,14 +48,29 @@ const deleteAccount = async (req, res) => {
         message: "User not found",
       });
     }
+
     const profileDetailsid = userDetails.additionalDetails;
     await Profile.findByIdAndDelete(profileDetailsid);
-    const courseids = userDetails.courses;
-        //delete profile
-    //delete profile
-if (courseids.length !== 0) {
-  await Course.deleteMany({ _id: { $in: courseids } });
-}
+
+    if (userDetails.accountType?.toLowerCase() === "instructor") {
+      // Instructor deletes their own courses
+      const courseIds = userDetails.courses;
+      if (courseIds.length !== 0) {
+        await Course.deleteMany({ _id: { $in: courseIds } });
+      }
+    } else {
+      // Student: just remove them from studentsEnrolled on their enrolled courses
+      const courseIds = userDetails.courses;
+      if (courseIds.length !== 0) {
+        await Course.updateMany(
+          { _id: { $in: courseIds } },
+          { $pull: { studentsEnrolled: id } }
+        );
+      }
+      // Also clean up their progress records
+      await CourseProgress.deleteMany({ userId: id });
+    }
+
     await User.findByIdAndDelete(id);
     return res.status(200).json({
       success: true,
@@ -130,7 +146,7 @@ const getEnrolledCourses = async (req, res) => {
         populate: {
           path: "courseContent",
           populate: {
-            path: "subSection",
+            path: "SubSection",
           },
         },
       })
@@ -143,7 +159,7 @@ const getEnrolledCourses = async (req, res) => {
       for (let j = 0; j < userDetails.courses[i].courseContent.length; j++) {
         totalDurationInSeconds += userDetails.courses[i].courseContent[
           j
-        ].subSection.reduce(
+        ].SubSection.reduce(
           (acc, curr) => acc + parseInt(curr.timeDuration),
           0,
         );
@@ -151,17 +167,21 @@ const getEnrolledCourses = async (req, res) => {
           totalDurationInSeconds,
         );
         SubsectionLength +=
-          userDetails.courses[i].courseContent[j].subSection.length;
+          userDetails.courses[i].courseContent[j].SubSection.length;
       }
-      let courseProgressCount = await CourseProgress.findOne({
-        courseID: userDetails.courses[i]._id,
+      let courseprogress = await CourseProgress.findOne({
+        courseId: userDetails.courses[i]._id,
         userId: userId,
       });
-      courseProgressCount = courseProgressCount?.completedVideos.length;
+     const courseProgressCount = courseprogress?.completedVideo.length || 0;
+
+      //sorting here so that course seen in order of last viewed 
+      userDetails.courses[i].lastAccessedAt =  courseprogress?.updatesAt || null;
+
       if (SubsectionLength === 0) {
         userDetails.courses[i].progressPercentage = 100;
       } else {
-        // To make it up to 2 decimal point
+       
         const multiplier = Math.pow(10, 2);
         userDetails.courses[i].progressPercentage =
           Math.round(
@@ -176,6 +196,14 @@ const getEnrolledCourses = async (req, res) => {
         message: `Could not find user with id: ${userDetails}`,
       });
     }
+
+    userDetails.courses.sort((a,b) => {
+    if(!a.lastAccessedAt && !b.lastAccessedAt) return 0;
+    if(!a.lastAccessedAt) return 1;
+    if(!b.lastAccessedAt) return -1;
+    return new Date(b.lastAccessedAt) - new Date(a.lastAccessedAt) ;
+
+    })
     return res.status(200).json({
       success: true,
       data: userDetails.courses,

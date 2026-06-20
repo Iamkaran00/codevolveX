@@ -9,6 +9,7 @@ import { FeaturesSection } from "../components/core/Homepage/FeaturesSection";
 import { InstructorCTA } from "../components/core/Homepage/InstructorCTA";
 import { Footer } from "../components/common/Footer";
 import { Navbar } from "../components/common/Navbar";
+import ReviewsMarquee from "../components/common/ReviewMarquee";
 export const Home = () => {
   return (
     <div className="home-root">
@@ -20,6 +21,7 @@ export const Home = () => {
       <LanguagesSection />
       <HowItWorks />
       <FeaturesSection />
+      <ReviewsMarquee/>
       <InstructorCTA />
     </div>
   );

@@ -231,8 +231,7 @@ const getInstructorCourses = async (req, res) => {
 const deleteCourse = async (req, res) => {
   try {
     const { courseId } = req.body
- 
-    // Find the course
+
     const course = await Course.findById(courseId)
     if (!course) {
       return res.status(404).json({ message: "Course not found" })
@@ -245,10 +244,12 @@ const deleteCourse = async (req, res) => {
       })
     }
 
-     
+    await User.findByIdAndUpdate(course.instructor, {
+      $pull: { courses: courseId },
+    })
+
     const courseSections = course.courseContent
     for (const sectionId of courseSections) {
-      // Delete sub-sections of the section
       const section = await Section.findById(sectionId)
       if (section) {
         const subSections = section.SubSection
@@ -256,12 +257,9 @@ const deleteCourse = async (req, res) => {
           await SubSection.findByIdAndDelete(subSectionId)
         }
       }
-
-      // Delete the section
       await Section.findByIdAndDelete(sectionId)
     }
 
-    // Delete the course
     await Course.findByIdAndDelete(courseId)
 
     return res.status(200).json({
@@ -307,18 +305,15 @@ const getCourseDetails = async (req, res) => {
       })
     }
 
-    
-
-    let totalDurationInSeconds = 0
-    courseDetails.courseContent.forEach((content) => {
-      content.subSection.forEach((subSection) => {
-        const timeDurationInSeconds = parseInt(subSection.timeDuration)
-        totalDurationInSeconds += timeDurationInSeconds
-      })
-    })
-
+   let totalDurationInSeconds = 0
+   courseDetails.courseContent.forEach((content) => {
+   const subs = content.subSection ?? content.SubSection ?? []
+    subs.forEach((subSection) => {
+    const timeDurationInSeconds = parseInt(subSection.timeDuration ?? 0)
+    totalDurationInSeconds += timeDurationInSeconds
+  })
+})
     const totalDuration = convertSecondsToDuration(totalDurationInSeconds)
-
     return res.status(200).json({
       success: true,
       data: {
@@ -357,7 +352,7 @@ const getFullCourseDetails = async (req, res) => {
       .exec()
 
     let courseProgressCount = await CourseProgress.findOne({
-      courseID: courseId,
+      courseId: courseId,
       userId: userId,
     })
 

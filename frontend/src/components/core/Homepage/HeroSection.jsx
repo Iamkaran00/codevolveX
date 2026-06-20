@@ -230,7 +230,7 @@ export default function HeroSection() {
 
             </NavLink>) : (   <NavLink to="/catalogue">
 
-              <button className="flex w-full sm:w-auto items-center justify-center gap-2 rounded-2xl bg-gray-900 px-8 py-4 text-sm font-bold text-white transition-all hover:bg-indigo-600 hover:shadow-lg hover:shadow-indigo-500/25 hover:-translate-y-0.5 active:scale-95">
+              <button className="flex w-full sm:w-auto cursor-pointer items-center justify-center gap-2 rounded-2xl bg-gray-900 px-8 py-4 text-sm font-bold text-white transition-all hover:bg-indigo-600 hover:shadow-lg hover:shadow-indigo-500/25 hover:-translate-y-0.5 active:scale-95">
 
                Explore Catalogue
                 <HiArrowRight className="h-4 w-4" />

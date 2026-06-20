@@ -17,10 +17,12 @@ const cartSlice = createSlice({
         //add to cart...
 
         addToCart : (state,action) => {
+
+            console.log(action);
             const course = action.payload ;
             const idx = state.cart.findIndex(item=>item._id===course._id) ;
             if(idx>=0)  {
-                // course already in cart , don't modify the quantity 
+                
                 toast.error('Course already in cart') 
                 return
             }

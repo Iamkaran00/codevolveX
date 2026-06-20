@@ -101,7 +101,7 @@ export function getEnrolledCourse (token) {
       console.log(error) ; 
       toast.error('Could not fetch enrolled courses');
       console.log(error.response.status) ;
-      console.log(error.response.message);
+      console.log(error.response);
     }
     dispatch(setLoading(false)) ;
   }

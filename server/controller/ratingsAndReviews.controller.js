@@ -5,7 +5,7 @@ import mongoose from "mongoose";
 const createRating = async (req, res) => {
   try {
     const { rating, review, courseId } = req.body;
-    const uid = req.user.id; // FIX: was req.body.id — user id comes from the auth middleware
+    const uid = req.user.id; 
 
     if (!rating || !review) {
       return res.status(400).json({ success: false, message: "All fields are mandatory" });

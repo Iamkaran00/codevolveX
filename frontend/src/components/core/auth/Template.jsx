@@ -3,8 +3,7 @@ import { useSelector } from "react-redux";
 import { motion } from "framer-motion";
 import { SignupForm } from "./SignupForm";
 import { LoginForm } from "./LoginForm";
-import img from "../../../assets/girl1.jpg";
-import img1 from "../../../assets/frame.png";
+import img from '../../../assets/login.png';
 
 export const Template = ({ title, description1, description2, formType }) => {
   const { loading } = useSelector((state) => state.auth);
@@ -57,7 +56,7 @@ export const Template = ({ title, description1, description2, formType }) => {
               <img 
                 src={img} 
                 alt="Students learning" 
-                className="absolute top-4 right-4 w-full h-full object-cover rounded-2xl z-10 shadow-2xl transition-transform duration-500 hover:scale-[1.02]"
+                className="absolute top-4 right-4 w-full h-full object-cover rounded-2xl z-10  transition-transform duration-500 hover:scale-[1.02]"
               />
             </div>
           </motion.div>

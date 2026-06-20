@@ -54,7 +54,6 @@ const isStudent = async (req, res, next) => {
 
 //isInstructor
 const isInstructor = async (req, res, next) => {
-  console.log('hi');
   try {
     if (req.user.accountType !== "Instructor")
       return res.status(401).json({

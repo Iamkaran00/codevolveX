@@ -3,47 +3,48 @@ import { Section } from "../models/Sections.js"
 import { CourseProgress } from "../models/CourseProgress.js";
 import { Course } from '../models/Course.js' ;
 import { SubSection } from "../models/SubSection.js"
+
 const updateCourseProgress = async (req, res) => {
   const { courseId, subsectionId } = req.body
   const userId = req.user.id
-
   try {
-    // Check if the subsection is valid
-    console.log("hie");
     const subsection = await SubSection.findById(subsectionId)
     if (!subsection) {
       return res.status(404).json({ error: "Invalid subsection" })
     }
 
-    // Find the course progress document for the user and course
-    let courseProgress = await courseProgress.findOne({
-      courseID: courseId,
+    let courseProgress = await CourseProgress.findOne({
+      courseId: courseId,
       userId: userId,
     })
 
     if (!courseProgress) {
-      // If course progress doesn't exist, create a new one
       return res.status(404).json({
         success: false,
         message: "Course progress Does Not Exist",
       })
-    } else {
-      // If course progress exists, check if the subsection is already completed
-      if (courseProgress.completedVideos.includes(subsectionId)) {
-        return res.status(400).json({ error: "Subsection already completed" })
-      }
-
-      // Push the subsection into the completedVideos array
-      courseProgress.completedVideos.push(subsectionId)
     }
 
-    // Save the updated course progress
+    const alreadyCompleted = courseProgress.completedVideo.includes(subsectionId)
+
+    if (alreadyCompleted) {
+       
+      courseProgress.completedVideo = courseProgress.completedVideo.filter(
+        (id) => id.toString() !== subsectionId
+      )
+    } else {
+      courseProgress.completedVideo.push(subsectionId)
+    }
+
     await courseProgress.save()
 
-    return res.status(200).json({ message: "Course progress updated" })
+    return res.status(200).json({
+      message: alreadyCompleted ? "Marked as incomplete" : "Course progress updated",
+      completed: !alreadyCompleted,
+    })
   } catch (error) {
     console.error(error)
     return res.status(500).json({ error: "Internal server error" })
   }
 }
-export {updateCourseProgress}
+export { updateCourseProgress }

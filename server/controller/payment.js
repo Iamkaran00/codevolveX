@@ -94,7 +94,7 @@ const verifySignature=async(req,res)=>{
     //enroll the student
 
     await enrollStudents(courses,userId,res);
-    //return response
+    
     return res.status(200).json({
       success:true,
       message:"Payment Verified",
@@ -136,10 +136,10 @@ const enrollStudents=async(courses,userId,res)=>{
     }
 
 
-    const progress=await courseProgress.create({
-      courseID:courseId,
+    const progress=await CourseProgress.create({
+      courseId:courseId,
       userId:userId,
-      completedVideos:[],
+      completedVideo:[],
     })
 
 

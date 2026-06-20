@@ -59,5 +59,14 @@ export const course_endpoints = {
   GET_REVIEWS_API: BASE_URL + "course/getReviews",
   GET_REVIEWS_FOR_COURSE_API:
     BASE_URL + "course/getReviewForCourse",
-    LECTURE_COMPLETION_API : BASE_URL + '/updatecourseprogress',
+    LECTURE_COMPLETION_API : BASE_URL + 'course/updatecourseprogress',
 };
+
+//payment endpoints ->
+export const paymentendpoints = {
+
+  COURSE_PAYMENT_API : BASE_URL + 'payment/capturePayment',
+  COURSE_VERIFY_API : BASE_URL + 'payment/verifySignature', 
+  SEND_PAYMENT_SUCCESS_EMAIL_API : BASE_URL + 'payment/sendPaymentSuccessEmail'
+
+}
