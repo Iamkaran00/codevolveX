@@ -16,7 +16,7 @@ const resetPasswordToken = async (req, res) => {
         message: "User is Not registered",
       });
     }
-    //generating token
+ 
     const token = crypto.randomUUID();
     //update user by adding token and expiration time
     const updatedDetails = await User.findOneAndUpdate(

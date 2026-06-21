@@ -401,10 +401,12 @@ export const createRating = async (data, token) => {
 
 export const getAverageRating = async (courseId) => {
   let result = 0;
+  console.log(courseId);
+  console.log(GET_AVERAGE_RATING_API);
   try {
-    const response = await apiConnector("GET", GET_AVERAGE_RATING_API, null,{
-      courseId,
-    });
+    const response = await apiConnector("GET", GET_AVERAGE_RATING_API,null,
+      {courseId}
+    );
     console.log("GET_AVERAGE_RATING_API RESPONSE", response);
     if (!response?.data?.success) {
       throw new Error("Could not fetch average rating");
@@ -432,11 +434,12 @@ export const getAllReviews = async () => {
   return result;
 };
 
-export const getReviewsForCourse = async (courseid) => {
+export const getReviewsForCourse = async (courseId) => {
   let result = [];
+  console.log(courseId)
   try {
-    const response = await apiConnector("GET", GET_REVIEWS_FOR_COURSE_API, {
-      courseid,
+    const response = await apiConnector("GET", GET_REVIEWS_FOR_COURSE_API,null, {
+      courseId,
     });
     console.log("GET_REVIEWS_FOR_COURSE_API RESPONSE", response);
     if (!response?.data?.success) {

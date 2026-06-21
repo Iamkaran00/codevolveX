@@ -32,11 +32,9 @@ export const Footer = () => {
       const rect = footerRef.current.getBoundingClientRect();
       
       if (rect.top < window.innerHeight && rect.bottom > 0) {
-        // NEW MATH: Calculate based on the distance from the bottom of the screen.
-        // When the footer hits the absolute bottom of your screen, this equals 0.
+         
         const distanceToBottom = window.innerHeight - rect.bottom;
         
-        // Multiply by 0.3 for the parallax speed. 
         const yOffset = distanceToBottom * 0.3; 
         
         textRef.current.style.transform = `translate(-50%, ${yOffset}px)`;
@@ -59,7 +57,7 @@ export const Footer = () => {
   return (
     <footer 
       ref={footerRef} 
-      className="relative bg-[#050505] font-['Inter',_sans-serif] overflow-hidden border-t border-white/[0.05] pt-20"
+      className="relative bg-[#101014] font-['Inter',_sans-serif] overflow-hidden border-t border-white/[0.05] pt-20"
     >
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none z-0" />
 
@@ -67,14 +65,14 @@ export const Footer = () => {
         <div className="lg:col-span-5 flex flex-col items-start pr-8">
           <NavLink
             to="/"
-            className="inline-block text-2xl font-bold text-white tracking-tight mb-6 group font-['Orbitron',_sans-serif]"
+            className="inline-block text-2xl  text-white  mb-6 group font-['Orbitron',_sans-serif]"
           >
             codevolve
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-indigo-500 transition-all duration-300 group-hover:brightness-125">
               X
             </span>
           </NavLink>
-          <p className="text-[15px] text-zinc-400 leading-relaxed max-w-[320px] mb-8 font-medium">
+          <p className="text-[15px] text-zinc-400  max-w-[320px] mb-8 font-medium">
             The modern platform for developers who build, not just learn. Master
             the stack, ship real code, and elevate your engineering journey.
           </p>
@@ -123,11 +121,10 @@ export const Footer = () => {
         </div>
       </div>
 
-      {/* Removed overflow-hidden from this div to prevent any clipping bugs */}
       <div 
         ref={textRef}
         className="absolute bottom-[60px] left-1/2 w-full flex justify-center pointer-events-none z-0"
-        style={{ transform: "translate(80%, 150px)" }}
+        style={{ transform: "translate(100%, 300px)" }}
       >
         <span className="text-[16vw] leading-[0.8] font-extrabold text-transparent bg-clip-text bg-gradient-to-b from-white/20 to-transparent font-['Orbitron',_sans-serif] tracking-tighter whitespace-nowrap select-none">
           codevolveX
@@ -139,7 +136,7 @@ export const Footer = () => {
           <p className="text-[13px] text-zinc-500 font-medium">
             © {currentYear}{" "}
             <span className="font-['Orbitron',_sans-serif] text-zinc-400">
-              CodeVolveX
+              codevolveX
             </span>{" "}
             All rights reserved.
           </p>

@@ -141,20 +141,25 @@ useEffect(() => {
               </Link>
               <Link to="/signup">
                 <button className="px-5 py-2 text-[14px] font-medium text-white bg-gray-900 rounded-full shadow-sm hover:bg-gray-800 transition-all hover:shadow-md hover:-translate-y-[1px]">
-                  create Account
+                  Create Account
                 </button>
               </Link>
             </div>
           )}
-          { user !== null && (
-            <Link to = '/dashboard' >
+          { (user !== null && user?.accountType === 'Student') ? (
+            <Link to = '/dashboard/enrolled-courses' >
        <button className="px-4 py-2 text-[14px] font-medium text-gray-700 bg-gray-100/50 backdrop-blur-sm border border-gray-200 rounded-full hover:bg-gray-200/50 transition-colors">
               Dashboard
             </button>
 
             </Link>
            
-          )}
+          ) : (<Link to = '/dashboard' >
+       <button className="px-4 py-2 text-[14px] font-medium text-gray-700 bg-gray-100/50 backdrop-blur-sm border border-gray-200 rounded-full hover:bg-gray-200/50 transition-colors">
+              Dashboard
+            </button>
+
+            </Link>)}
           {token != null && <ProfileDropdown/>}
         </div>
       </div>

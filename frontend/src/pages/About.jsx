@@ -3,7 +3,7 @@ import { Link } from "react-router-dom"
 import { motion, useScroll, useTransform } from "framer-motion"
 import ContactUsForm from "../components/common/ContactUsform"
 import {Footer} from "../components/common/Footer"
-
+import founderimage from '../assets/FounderImage.jpg'
 const statsData = [
   { count: "5K+", label: "Active Learners" },
   { count: "10+", label: "Industry Mentors" },
@@ -90,7 +90,6 @@ function Marquee() {
   )
 }
 
-/* ─── MAIN COMPONENT ─────────────────────────────────────────── */
 const About = () => {
   const heroRef = useRef(null)
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] })
@@ -100,9 +99,7 @@ const About = () => {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 font-sans selection:bg-indigo-500/20">
       
-      {/* ── HERO ──────────────────────────────────────────────────── */}
       <section ref={heroRef} className="relative flex flex-col justify-center pt-32 pb-20 overflow-hidden bg-slate-50">
-        {/* Crisp grid background */}
         <div className="absolute inset-0 pointer-events-none opacity-40"
           style={{
             backgroundImage: `linear-gradient(to right, #cbd5e1 1px, transparent 1px), linear-gradient(to bottom, #cbd5e1 1px, transparent 1px)`,
@@ -111,7 +108,6 @@ const About = () => {
           }}
         />
 
-        {/* Top Glow */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-indigo-500/10 blur-[100px] rounded-full pointer-events-none" />
 
         <motion.div style={{ y: heroY, opacity: heroOpacity }} className="relative z-10 mx-auto w-full max-w-7xl px-6 lg:px-8 mt-8 text-center">
@@ -157,10 +153,8 @@ const About = () => {
           </motion.div>
         </motion.div>
 
-        {/* ── FIXED IMAGE GRID ── */}
         <div className="relative z-10 mx-auto mt-24 w-full max-w-6xl px-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
-            {/* Left Image */}
             <motion.div
               initial={{ opacity: 0, y: 40 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.4 }}
               className="hidden md:block relative h-64 w-full rounded-3xl overflow-hidden shadow-xl shadow-slate-200"
@@ -175,7 +169,6 @@ const About = () => {
               </div>
             </motion.div>
 
-            {/* Center Image (Elevated & Scaled) */}
             <motion.div
               initial={{ opacity: 0, y: 60 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.2 }}
               className="relative h-80 md:h-[400px] w-full rounded-3xl overflow-hidden shadow-2xl shadow-indigo-500/20 md:scale-110 z-20 border-4 border-white"
@@ -217,7 +210,6 @@ const About = () => {
 
       <Marquee />
 
-      {/* ── STATS ────────────────────────────────────────────────── */}
       <section className="bg-white py-24 border-b border-slate-100">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
@@ -237,33 +229,21 @@ const About = () => {
         </div>
       </section>
 
-      {/* ── STORY ─────────────────────────────────────────────────── */}
       <section id="story" className="bg-slate-50 py-24 lg:py-32">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             
-            {/* Image side */}
             <motion.div
               initial={{ opacity: 0, x: -30 }} whileInView={{ opacity: 1, x: 0 }} transition={{ duration: 0.8 }} viewport={{ once: true }}
               className="relative"
             >
               <div className="absolute inset-0 bg-gradient-to-tr from-indigo-200 to-cyan-100 rounded-[2.5rem] transform translate-x-4 translate-y-4"></div>
               <img
-                src="https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=900&auto=format&fit=crop"
+                src={founderimage}
                 alt="Development environment"
                 className="relative z-10 w-full h-[500px] object-cover rounded-[2.5rem] shadow-2xl border-4 border-white"
               />
-              <div className="absolute -right-6 top-1/2 -translate-y-1/2 z-20 bg-white rounded-2xl p-5 shadow-2xl border border-slate-100 hidden sm:block">
-                <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4f46e5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-extrabold text-slate-900">Industry Verified</h4>
-                    <p className="text-xs font-medium text-slate-500">Ready for production</p>
-                  </div>
-                </div>
-              </div>
+              
             </motion.div>
 
             {/* Text side */}
@@ -300,8 +280,6 @@ const About = () => {
         </div>
       </section>
 
-      {/* ── PREMIUM DARK FEATURES SECTION ──────────────────────────── */}
-      {/* Kept dark specifically to contrast with the light theme and give that modern "Tech/Vercel" premium feel before the contact form */}
       <section className="bg-slate-950 py-24 sm:py-32 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/20 via-slate-950 to-slate-950"></div>
         <div className="relative z-10 mx-auto max-w-7xl px-6 lg:px-8">
@@ -335,8 +313,7 @@ const About = () => {
         </div>
       </section>
 
-      {/* ── HIGH-CONTRAST CONTACT SECTION ──────────────────────────── */}
-      {/* Background is light gray, form container is pure white with shadow */}
+      
       <section className="bg-slate-100 py-24 lg:py-32 relative overflow-hidden">
         {/* Soft background glows to break up the flat gray */}
         <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-blue-500/10 blur-[120px] rounded-full pointer-events-none"></div>
@@ -356,7 +333,6 @@ const About = () => {
             initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} viewport={{ once: true }}
             className="rounded-[2rem] bg-white p-2 sm:p-4 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-200/60"
           >
-            {/* The ContactUsForm goes here. Ensure its internal background is white or transparent */}
             <ContactUsForm />
           </motion.div>
         </div>

@@ -13,7 +13,7 @@ dotenv.config({
 });
 const app = express();
 const PORT = process.env.PORT || 5501;
-//db connection
+ 
 
 dbconnection();
 app.use(express.urlencoded({ limit: '4000mb', extended: true }));
@@ -31,7 +31,7 @@ app.use("/api/v1/profile", profileRoute);
 app.use("/api/v1/course", courseRoute);
 app.use("/api/v1/payment", paymentRoute);
 app.use('/api/v1/contact' , contactRoute);
-//default route
+ 
 app.get("/", (req, res) => {
   return res.json({
     success: true,

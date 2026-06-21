@@ -30,7 +30,7 @@ export default function ViewCourse() {
       if (result) {
         dispatch(setCourseSectionData(result.courseDetails?.courseContent || []));
         dispatch(setEntireCourseData(result.courseDetails));
-        dispatch(setCompletedLectures(result.completedVideos || []));
+        dispatch(setCompletedLectures(result.completedVideo || []));
 
         let lectures = 0;
         result.courseDetails?.courseContent?.forEach((section) => {
@@ -38,11 +38,10 @@ export default function ViewCourse() {
         });
         dispatch(setTotalNoOfLectures(lectures));
 
-        // 2. USE THE URL PARAMETERS FIRST
         if (sectionId && subSectionId) {
           dispatch(setActiveLecture({ sectionId, subSectionId }));
         } 
-        // If there are no URL parameters, default to the first video
+        
         else {
           const firstSection = result.courseDetails?.courseContent?.[0];
           const firstSubSection = firstSection?.SubSection?.[0];

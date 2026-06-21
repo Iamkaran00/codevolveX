@@ -382,8 +382,8 @@ const getFullCourseDetails = async (req, res) => {
       data: {
         courseDetails,
         totalDuration,
-        completedVideos: courseProgressCount?.completedVideos
-          ? courseProgressCount?.completedVideos
+        completedVideo: courseProgressCount?.completedVideo
+          ? courseProgressCount?.completedVideo
           : [],
       },
     })

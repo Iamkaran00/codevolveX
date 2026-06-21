@@ -28,16 +28,14 @@ const updateCourseProgress = async (req, res) => {
     const alreadyCompleted = courseProgress.completedVideo.includes(subsectionId)
 
     if (alreadyCompleted) {
-       
+      
       courseProgress.completedVideo = courseProgress.completedVideo.filter(
         (id) => id.toString() !== subsectionId
       )
     } else {
       courseProgress.completedVideo.push(subsectionId)
     }
-
     await courseProgress.save()
-
     return res.status(200).json({
       message: alreadyCompleted ? "Marked as incomplete" : "Course progress updated",
       completed: !alreadyCompleted,

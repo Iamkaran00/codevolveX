@@ -5,7 +5,8 @@ import { motion, AnimatePresence } from "framer-motion"
 import { ArrowLeft, CheckCircle2, Circle, PlayCircle, ChevronDown, Star } from "lucide-react"
 
 import { setActiveLecture } from "../../slices/viewCourse.slice"
-import WriteReviewModal from "./WriteReview"
+import WriteReviewModal from '../common/WriteReview'
+
 export default function VideoDetailsSidebar() {
   const navigate = useNavigate()
   const dispatch = useDispatch()
@@ -20,6 +21,7 @@ export default function VideoDetailsSidebar() {
 
   const [openSections, setOpenSections] = useState({})
   const [reviewModalOpen, setReviewModalOpen] = useState(false)
+  const [hasReviewed, setHasReviewed] = useState(false)
 
   useEffect(() => {
     if (activeSectionId) {
@@ -30,6 +32,8 @@ export default function VideoDetailsSidebar() {
   const toggleSection = (sectionId) => {
     setOpenSections((prev) => ({ ...prev, [sectionId]: !prev[sectionId] }))
   }
+
+  const hasWatchedAny = completedLectures.length > 0
 
   if (!courseEntireData) return null
 
@@ -51,13 +55,25 @@ export default function VideoDetailsSidebar() {
           {courseSectionData.reduce((acc, s) => acc + s.SubSection.length, 0)}{" "}
           lectures completed
         </p>
-        <button
-          onClick={() => setReviewModalOpen(true)}
-          className="mt-4 flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-700 transition-colors"
-        >
-          <Star size={13} />
-          Rate this course
-        </button>
+        {hasReviewed ? (
+          <p className="mt-4 flex items-center gap-1.5 text-xs font-bold text-emerald-600">
+            <Star size={13} className="fill-emerald-600" />
+            Thanks for rating this course
+          </p>
+        ) : hasWatchedAny ? (
+          <button
+            onClick={() => setReviewModalOpen(true)}
+            className="mt-4 flex items-center gap-1.5 text-xs font-bold text-indigo-600 hover:text-indigo-700 transition-colors"
+          >
+            <Star size={13} />
+            Rate this course
+          </button>
+        ) : (
+          <p className="mt-4 flex items-center gap-1.5 text-xs font-semibold text-slate-300">
+            <Star size={13} />
+            Watch a lecture to unlock rating
+          </p>
+        )}
       </div>
 
       <div className="py-2">
@@ -145,6 +161,7 @@ export default function VideoDetailsSidebar() {
         isOpen={reviewModalOpen}
         onClose={() => setReviewModalOpen(false)}
         courseId={courseEntireData._id}
+        onSubmitted={() => setHasReviewed(true)}
       />
     </aside>
   )

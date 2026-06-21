@@ -36,19 +36,18 @@ const createRating = async (req, res) => {
 
 const averageRatings = async (req, res) => {
   try {
-    const { courseId } = req.body;
-
-    // FIX: aggregate() was called with two separate arguments instead of a single pipeline array
+    const { courseId } = req.query;
+    
     const result = await ratingsAndReview.aggregate([
       { $match: { course: new mongoose.Types.ObjectId(courseId) } },
       { $group: { _id: null, averageRatings: { $avg: "$rating" } } },
     ]);
-
+  
     if (result.length > 0) {
       return res.status(200).json({ success: true, averageRatings: result[0].averageRatings });
     }
-
-    return res.status(200).json({ success: true, message: "No ratings yet", averageRatings: 0 });
+      console.log(result);
+    return res.status(200).json({ success: true, message: "No ratings yet", averageRatings: result });
   } catch (error) {
     return res.status(500).json({ success: false, message: "Something went wrong" });
   }
@@ -56,16 +55,14 @@ const averageRatings = async (req, res) => {
 
 const reviewsAndRatingForCourse = async (req, res) => {
   try {
-    const { courseid } = req.body;
+    const { courseId } = req.query;
 
-    // FIX: reviewsAndRating.findbyId() → ratingsAndReview.find() with correct variable and method
     const reviews = await ratingsAndReview
-      .find({ course: new mongoose.Types.ObjectId(courseid) })
+      .find({ course: courseId })
       .sort({ rating: "desc" })
       .populate({ path: "course", select: "courseName" })
       .populate({ path: "user", select: "firstName lastName email image" })
       .exec();
-
     return res.status(200).json({
       success: true,
       message: "Ratings and reviews fetched successfully",

@@ -117,8 +117,8 @@ export default function CourseDetails() {
             <CourseAccordion course={courseDetails} />
             <CourseInstructor course={courseDetails} />
             <CourseRequirements course={courseDetails} />
-            <CourseFAQ/>
             <CourseReviews courseId = {courseDetails._id} />
+            <CourseFAQ/>
           </div>
 
           <motion.div

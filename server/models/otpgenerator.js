@@ -22,20 +22,13 @@ async function sendVerificationEmail(email, otp) {
   try {
     const mailResponse = await mailSender(
       email,
-      "Verification Email from studyNotion",
+      "Verification Email from codevolveX",
       otpTemplate(otp)
     )
-      .then(() => {
-        console.log("Mail sent successfully");
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-    console.log(email);
-    console.log("otp send successfully at email", mailResponse);
+    console.log("otp sent successfully at email", mailResponse)
   } catch (error) {
-    console.log("error occured while sending mails");
-    console.error(error);
+    console.log("error occurred while sending mails")
+    console.error(error)
   }
 }
 otpSchema.pre("save", async function (next) {

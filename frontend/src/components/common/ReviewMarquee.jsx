@@ -70,7 +70,6 @@ export default function ReviewsMarquee() {
 
   useEffect(() => {
     async function load() {
-      // Fetch your reviews
       const data = await getAllReviews();
       setReviews(data || []);
     }
@@ -79,13 +78,12 @@ export default function ReviewsMarquee() {
 
   if (reviews.length === 0) return null;
 
-  // Quadruple the array to ensure it never runs out of content on ultra-wide screens
   const track = [...reviews, ...reviews, ...reviews, ...reviews];
 
   return (
     <section className="py-24 bg-slate-50 overflow-hidden font-sans">
       
-      {/* Header Section */}
+      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16 text-center flex flex-col items-center">
         <motion.div 
           initial={{ opacity: 0, y: 10 }}
@@ -118,14 +116,12 @@ export default function ReviewsMarquee() {
         </motion.p>
       </div>
 
-      {/* Marquee Container */}
+       
       <div className="relative flex flex-col gap-6">
         
-        {/* Left and Right Fade Gradients (Matches bg-slate-50) */}
         <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-slate-50 to-transparent z-20 pointer-events-none" />
         <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-slate-50 to-transparent z-20 pointer-events-none" />
 
-        {/* Scrolling Track */}
         <div className="flex animate-marquee-fast hover:[animation-play-state:paused] py-2">
           {track.map((r, i) => (
             <ReviewCard key={`row1-${r._id}-${i}`} r={r} />

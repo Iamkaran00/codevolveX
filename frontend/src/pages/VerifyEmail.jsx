@@ -16,108 +16,74 @@ function VerifyEmail() {
     if (!signupData) {
       navigate("/signup");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleVerifyAndSignup = (e) => {
     e.preventDefault();
-    const {
-      firstName,
-      lastName,
-      email,
-      password,
-      confirmPassword,
-      accountType,
-    } = signupData;
-
-    dispatch(
-      signup(
-        firstName,
-        lastName,
-        email,
-        password,
-        confirmPassword,
-        accountType,
-        otp,
-        navigate
-      )
-    );
+    const { firstName, lastName, email, password, confirmPassword, accountType } = signupData;
+    dispatch(signup(firstName, lastName, email, password, confirmPassword, accountType, otp, navigate));
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0F172A] font-sans text-slate-200 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
       {loading ? (
         <div className="flex flex-col items-center gap-4">
-          {/* IDE-style loader */}
-          <div className="flex gap-1">
-            <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce"></div>
-            <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce [animation-delay:-.3s]"></div>
-            <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce [animation-delay:-.5s]"></div>
+          <div className="flex gap-1.5">
+            <div className="w-3 h-3 bg-indigo-500 rounded-full animate-bounce" />
+            <div className="w-3 h-3 bg-indigo-500 rounded-full animate-bounce [animation-delay:-.2s]" />
+            <div className="w-3 h-3 bg-indigo-500 rounded-full animate-bounce [animation-delay:-.4s]" />
           </div>
-          <p className="text-slate-400 font-mono text-sm">Compiling request...</p>
+          <p className="text-sm font-medium text-slate-500 tracking-wide">Authenticating...</p>
         </div>
       ) : (
-        <div className="bg-[#1E293B] border border-slate-700/50 p-8 sm:p-10 rounded-xl w-full max-w-md shadow-2xl relative overflow-hidden">
-          
-          {/* Top accent line representing a code editor tab */}
-          <div className="absolute top-0 left-0 w-full h-1 bg-blue-600"></div>
-          
+        <div className="bg-white p-8 md:p-10 rounded-[2rem] w-full max-w-md border border-indigo-50 shadow-[0_4px_40px_-12px_rgba(79,70,229,0.1)]">
           <div className="mb-8 text-center">
-            <h1 className="text-2xl font-bold mb-2 text-white tracking-tight">
-              Verify your email
-            </h1>
-            <p className="text-sm text-slate-400">
-              A 6-digit code has been sent to <br/>
-              <span className="text-slate-200 font-medium">{signupData?.email}</span>
+            <h1 className="text-2xl font-semibold text-indigo-950 mb-2">Verify your email</h1>
+            <p className="text-[14px] text-slate-500 leading-relaxed">
+              We've sent a 6-digit code to <br />
+              <span className="font-semibold text-indigo-700">{signupData?.email}</span>
             </p>
           </div>
 
           <form onSubmit={handleVerifyAndSignup} className="flex flex-col gap-8">
-            <div className="flex justify-center">
-              <OtpInput
-                value={otp}
-                onChange={setOtp}
-                numInputs={6}
-                renderSeparator={<span className="w-2 sm:w-3"></span>}
-                renderInput={(props) => (
-                  <input
-                    {...props}
-                    // Added font-mono to make the numbers look like code
-                    className="!w-12 !h-14 bg-[#0F172A] border border-slate-600 rounded-md text-white text-2xl font-mono font-semibold text-center transition-all outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm placeholder:text-slate-700"
-                    placeholder="0"
-                  />
-                )}
-                containerStyle="flex justify-between w-full"
-              />
-            </div>
+            <OtpInput
+              value={otp}
+              onChange={setOtp}
+              numInputs={6}
+              renderSeparator={<span className="w-2" />}
+              renderInput={(props) => (
+                <input
+                  {...props}
+                  className="!w-12 !h-14 bg-slate-50 border border-indigo-100 rounded-2xl text-indigo-950 text-xl font-semibold text-center transition-all outline-none focus:border-violet-400 focus:ring-4 focus:ring-violet-500/10"
+                />
+              )}
+              containerStyle="flex justify-between w-full"
+            />
 
             <button
               type="submit"
               disabled={otp.length < 6}
-              className="w-full py-3 px-4 bg-blue-600 text-white rounded-md text-sm font-semibold hover:bg-blue-700 focus:ring-4 focus:ring-blue-500/30 transition-all disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed"
+              className="w-full py-3.5 bg-indigo-600 text-white rounded-2xl text-sm font-semibold hover:bg-indigo-700 transition-all disabled:bg-slate-200 disabled:text-slate-400"
             >
               Verify & Continue
             </button>
           </form>
 
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-8 pt-6 border-t border-slate-700/50">
+          <div className="flex justify-between items-center mt-8 pt-6 border-t border-slate-100">
             <Link
               to="/signup"
-              className="flex items-center gap-2 text-sm font-medium text-slate-400 hover:text-blue-400 transition-colors"
+              className="flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-indigo-600 transition-colors"
             >
-              <BiArrowBack className="text-lg" /> 
-              Back to Signup
+              <BiArrowBack size={16} /> Back
             </Link>
 
             <button
               onClick={() => dispatch(sendOtp(signupData.email, navigate))}
-              className="flex items-center gap-2 text-sm font-medium text-slate-400 hover:text-blue-400 transition-colors bg-transparent border-none cursor-pointer p-0"
+              className="flex items-center gap-2 text-sm font-medium text-indigo-600 hover:text-indigo-700 transition-colors"
             >
-              <RxCountdownTimer className="text-lg" />
-              Resend Code
+              <RxCountdownTimer size={16} /> Resend Code
             </button>
           </div>
-          
         </div>
       )}
     </div>
