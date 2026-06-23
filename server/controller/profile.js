@@ -1,6 +1,6 @@
 import { Profile } from "../models/Profile.model.js";
 import { User } from "../models/User.model.js";
-import { uploadOnCloudinary } from "../utils/Cloudinary.Uploader.js";
+import { uploadOnCloudinary } from "../utils/cloudinary.js"
 import mongoose, { mongo } from "mongoose";
 import { Course } from "../models/Course.model.js";
 import { CourseProgress } from "../models/CourseProgress.model.js";
