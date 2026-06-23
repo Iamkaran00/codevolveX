@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form"
 import { motion, AnimatePresence } from "framer-motion"
 import { apiConnector } from "../../services/apiconnector"
 import { endpoints } from "../../services/apis"
-import countryCode from "../../data/CountryCode.jsx"
+import countryCode from "../../data/countryCode.js"
 import { toast } from "react-toastify"
 
 const ContactUsForm = () => {
