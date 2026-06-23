@@ -1,6 +1,6 @@
 import axios from "axios";
 export const axiosInstance = axios.create({
-  VITE_BASE_URL: "https://codevolvex.onrender.com/api/v1/",
+  baseURL : "https://codevolvex.onrender.com/api/v1/",
 
 });
 
