@@ -6,9 +6,10 @@ import {
 } from "../middleware/multer.middleware.js";
 const router = express.Router();
  
-import { login ,signUp, sendOTP, changePassword } from "../controller/Auth.js";
-import { createSubSection } from "../controller/Subsection.controller.js";
+import { login ,signUp, sendOTP, changePassword } from "../controller/auth.controller.js";
+import { createSubSection } from "../controller/subsection.controller.js";
 import { createSection } from "../controller/section.controller.js";
+
 import {
   resetPasswordToken,
   resetPassword,

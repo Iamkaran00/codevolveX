@@ -4,6 +4,7 @@ import { CourseProgress } from "../models/CourseProgress.model.js";
 import { Course } from '../models/Course.model.js' ;
 import { SubSection } from "../models/SubSection.model.js"
 
+
 const updateCourseProgress = async (req, res) => {
   const { courseId, subsectionId } = req.body
   const userId = req.user.id
