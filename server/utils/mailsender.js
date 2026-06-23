@@ -1,7 +1,7 @@
 import * as nodemailer from 'nodemailer';
 
 
-const mailSender = async (email, title, body) => {
+const mailsender = async (email, title, body) => {
   try{
     
    let transporter = nodemailer.createTransport({
@@ -28,4 +28,4 @@ console.log(error.message);
 }
 };
  
-export default mailSender;
+export default mailsender;

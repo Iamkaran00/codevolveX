@@ -4,7 +4,7 @@ import { Profile } from "../models/Profile.model.js";
 import bcrypt from "bcrypt";
 import otpGenerator from "otp-generator";
 import jwt from "jsonwebtoken";
-import mailSender from "../utils/MailSender.js";
+import mailSender from "../utils/mailsender.js";
 import mongoose from "mongoose";
 
 const sendOTP = async (req, res) => {

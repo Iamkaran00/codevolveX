@@ -1,6 +1,6 @@
 //reseting password
 import { User } from "../models/User.model.js";
-import mailSender from "../utils/MailSender.js"
+import mailSender from "../utils/mailsender.js"
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 const resetPasswordToken = async (req, res) => {
