@@ -1,4 +1,3 @@
-// Import the required modules
 import express from "express";
 import {
   uploadVideo,
@@ -6,14 +5,14 @@ import {
 } from "../middleware/multer.middleware.js";
 const router = express.Router();
  
-import { login ,signUp, sendOTP, changePassword } from "../controller/auth.controller.js";
-import { createSubSection } from "../controller/subsection.controller.js";
-import { createSection } from "../controller/section.controller.js";
+import { login ,signUp, sendOTP, changePassword } from "../controller/auth.js";
+import { createSubSection } from "../controller/subsection.js";
+import { createSection } from "../controller/section.js";
 
 import {
   resetPasswordToken,
   resetPassword,
-} from "../controller/resetPassword.controller.js";
+} from "../controller/resetPassword.js";
 import { auth } from "../middleware/auth.middleware.js";
  router.post(
   "/createCourse",
