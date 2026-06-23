@@ -2,7 +2,7 @@ import express from "express";
 const router = express.Router();
 import { uploadVideo,uploadImage } from "../middleware/multer.middleware.js";
 import {auth ,isInstructor, isStudent} from '../middleware/auth.middleware.js';
-import {updateProfile,deleteAccount,getAllUserDetails,updateDisplayPicture,getEnrolledCourses,instructorDashboard} from "../controller/profile.controller.js";
+import {updateProfile,deleteAccount,getAllUserDetails,updateDisplayPicture,getEnrolledCourses,instructorDashboard} from "../controller/profile.js";
  
 // Delete User Account
 const isStudentOrInstructor = (req, res, next) => {
