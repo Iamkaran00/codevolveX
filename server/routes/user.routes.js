@@ -12,7 +12,7 @@ import { createSection } from "../controller/section.controller.js";
 import {
   resetPasswordToken,
   resetPassword,
-} from "../controller/resetPassword.js";
+} from "../controller/resetPassword.controller.js";
 import { auth } from "../middleware/auth.middleware.js";
  router.post(
   "/createCourse",

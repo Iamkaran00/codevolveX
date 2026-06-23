@@ -1,7 +1,6 @@
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 export const categories = {
     CATEGORIES_API : BASE_URL + "course/showAllCategories",
-   
 }
 export const endpoints = {
     // auth api
@@ -19,7 +18,7 @@ export const endpoints = {
     GET_USER_DETAILS : BASE_URL + 'profile/getUserDetails' , 
     UPDATE_PROFILE_DETAILS : BASE_URL + 'profile/updateProfile',
     DELETE_PROFILE : BASE_URL  + 'profile/deleteProfile',
-
+    GET_PURCHASE_HISTORY_API : BASE_URL + 'payment/purchaseHistory'
 
   }
   
@@ -46,7 +45,7 @@ export const course_endpoints = {
     BASE_URL + "course/getFullCourseDetails",
   GET_ALL_INSTRUCTOR_COURSES_API:
     BASE_URL + "course/getInstructorCourses",
-
+  GET_INSTRUCTOR_DASHBOARD : BASE_URL + "course/getInstructorDashboard",
   // Category
   CREATE_CATEGORY_API: BASE_URL + "course/createCategory",
   COURSE_CATEGORIES_API: BASE_URL + "course/showAllCategories",

@@ -73,9 +73,7 @@ export default function CourseInformationForm() {
 
   const onSubmit = async (data) => {
      
-    console.log(editCourse);
     if (editCourse) {
-      console.log(editCourse,'hi there ')
       if (isFormUpdated()) {
         const formData = new FormData();
         formData.append("courseId", course._id);

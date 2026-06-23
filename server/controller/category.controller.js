@@ -12,7 +12,6 @@ const createCategory = async (req, res) => {
         message: "Please fill the fields",
       });
     }
-    //create entry in database
     const categorydetails = await Category.create({
       name: name,
       description: description,
@@ -80,8 +79,8 @@ const categoryPageDetails = async (req, res) => {
         path: "courses",
         match: { status: "Published" },
       })
-      .exec(); // $ne not equals
-    //validation
+      .exec(); 
+    
      differentCategory = await Category.findOne(
       categoriesExceptSelected[getRandomInt(categoriesExceptSelected.length)]
         ._id
@@ -91,7 +90,7 @@ const categoryPageDetails = async (req, res) => {
         match: { status: "Published" },
       })
       .exec();
-    // get topselling courses
+    
     const allCategories = await Category.find()
       .populate({
         path: "courses",
@@ -105,7 +104,6 @@ const categoryPageDetails = async (req, res) => {
     const mostSellingCourses = allCourses
       .sort((a, b) => b.sold - a.sold)
       .slice(0, 10);
-    console.log("most Selling Courses are", mostSellingCourses);
     return res.status(200).json({
       success: true,
       data: {

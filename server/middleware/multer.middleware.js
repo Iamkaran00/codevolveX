@@ -29,7 +29,6 @@ export const uploadImage = multer({
   storage,
   limits: { fileSize: 10 * 1024 * 1024 },  // 10 mb ka allow kr dete hai 
   fileFilter: function (req, file, cb) {
-    console.log(req,file,'here in multer');
 
     const allowed = /jpeg|jpg|png|webp/;
     const ext = allowed.test(path.extname(file.originalname).toLowerCase());

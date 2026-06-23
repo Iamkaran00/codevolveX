@@ -66,7 +66,7 @@ const EnrolledCourse = () => {
               <div className="flex w-full items-center gap-6 sm:w-auto justify-end">
                 <button 
                   onClick={() => navigate(`/dashboard/view-courses/${course._id}`)}
-                  className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-all duration-150 active:scale-[0.98]"
+                  className="rounded-xl border cursor-pointer border-slate-200 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-all duration-150 active:scale-[0.98]"
                 >
                   Resume Learning
                 </button>

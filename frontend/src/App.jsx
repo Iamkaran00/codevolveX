@@ -19,18 +19,17 @@ import PrivateRoute from "./components/core/auth/PrivateRoute";
 import "./App.css";
 
 import MyProfile from "./components/core/Dashboard/MyProfile";
-import PurchaseHistory from "./components/core/Dashboard/PurchaseHistory";
 import EnrolledCourse from "./components/core/Dashboard/EnrolledCourse";
 import Cart from "./components/core/Dashboard/Cart";
 import Catalogue from "./pages/Catalogue";
-
+import PurchaseHistory from "./pages/PurchaseHistory";
 import MyCourses from "./components/core/Dashboard/InstructorCourses/MyCourses";
 import AddCourse from "./components/core/Dashboard/AddCourse/AddCourse";
 import EditCourse from "./components/core/Dashboard/EditCourse/index";
 import { Footer } from "./components/common/Footer";
 import CourseDetails from "./pages/CourseDetails";
 import ViewCourse from "./pages/ViewCourse";
-
+import InstructorDashboard from "./pages/InstructorDashboard";
 
 function App() {
   const { user } = useSelector((state) => state.profile);
@@ -47,6 +46,8 @@ function App() {
         <Route path="update-password/:id" element={<UpdatePassword />} />
         <Route path="about-us" element={<About />} />
         <Route path="contact-us" element={<Contact />} />
+            <Route path = 'catalogue' element = {<Catalogue/>} />
+
         <Route
           path="dashboard"
           element={
@@ -58,6 +59,7 @@ function App() {
           <Route path="purchase-history" element={<PurchaseHistory />} />
           <Route path="enrolled-courses" element={<EnrolledCourse />} />
           <Route path="mycart" element={<Cart />} />
+         <Route path = 'instructor' element = {<InstructorDashboard/>}/>
           <Route
             path="my-courses"
             element={
@@ -68,6 +70,7 @@ function App() {
               )
             }
           />
+          
           <Route
             path="add-course"
             element={
@@ -97,13 +100,15 @@ function App() {
             </PrivateRoute>
           }
         />
+            <Route path = 'catalogue/:courseId' element = {<PrivateRoute> <CourseDetails/></PrivateRoute>
+             } />
+
         <Route path="settings" element={<Settings />} />
          { 
           user?.accountType == 'Student' && (
          <>
-            <Route path = 'catalogue' element = {<Catalogue/>} />
-            <Route path = 'catalogue/:courseId' element = {<CourseDetails/>} />
             <Route path = 'dashboard/view-courses/:courseId' element = {<ViewCourse/>} />
+            <Route path = 'dashboard/purchase-history' element = {<PurchaseHistory/>} />
          </>
 
          

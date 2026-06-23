@@ -8,6 +8,7 @@ import mongoose from "mongoose";
 import crypto from "crypto";
 import paymentSuccessEmail from '../mail/templates/payementSuccessEmail.js';
 import { CourseProgress } from "../models/CourseProgress.js";
+import { Order } from "../models/Payment.model.js";
 //Capture payment and intitate razorpay order->create order for multiple items buy
 const capturePayment=async(req,res)=>{
   
@@ -91,10 +92,20 @@ const verifySignature=async(req,res)=>{
   let body=razorpay_order_id + "|" + razorpay_payment_id;
   const expectedSignature=crypto.createHmac("sha256",process.env.RAZORPAY_SECRET).update(body.toString()).digest("hex");
   if(expectedSignature===razorpay_signature){
-    //enroll the student
+   
 
     await enrollStudents(courses,userId,res);
     
+    const courseDocs = await Course.find({_id : {$in : Object.values(courses)}}) ;
+    const totalAmount = courseDocs.reduce((sum,currentsum) => sum + currentsum.price,0);
+    await Order.create({
+      user:userId,
+      courses : Object.values(courses) , 
+      amount : totalAmount,
+      razorpay_order_id ,
+      razorpay_payment_id,
+      status : 'Success'
+    })
     return res.status(200).json({
       success:true,
       message:"Payment Verified",
@@ -207,4 +218,20 @@ const sendPaymentSuccessEmail=async(req,res)=>{
   }
 
 }
- export {capturePayment,verifySignature,enrollStudents,sendPaymentSuccessEmail};
+
+ const getPurchaseHistory = async (req,res) => {
+  try {
+    const userId = req.user.id;
+    const orders = await Order.find({user : userId}).populate('courses','courseName thumbnail').sort({createdAt : -1});
+
+    return res.status(200).json({success : true,data : orders})
+    
+  } catch (error) {
+    return res.status(500).json({success : false, response : 'Internal Server Error',message : error.message})
+  }
+ }
+
+
+
+
+ export {capturePayment,verifySignature,enrollStudents,sendPaymentSuccessEmail,getPurchaseHistory};

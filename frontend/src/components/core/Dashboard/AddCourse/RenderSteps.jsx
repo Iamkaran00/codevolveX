@@ -8,7 +8,6 @@ import PublishCourse from "./PublishCourse";
 
 export default function RenderSteps() {
   const { step } = useSelector((state) => state.course);
-console.log("hi there" , step);
   const steps = [
     { id: 1, title: "Course Information" },
     { id: 2, title: "Course Builder" },

@@ -25,7 +25,6 @@ export default function ViewCourse() {
       setLoading(true);
       const result = await getFullDetailsOfCourse(courseId, token);
       
-      console.log("🔍 API RESULT:", result);  
 
       if (result) {
         dispatch(setCourseSectionData(result.courseDetails?.courseContent || []));

@@ -11,19 +11,16 @@ export default function CourseDetailsCard({ course, totalDuration, user }) {
   const dispatch = useDispatch();
   const enrolled = course.studentsEnrolled?.length ?? 0;
   const isEnrolled = course.studentsEnrolled?.includes(user._id);
-  
   const {cart} = useSelector(state => state.cart);
   const isCourseInCart = cart.some(item => item._id === course?._id) ;
   const {token} = useSelector(state => state.auth) ;
   const handleAddToCart = () => {
-
   if(isCourseInCart) {
    navigate('/dashboard/mycart') ;
    return ;
   }
    dispatch(addToCart(course));
   }
-
   const handleBuyCourse = () => {
     if(!token) {
       toast.error('Please login to enroll') ;
@@ -37,10 +34,8 @@ export default function CourseDetailsCard({ course, totalDuration, user }) {
     const courses = [course._id];
     buyCourse(token,courses,user,navigate,dispatch) ;
   }
-
   return (
     <div className="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-[0_24px_48px_-12px_rgba(79,70,229,0.12)] sticky top-24">
- 
       <div className="relative w-full aspect-video overflow-hidden bg-slate-100">
         {course.thumbnail ? (
           <img
@@ -67,9 +62,7 @@ export default function CourseDetailsCard({ course, totalDuration, user }) {
           )}
         </div>
       </div>
-
       <div className="p-6 space-y-5">
-
         <div className="flex items-baseline gap-2">
           {course.price === 0 ? (
             <span className="text-emerald-600 font-black text-4xl tracking-tight">Free</span>
@@ -102,12 +95,6 @@ export default function CourseDetailsCard({ course, totalDuration, user }) {
               Continue Learning
             </motion.button>)
 }
-
-
-
-
-          
-
             {
               isCourseInCart ? (
                 <Link to = '/dashboard/mycart' >

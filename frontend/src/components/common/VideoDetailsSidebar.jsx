@@ -4,8 +4,10 @@ import { useDispatch, useSelector } from "react-redux"
 import { motion, AnimatePresence } from "framer-motion"
 import { ArrowLeft, CheckCircle2, Circle, PlayCircle, ChevronDown, Star } from "lucide-react"
 
-import { setActiveLecture } from "../../slices/viewCourse.slice"
-import WriteReviewModal from '../common/WriteReview'
+import { setActiveLecture } from '../../slices/viewCourse.slice';
+
+import { getReviewsForCourse } from "../../services/operations/courseApi"
+import WriteReviewModal from './WriteReview'
 
 export default function VideoDetailsSidebar() {
   const navigate = useNavigate()
@@ -18,16 +20,34 @@ export default function VideoDetailsSidebar() {
     activeSectionId,
     activeSubSectionId,
   } = useSelector((state) => state.viewCourse)
+  const { user } = useSelector((state) => state.profile)
 
   const [openSections, setOpenSections] = useState({})
   const [reviewModalOpen, setReviewModalOpen] = useState(false)
   const [hasReviewed, setHasReviewed] = useState(false)
+  const [checkingReview, setCheckingReview] = useState(true)
 
   useEffect(() => {
     if (activeSectionId) {
       setOpenSections((prev) => ({ ...prev, [activeSectionId]: true }))
     }
   }, [activeSectionId])
+
+  useEffect(() => {
+    async function checkExistingReview() {
+      if (!courseEntireData?._id || !user?._id) {
+        setCheckingReview(false)
+        return
+      }
+      const reviews = await getReviewsForCourse(courseEntireData._id)
+      const alreadyReviewed = (reviews || []).some(
+        (r) => r.user?._id === user._id
+      )
+      setHasReviewed(alreadyReviewed)
+      setCheckingReview(false)
+    }
+    checkExistingReview()
+  }, [courseEntireData?._id, user?._id])
 
   const toggleSection = (sectionId) => {
     setOpenSections((prev) => ({ ...prev, [sectionId]: !prev[sectionId] }))
@@ -55,7 +75,7 @@ export default function VideoDetailsSidebar() {
           {courseSectionData.reduce((acc, s) => acc + s.SubSection.length, 0)}{" "}
           lectures completed
         </p>
-        {hasReviewed ? (
+        {checkingReview ? null : hasReviewed ? (
           <p className="mt-4 flex items-center gap-1.5 text-xs font-bold text-emerald-600">
             <Star size={13} className="fill-emerald-600" />
             Thanks for rating this course

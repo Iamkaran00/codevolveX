@@ -6,9 +6,10 @@ import { CourseProgress } from "../models/CourseProgress.js";
 import convertSecondsToDuration from "../utils/secToDuration.js";
 import { Section } from "../models/Sections.js";
 import { SubSection } from "../models/SubSection.js";
+import { Order } from "../models/Payment.model.js";
+import { ratingsAndReview } from "../models/ratingsAndReview.js";
 import mongoose from "mongoose";
 const createCourse = async (req, res) => {
-  console.log('here arrived in course controller') ;
   try {
     let {
       courseName,
@@ -394,4 +395,99 @@ const getFullCourseDetails = async (req, res) => {
     })
   }
 }
-export  {createCourse,editCourse,showAllCourses,deleteCourse,getInstructorCourses,getFullCourseDetails,getCourseDetails};
+const instructorDashboard = async (req, res) => {
+  try {
+    const instructorId = req.user.id;
+    const courses = await Course.find({ instructor: instructorId });
+    const courseIds = courses.map(c => c._id); 
+
+    const orders = await Order.find({
+      courses: { $in: courseIds },
+      status: 'Success'
+    });
+
+    const revenueByCourse = {};
+    const orderCountByCourse = {};
+    let totalRevenue = 0;
+
+    orders.forEach(order => {
+      const matchingCourses = order.courses.filter(cid =>
+        courseIds.some(id => id.toString() === cid.toString())
+      );
+      if (matchingCourses.length === 0) return; 
+
+      const splitAmount = order.amount / order.courses.length;
+
+      matchingCourses.forEach(cid => {
+        const key = cid.toString();
+        revenueByCourse[key] = (revenueByCourse[key] || 0) + splitAmount;
+        orderCountByCourse[key] = (orderCountByCourse[key] || 0) + 1;
+        totalRevenue += splitAmount;
+      });
+    });
+
+    const ratings = await ratingsAndReview.aggregate([
+      { $match: { course: { $in: courseIds } } },
+      {
+        $group: {
+          _id: '$course',
+          averageRating: { $avg: '$rating' },
+          reviewCount: { $sum: 1 }, 
+        }
+      }
+    ]);
+
+    const ratingMap = {};
+    ratings.forEach(r => {
+      ratingMap[r._id.toString()] = {
+        averageRating: r.averageRating,
+        reviewCount: r.reviewCount,
+      };
+    });
+
+    const totalStudents = courses.reduce(
+      (sum, c) => sum + (c.studentsEnrolled?.length || 0), 0
+    );
+
+    const courseStats = courses.map(course => {
+      const key = course._id.toString();
+      return {
+        _id: course._id,
+        courseName: course.courseName,
+        thumbnail: course.thumbnail,
+        price: course.price, 
+        status: course.status,
+        studentsEnrolled: course.studentsEnrolled?.length || 0,
+        revenue: Math.round(revenueByCourse[key] || 0),
+        purchaseCount: orderCountByCourse[key] || 0,
+        averageRating: ratingMap[key]?.averageRating || 0,
+        reviewCount: ratingMap[key]?.reviewCount || 0,
+      };
+    });
+
+    const topByRevenue = [...courseStats].sort((a, b) => b.revenue - a.revenue)[0] || null;
+    const topByEnrollment = [...courseStats].sort((a, b) => b.studentsEnrolled - a.studentsEnrolled)[0] || null;
+    const topByRating = [...courseStats]
+      .filter(a => a.reviewCount > 0) 
+      .sort((a, b) => b.averageRating - a.averageRating)[0] || null;
+
+    return res.status(200).json({
+      status: 200,
+      data: {
+        totalRevenue: Math.round(totalRevenue),
+        totalStudents,
+        totalCourses: courses.length,
+        courseStats,
+        topByRevenue,
+        topByEnrollment,
+        topByRating,
+      }
+    });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+export  {createCourse,editCourse,showAllCourses,deleteCourse,getInstructorCourses,getFullCourseDetails,getCourseDetails,instructorDashboard};

@@ -8,7 +8,8 @@ const {
   INSTRUCTOR_DASHBOARD,
   GET_USER_DETAILS,
   UPDATE_PROFILE_DETAILS,
-  DELETE_PROFILE
+  DELETE_PROFILE,
+  GET_PURCHASE_HISTORY_API
 } = endpoints;
   
 export function updateDisplayPicture(token, formData) {
@@ -106,4 +107,19 @@ export function getEnrolledCourse (token) {
     dispatch(setLoading(false)) ;
   }
 
+}
+
+export const getPurchaseHistory = async (token) => {
+  let result = [] ;
+  try {
+    const response = await apiConnector('GET',GET_PURCHASE_HISTORY_API,null,null,{
+      Authorization : `Bearer ${token}`
+    })
+    result = response.data?.data;
+    console.log(result);
+  } catch (error) {
+    console.log(error.response) ; 
+    console.log("GET_PURCHASE_HISTORY_API_ERROR",error) ; 
+  }
+  return result;
 }

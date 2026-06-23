@@ -4,22 +4,18 @@ import mongoose from "mongoose";
 
 const createSection = async (req, res) => {
   try {
-    //fetch data
     const { sectionName, courseId } = req.body;
-    //data validation
     if (!sectionName || !courseId)
       return res.status(401).json({
         success: false,
         message: "Missing Properties",
       });
-    //creating Section
     const payload = {
       sectionName,
     };
    
     const objectIdOFCourse = new mongoose.Types.ObjectId(courseId);
     const newSection = await Section.create(payload);
-    console.log("hello again"); 
     const updatedCourseDetails = await Course.findByIdAndUpdate(
       {_id :  objectIdOFCourse },
       {
@@ -32,7 +28,6 @@ const createSection = async (req, res) => {
       }
     ).populate("courseContent").exec();
  
-console.log("sections in ")
     return res.status(201).json({
       data : updatedCourseDetails,
       success: true,

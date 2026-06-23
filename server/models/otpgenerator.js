@@ -25,7 +25,6 @@ async function sendVerificationEmail(email, otp) {
       "Verification Email from codevolveX",
       otpTemplate(otp)
     )
-    console.log("otp sent successfully at email", mailResponse)
   } catch (error) {
     console.log("error occurred while sending mails")
     console.error(error)

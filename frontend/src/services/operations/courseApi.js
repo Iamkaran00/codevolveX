@@ -24,6 +24,7 @@ const {
   GET_REVIEWS_API,
   GET_REVIEWS_FOR_COURSE_API,
   LECTURE_COMPLETION_API,
+  GET_INSTRUCTOR_DASHBOARD,
 } = course_endpoints;
  
 export const addCourseDetails = async (data, token) => {
@@ -394,6 +395,7 @@ export const createRating = async (data, token) => {
   } catch (error) {
     console.log("CREATE_RATING_API ERROR", error);
     toast.error(error.message);
+    console.log(error.response);
   }
   toast.dismiss(toastId);
   return success;
@@ -472,8 +474,27 @@ export const markLectureAsComplete = async (data, token) => {
   } catch (error) {
     console.log("LECTURE_COMPLETION_API ERROR", error);
     toast.error(error.message);
+    console.log(error.response);
     result = null;
   }
   toast.dismiss(toastId);
+  return result;
+};
+
+export const getInstructorDashboardStats = async (token) => {
+  let result = null;
+  console.log(GET_INSTRUCTOR_DASHBOARD ,'this is api');
+  try {
+    const response = await apiConnector("GET", GET_INSTRUCTOR_DASHBOARD, null, null, {
+      Authorization: `Bearer ${token}`,
+    });
+    if (!response?.data) {
+      throw new Error("Could not fetch dashboard stats");
+    }
+    result = response?.data?.data;
+  } catch (error) {
+    console.log("INSTRUCTOR_DASHBOARD_API ERROR", error);
+    console.log(error.response) ;
+  }
   return result;
 };

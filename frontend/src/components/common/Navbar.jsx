@@ -21,7 +21,6 @@ export const Navbar = () => {
   const fetchSubLinks = async () => {
     try {
       const result = await apiConnector("GET", categories.CATEGORIES_API);
-      console.log(result,'categorydata');
       setSubLinks(result.data.allCategory);
     } catch (error) {
       console.log("Could not fetch the category list");
@@ -71,7 +70,6 @@ useEffect(() => {
           </p>
         </Link>
 
-        {/* NavLinks */}
         <nav className="hidden md:block">
           <ul className="flex items-center gap-x-8 text-[15px] font-medium text-gray-700">
             {NavbarLinks.map((link, index) => (
@@ -122,7 +120,7 @@ useEffect(() => {
         <div className="flex items-center gap-x-4">
           {token && user?.accountType !== "Instructor" && (
             <Link to="/dashboard/mycart" className="relative group p-2">
-              <FaShoppingCart className="text-xl text-gray-600 group-hover:text-blue-600 transition-colors" />
+              <FaShoppingCart className="text-xl text-gray-600 cursor-pointer group-hover:text-blue-600 transition-colors" />
               {totalItems > 0 && (
                 <span className="absolute top-0 right-0 grid h-5 w-5 place-items-center rounded-full bg-blue-600 text-[10px] font-bold text-white shadow-sm ring-2 ring-white">
                   {totalItems}
@@ -135,31 +133,31 @@ useEffect(() => {
             <div className="flex items-center gap-x-3">
                
               <Link to="/login">
-                <button className="px-5 py-2 text-[14px] font-medium text-white bg-gray-900 rounded-full shadow-sm hover:bg-gray-800 transition-all hover:shadow-md hover:-translate-y-[1px]">
+                <button className="px-5 py-2 text-[14px]  cursor-pointer font-medium text-white bg-gray-900 rounded-full shadow-sm hover:bg-gray-800 transition-all hover:shadow-md hover:-translate-y-[1px]">
                  Login
                 </button>
               </Link>
               <Link to="/signup">
-                <button className="px-5 py-2 text-[14px] font-medium text-white bg-gray-900 rounded-full shadow-sm hover:bg-gray-800 transition-all hover:shadow-md hover:-translate-y-[1px]">
+                <button className="px-5 py-2 cursor-pointer text-[14px] font-medium text-white bg-gray-900 rounded-full shadow-sm hover:bg-gray-800 transition-all hover:shadow-md hover:-translate-y-[1px]">
                   Create Account
                 </button>
               </Link>
             </div>
           )}
-          { (user !== null && user?.accountType === 'Student') ? (
+          {user!=null && ( ( user?.accountType === 'Student') ? (
             <Link to = '/dashboard/enrolled-courses' >
-       <button className="px-4 py-2 text-[14px] font-medium text-gray-700 bg-gray-100/50 backdrop-blur-sm border border-gray-200 rounded-full hover:bg-gray-200/50 transition-colors">
+       <button className="px-4 py-2  cursor-pointer text-[14px] font-medium text-gray-700 bg-gray-100/50 backdrop-blur-sm border border-gray-200 rounded-full hover:bg-gray-200/50 transition-colors">
               Dashboard
             </button>
 
             </Link>
            
-          ) : (<Link to = '/dashboard' >
+          ) : (<Link to = '/dashboard/instructor' >
        <button className="px-4 py-2 text-[14px] font-medium text-gray-700 bg-gray-100/50 backdrop-blur-sm border border-gray-200 rounded-full hover:bg-gray-200/50 transition-colors">
               Dashboard
             </button>
 
-            </Link>)}
+            </Link>))}
           {token != null && <ProfileDropdown/>}
         </div>
       </div>
