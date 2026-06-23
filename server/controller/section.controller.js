@@ -1,5 +1,5 @@
-import { Section } from "../models/Sections.js";
-import { Course } from "../models/Course.js";
+import { Section } from "../models/Section.model.js";
+import { Course } from "../models/Course.model.js";
 import mongoose from "mongoose";
 
 const createSection = async (req, res) => {

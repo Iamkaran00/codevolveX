@@ -1,13 +1,13 @@
-import { Course } from "../models/Course.js";
-import { User } from "../models/User.js";
+import { Course } from "../models/Course.model.js";
+import { User } from "../models/User.model.js/index.js";
 import { Category } from "../models/Category.model.js";
-import {uploadOnCloudinary} from "../utils/cloudinaryuploader.js";
-import { CourseProgress } from "../models/CourseProgress.js";
+import {uploadOnCloudinary} from "../utils/Cloudinary.Uploader.js";
+import { CourseProgress } from "../models/CourseProgress.model.js";
 import convertSecondsToDuration from "../utils/secToDuration.js";
-import { Section } from "../models/Sections.js";
-import { SubSection } from "../models/SubSection.js";
+import { Section } from "../models/Section.model.js";
+import { SubSection } from "../models/SubSection.model.js";
 import { Order } from "../models/Payment.model.js";
-import { ratingsAndReview } from "../models/ratingsAndReview.js";
+import { ratingsAndReview } from "../models/RatingAndReview.model.js";
 import mongoose from "mongoose";
 const createCourse = async (req, res) => {
   try {

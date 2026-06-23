@@ -1,5 +1,5 @@
 import { Schema, mongoose } from "mongoose";
-import mailSender from "../utils/mailsender.js";
+import mailSender from "../utils/MailSender.js";
 import otpTemplate from "../mail/templates/emailVerificationTemplate.js";
 
 const otpSchema = new Schema({

@@ -1,10 +1,10 @@
-import { User } from "../models/User.js";
-import { otpgenerator } from "../models/otpgenerator.js";
-import { Profile } from "../models/Profile.js";
+import { User } from "../models/User.model.js/index.js";
+import { otpgenerator } from "../models/OtpGenerator.model.js";
+import { Profile } from "../models/Profile.model.js";
 import bcrypt from "bcrypt";
 import otpGenerator from "otp-generator";
 import jwt from "jsonwebtoken";
-import mailSender from "../utils/mailsender.js";
+import mailSender from "../utils/MailSender.js";
 import mongoose from "mongoose";
 
 const sendOTP = async (req, res) => {

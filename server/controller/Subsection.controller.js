@@ -1,6 +1,6 @@
-import { SubSection } from "../models/SubSection.js";
-import { Section } from "../models/Sections.js";
-import { uploadOnCloudinary } from "../utils/cloudinaryuploader.js";
+import { SubSection } from "../models/SubSection.model.js";
+import { Section } from "../models/Section.model.js";
+import { uploadOnCloudinary } from "../utils/Cloudinary.Uploader.js";
 import mongoose from "mongoose";
 
 const createSubSection = async (req, res) => {
