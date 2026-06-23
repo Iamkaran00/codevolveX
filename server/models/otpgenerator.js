@@ -14,10 +14,10 @@ const otpSchema = new Schema({
   createdAt: {
     type: Date,
     default: Date.now(),
-    expires: 5 * 60 * 1000,
+    expires: 15000,
   },
 });
-//function -> to send emails
+ 
 async function sendVerificationEmail(email, otp) {
   try {
     const mailResponse = await mailSender(
@@ -31,7 +31,6 @@ async function sendVerificationEmail(email, otp) {
   }
 }
 otpSchema.pre("save", async function (next) {
-  //Only send an email when an new document is created
 
   if (this.isNew) {
     await sendVerificationEmail(this.email, this.otp);
