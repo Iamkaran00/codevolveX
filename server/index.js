@@ -21,7 +21,7 @@ app.use(express.json({limit : "4000mb"}));
 app.use(cookieParser());
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: "https://codevolvx.vercel.app",
     credentials: true,
   })
 );
