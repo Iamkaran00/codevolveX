@@ -1,5 +1,5 @@
 import { Course } from "../models/Course.model.js";
-import { User } from "../models/User.model.js/index.js";
+import { User } from "../models/User.model.js";
 import { Category } from "../models/Category.model.js";
 import {uploadOnCloudinary} from "../utils/cloudinary.js";
 import { CourseProgress } from "../models/CourseProgress.model.js";
