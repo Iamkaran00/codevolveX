@@ -1,32 +1,32 @@
 import express from "express";
 const router = express.Router();
- import { updateCourseProgress } from "../controller/courseProgress.controller.js";
+ import { updateCourseProgress } from "../controller/courseProgress.js"
 import {
   createCourse,editCourse,showAllCourses,deleteCourse,getInstructorCourses,getFullCourseDetails,getCourseDetails,instructorDashboard
-} from "../controller/course.controller.js";
+} from "../controller/course.js";
 import {
   showAllCategory,
   createCategory,
   categoryPageDetails,
-} from "../controller/category.controller.js";
+} from "../controller/category.js";
 
 
 import {
   createSection,
   updateSection,
   deleteSection,
-} from "../controller/section.controller.js";
+} from "../controller/section.js";
 // Sub-Sections Controllers Import
 import {
   createSubSection,
   updateSubSection,
   deleteSubSection,
-} from "../controller/subsection.controller.js";
+} from "../controller/subsection.js";
 
 // Rating Controllers Import
 import {
   gettingAllRatings,reviewsAndRatingForCourse,createRating,averageRatings
-} from "../controller/ratingsAndReviews.controller.js";
+} from "../controller/ratingsAndReview.js";
 
 import {auth , isInstructor,isAdmin,isStudent} from "../middleware/auth.middleware.js";
 import { uploadVideo,uploadImage } from "../middleware/multer.middleware.js";
