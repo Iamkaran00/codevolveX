@@ -3,7 +3,7 @@ import { User } from "../models/User.model.js/index.js";
 import { Category } from "../models/Category.model.js";
 import {uploadOnCloudinary} from "../utils/Cloudinary.Uploader.js";
 import { CourseProgress } from "../models/CourseProgress.model.js";
-import convertSecondsToDuration from "../utils/secToDuration.js";
+import convertSecondsToDuration from "../utils/SecondsToDurationConversion.js";
 import { Section } from "../models/Section.model.js";
 import { SubSection } from "../models/SubSection.model.js";
 import { Order } from "../models/Payment.model.js";

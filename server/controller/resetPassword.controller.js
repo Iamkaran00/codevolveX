@@ -1,11 +1,10 @@
 //reseting password
-import { User } from "../models/User.js";
-import mailSender from "../utils/mailSender.js";
+import { User } from "../models/User.model.js";
+import mailSender from "../utils/MailSender.js"
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 const resetPasswordToken = async (req, res) => {
   try {
-    //get Email from Req bodyr
     const { email } = req.body;
    console.log("hello from reset password");
     //check user for this email , email validation
@@ -18,7 +17,6 @@ const resetPasswordToken = async (req, res) => {
     }
  
     const token = crypto.randomUUID();
-    //update user by adding token and expiration time
     const updatedDetails = await User.findOneAndUpdate(
       { email },
       { token: token, resetPasswordExpires: Date.now() + 5 * 60 * 60 * 1000 },

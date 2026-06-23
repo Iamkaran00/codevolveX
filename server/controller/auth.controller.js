@@ -1,4 +1,4 @@
-import { User } from "../models/User.model.js/index.js";
+import { User } from "../models/User.model.js";
 import { otpgenerator } from "../models/OtpGenerator.model.js";
 import { Profile } from "../models/Profile.model.js";
 import bcrypt from "bcrypt";

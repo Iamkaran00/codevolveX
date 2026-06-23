@@ -1,10 +1,10 @@
-import { Profile } from "../models/Profile.js";
-import { User } from "../models/User.js";
-import { uploadOnCloudinary } from "../utils/cloudinaryuploader.js";
+import { Profile } from "../models/Profile.model.js";
+import { User } from "../models/User.model.js";
+import { uploadOnCloudinary } from "../utils/Cloudinary.Uploader.js";
 import mongoose, { mongo } from "mongoose";
-import { Course } from "../models/Course.js";
-import { CourseProgress } from "../models/CourseProgress.js";
-import convertSecondsToDuration from "../utils/secToDuration.js";
+import { Course } from "../models/Course.model.js";
+import { CourseProgress } from "../models/CourseProgress.model.js";
+import convertSecondsToDuration from "../utils/SecondsToDurationConversion.js";
 const updateProfile = async (req, res) => {
   try {
     const { gender, dateOfBirth, contactNumber, about } = req.body;
