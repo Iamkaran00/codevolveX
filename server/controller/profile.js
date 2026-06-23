@@ -4,7 +4,7 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js"
 import mongoose, { mongo } from "mongoose";
 import { Course } from "../models/Course.model.js";
 import { CourseProgress } from "../models/CourseProgress.model.js";
-import convertSecondsToDuration from "../utils/SecondsToDurationConversion.js";
+import convertSecondsToDuration from "../utils/sectoduration.js";
 const updateProfile = async (req, res) => {
   try {
     const { gender, dateOfBirth, contactNumber, about } = req.body;
