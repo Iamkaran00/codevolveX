@@ -168,7 +168,6 @@ export const SignupForm = () => {
             </div>
           </label>
         </div>
-
         <motion.button
           whileHover={{ y: -1 }}
           whileTap={{ scale: 0.98 }}
