@@ -127,7 +127,7 @@ useEffect(() => {
                 </span>
               )}
             </Link>
-          )}
+          )  }
 
           {token === null && (
             <div className="flex items-center gap-x-3">
