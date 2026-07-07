@@ -63,7 +63,7 @@ export function signup(
         throw new Error(response.data.message);
       }
       toast.success("Signup Succeed");
-      navigate("/");
+      navigate('/login');
     } catch (error) {
       console.log("Singup api error", error);
       toast.error("Signup failed");
