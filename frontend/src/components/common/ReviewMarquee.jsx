@@ -21,7 +21,6 @@ function StaticStars({ rating, size = 15, className = "" }) {
     </div>
   );
 }
-
 function ReviewCard({ r }) {
   const initials = `${r.user?.firstName?.charAt(0) || ""}${
     r.user?.lastName?.charAt(0) || ""
@@ -42,7 +41,6 @@ function ReviewCard({ r }) {
         }
         onMouseLeave={(e) => (e.currentTarget.style.transform = "rotateY(0deg)")}
       >
-        {/* FRONT — terminal log look */}
         <div className="absolute inset-0 [backface-visibility:hidden] rounded-2xl border border-[#232328] bg-[#141417] p-6 flex flex-col overflow-hidden">
           <div className="flex items-center gap-2 pb-4 mb-4 border-b border-[#232328]">
             <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]/50" />
@@ -69,7 +67,6 @@ function ReviewCard({ r }) {
           </div>
         </div>
 
-        {/* BACK — full photo takeover */}
         <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-2xl overflow-hidden border border-[#ffb454]/30">
           {r.user?.image ? (
             <img
@@ -128,7 +125,7 @@ export default function ReviewsMarquee() {
   const track = [...reviews, ...reviews, ...reviews, ...reviews];
 
   return (
-    <section className="py-24 bg-[#0b0b0d] overflow-hidden">
+    <section className="py-24 bg-[#101014] overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16 text-center flex flex-col items-center">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -162,8 +159,8 @@ export default function ReviewsMarquee() {
       </div>
 
       <div className="relative flex flex-col gap-6">
-        <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-[#0b0b0d] to-transparent z-20 pointer-events-none" />
-        <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-[#0b0b0d] to-transparent z-20 pointer-events-none" />
+        <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-[#101014] to-transparent z-20 pointer-events-none" />
+        <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-[#101014] to-transparent z-20 pointer-events-none" />
 
         <div className="flex animate-marquee-fast hover:[animation-play-state:paused] py-2">
           {track.map((r, i) => (
