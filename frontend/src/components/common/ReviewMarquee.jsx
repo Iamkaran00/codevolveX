@@ -21,6 +21,7 @@ function StaticStars({ rating, size = 15, className = "" }) {
     </div>
   );
 }
+
 function ReviewCard({ r }) {
   const initials = `${r.user?.firstName?.charAt(0) || ""}${
     r.user?.lastName?.charAt(0) || ""
@@ -125,13 +126,13 @@ export default function ReviewsMarquee() {
   const track = [...reviews, ...reviews, ...reviews, ...reviews];
 
   return (
-    <section className="py-24 bg-[#101014] overflow-hidden">
+    <section className="py-24 bg-white overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16 text-center flex flex-col items-center">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="inline-flex items-center gap-2 border border-[#232328] bg-[#141417] text-[#ffb454] font-['JetBrains_Mono'] text-xs px-4 py-2 rounded-full mb-6"
+          className="inline-flex items-center gap-2 border border-slate-200 bg-slate-50 text-indigo-600 font-['JetBrains_Mono'] text-xs px-4 py-2 rounded-full mb-6"
         >
           <Terminal size={13} />
           $ cat reviews.log
@@ -142,7 +143,7 @@ export default function ReviewsMarquee() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.1 }}
-          className="font-['Space_Grotesk'] text-4xl md:text-5xl font-black text-[#ede9e4] tracking-tight"
+          className="font-['Space_Grotesk'] text-4xl md:text-5xl font-black text-slate-900 tracking-tight"
         >
           Don't just take our word for it.
         </motion.h2>
@@ -152,20 +153,22 @@ export default function ReviewsMarquee() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.2 }}
-          className="mt-4 text-lg text-[#8a8a92] font-['IBM_Plex_Sans'] max-w-2xl"
+          className="mt-4 text-lg text-slate-500 font-['IBM_Plex_Sans'] max-w-2xl"
         >
           Join thousands of developers who have accelerated their careers through our structured learning paths.
         </motion.p>
       </div>
 
-      <div className="relative flex flex-col gap-6">
-        <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-[#101014] to-transparent z-20 pointer-events-none" />
-        <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-[#101014] to-transparent z-20 pointer-events-none" />
+      <div className="mx-4 sm:mx-8 lg:mx-16">
+        <div className="relative flex flex-col gap-6 bg-[#101014] rounded-[2.5rem] py-10 overflow-hidden">
+          <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-[#101014] to-transparent z-20 pointer-events-none" />
+          <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-[#101014] to-transparent z-20 pointer-events-none" />
 
-        <div className="flex animate-marquee-fast hover:[animation-play-state:paused] py-2">
-          {track.map((r, i) => (
-            <ReviewCard key={`row1-${r._id}-${i}`} r={r} />
-          ))}
+          <div className="flex animate-marquee-fast hover:[animation-play-state:paused] py-2">
+            {track.map((r, i) => (
+              <ReviewCard key={`row1-${r._id}-${i}`} r={r} />
+            ))}
+          </div>
         </div>
       </div>
 
