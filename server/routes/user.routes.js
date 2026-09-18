@@ -14,11 +14,13 @@ import {
   resetPassword,
 } from "../controller/resetPassword.js";
 import { auth } from "../middleware/auth.middleware.js";
+import { slidingWindowLimiter } from "../middleware/rateLimiter.js";
+import { createCourse } from "../controller/course.js";
  router.post(
   "/createCourse",
   auth,
   uploadImage.single("thumbnail"),
-  
+  createCourse
 );
 
 router.post(
@@ -28,15 +30,15 @@ router.post(
   createSubSection
 );
 // Route for user login
-router.post("/login", login);
+router.post("/login",slidingWindowLimiter(10,900), login);
 // Route for user signup
 router.post(
   "/signup",
-  
+  slidingWindowLimiter(5,900) , 
   signUp
 );
 // Route for sending OTP to the user's email
-router.post("/sendotp", sendOTP);
+router.post("/sendotp",slidingWindowLimiter(5 ,900) , sendOTP);
 // Route for Changing the password
 router.post("/changepassword", auth, changePassword);
  

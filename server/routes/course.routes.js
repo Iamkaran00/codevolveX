@@ -30,6 +30,7 @@ import {
 
 import {auth , isInstructor,isAdmin,isStudent} from "../middleware/auth.middleware.js";
 import { uploadVideo,uploadImage } from "../middleware/multer.middleware.js";
+import { slidingWindowLimiter } from "../middleware/rateLimiter.js";
 // Courses can Only be Created by Instructors
 router.post("/createCourse", auth, isInstructor,uploadImage.single("thumbnailImage"), createCourse);
 //Add a Section to a Course
@@ -59,13 +60,13 @@ router.get("/getInstructorCourses", auth, isInstructor, getInstructorCourses);
 
 router.get('/getInstructorDashboard', auth,isInstructor,instructorDashboard)
 // Delete a Course
-router.delete("/deleteCourse", deleteCourse);
+router.delete("/deleteCourse",auth,isInstructor, deleteCourse);
  
 router.post("/createCategory", auth, isAdmin, createCategory);
 router.get("/showAllCategories", showAllCategory);
 router.post("/getCategoryPageDetails", categoryPageDetails);
  
-router.post("/createRating", auth, isStudent, createRating);
+router.post("/createRating", auth, isStudent,slidingWindowLimiter(3,9000), createRating);
 router.get("/getAverageRating", averageRatings);
 router.get("/getReviews", gettingAllRatings);
 router.get("/getReviewForCourse",reviewsAndRatingForCourse);
