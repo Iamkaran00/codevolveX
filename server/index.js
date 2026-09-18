@@ -8,6 +8,7 @@ import paymentRoute from "./routes/payment.routes.js";
 import cookieParser from "cookie-parser";
 import  dbconnection from "./config/database.js";
 import cors from "cors";
+import redisClient from "./config/redis.js";
 dotenv.config({
   path: "./.env",
 });
@@ -21,7 +22,8 @@ app.use(express.json({limit : "4000mb"}));
 app.use(cookieParser());
 app.use(
   cors({
-    origin: "https://codevolvx.vercel.app",
+    // origin: "https://codevolvx.vercel.app",
+    origin : "http://localhost:5173",
     credentials: true,
   })
 );
@@ -39,6 +41,10 @@ app.get("/", (req, res) => {
   });
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => { 
+  await redisClient.connect();
+  await redisClient.set('test','hello') ; 
+  const value = await redisClient.get('test') ; 
+console.log(value) ; 
   console.log("App is running at PORT ⚙️", PORT);
 });

@@ -10,7 +10,7 @@ const rootReducers = combineReducers(
     auth : authReducer,
     profile : profileReducer,
     cart : cartReducer ,
-   course :  courseReducer,
+    course :  courseReducer,
     viewCourse : viewCourseReducer,
     }
 )

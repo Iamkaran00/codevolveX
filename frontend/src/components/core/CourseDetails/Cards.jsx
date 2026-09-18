@@ -23,8 +23,7 @@ export function CourseDetailsCard({ course, totalDuration, user }) {
     }
     dispatch(addToCart(course));
   }
-
-
+  
   return (
     <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-[0_20px_40px_-15px_rgba(79,70,229,0.1)] sticky top-24">
       <div className="relative w-full aspect-video overflow-hidden bg-slate-100">

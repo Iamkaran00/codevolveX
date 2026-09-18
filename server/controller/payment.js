@@ -9,7 +9,7 @@ import crypto from "crypto";
 import paymentSuccessEmail from '../mail/templates/payementSuccessEmail.js';
 import { CourseProgress } from "../models/CourseProgress.model.js";
 import { Order } from "../models/Payment.model.js";
-//Capture payment and intitate razorpay order->create order for multiple items buy
+ 
 const capturePayment=async(req,res)=>{
   
   const {courses}=req.body;
@@ -21,7 +21,6 @@ const capturePayment=async(req,res)=>{
       message:"Please provide Course Id"
     });
   }
-  
   let totalAmount=0;
   console.log(courses);
   for(const course_id of Object.values(courses)){
@@ -48,15 +47,12 @@ const capturePayment=async(req,res)=>{
       })
     }
   }
-  
-  //Creating options to create order
+ 
   const options={
     amount:totalAmount*100,
     currency:"INR",
     receipt:Math.random(Date.now()).toString(),
   }
-
-
   try{
     const paymentResponse = await instance.orders.create(options);
     return res.json({
@@ -74,7 +70,7 @@ const capturePayment=async(req,res)=>{
 }
 
 
-//verify the payment 
+  
 const verifySignature=async(req,res)=>{
   const razorpay_order_id=req.body?.razorpay_order_id;
   const razorpay_payment_id=req.body?.razorpay_payment_id;
@@ -154,7 +150,6 @@ const enrollStudents = async (courses, userId, res) => {
         },
         { new: true }
       );
-
       const emailResponse = await mailSender(
         enrolledStudent.email,
         `Successfully enrolled into ${enrolledCourse.courseName}`,

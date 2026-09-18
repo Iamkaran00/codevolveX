@@ -34,24 +34,19 @@ function loadScript(src) {
 //payment thunks =====> 
 
 export async function buyCourse(token , courses, userDetails, navigate,dispatch) {
-
     const toastId = toast.loading('wait for a moment....') ; 
-
-
     try {
         const res = await loadScript('https://checkout.razorpay.com/v1/checkout.js') ;
         if(!res) {
             toast.error('Razorpay SDK failed to load.Check Connection') ;
             return ;
         }
-
         const orderResponse = await apiConnector(
             'POST' , 
             COURSE_PAYMENT_API , 
             {courses}, null, 
             {Authorization : `Bearer ${token}`} 
         )
- 
      if(!orderResponse.data.success) {
         throw new Error(orderResponse.data.message) ;
      }

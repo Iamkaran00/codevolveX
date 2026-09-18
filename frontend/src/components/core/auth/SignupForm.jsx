@@ -11,7 +11,6 @@ import { Link } from "react-router-dom";
 export const SignupForm = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
   const [accountType, setAccountType] = useState(ACCOUNT_TYPE.STUDENT);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -22,7 +21,6 @@ export const SignupForm = () => {
     password: "",
     confirmPassword: "",
   });
-
   const { firstName, lastName, email, password, confirmPassword } = formData;
 
   const handleOnChange = (e) => {
