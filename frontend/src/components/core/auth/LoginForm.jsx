@@ -6,7 +6,7 @@ import { login } from "../../../services/operations/authAPI";
 export const LoginForm = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const loading = useSelector(auth => state.auth) ; 
+  
   const [formData, setFormData] = useState({
     email: "",
     password: "",
