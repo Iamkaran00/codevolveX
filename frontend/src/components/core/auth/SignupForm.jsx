@@ -1,17 +1,19 @@
-import React, { useState } from "react";
+import React from "react";
 import { toast } from "react-toastify";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { motion } from "framer-motion";
 import { ACCOUNT_TYPE } from "../../../utils/constants";
 import { sendOtp } from "../../../services/operations/authAPI";
 import { setSignupData } from "../../../slices/auth.slice";
 import { Link } from "react-router-dom";
+import { useState } from "react";
 export const SignupForm = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const loading = useSelector(auth => state.auth)
+  const loading = useSelector(auth => auth.loading)
   const [accountType, setAccountType] = useState(ACCOUNT_TYPE.STUDENT);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);

@@ -173,20 +173,7 @@ export default function HeroSection() {
 
         >
 
-
-          <motion.div variants={itemVariants} className="inline-flex items-center gap-2 rounded-full border border-indigo-100 bg-indigo-50/50 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-indigo-600 mb-6 backdrop-blur-sm">
-
-            <span className="relative flex h-2 w-2">
-
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
-
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-600"></span>
-
-            </span>
-
-            Trusted by 120,000+ developers
-
-          </motion.div>
+ 
 
 
 

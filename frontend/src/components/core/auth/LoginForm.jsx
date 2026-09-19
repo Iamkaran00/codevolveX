@@ -3,7 +3,6 @@ import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai"; // Grouped
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { login } from "../../../services/operations/authAPI";
-
 export const LoginForm = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -33,7 +32,6 @@ export const LoginForm = () => {
       onSubmit={handleOnSubmit} 
       className="flex flex-col gap-y-5 w-full max-w-md mx-auto p-6 bg-white rounded-lg  relative right-13"
     >
-      {/* Email Input Field */}
       <div className="flex flex-col gap-y-1">
         <label htmlFor="email" className="text-sm font-medium text-gray-700">
           Email Address <span className="text-red-500">*</span>
@@ -49,8 +47,7 @@ export const LoginForm = () => {
           className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
         />
       </div>
-
-      {/* Password Input Field */}
+ 
       <div className="flex flex-col gap-y-1">
         <label htmlFor="password" className="text-sm font-medium text-gray-700">
           Password <span className="text-red-500">*</span>
@@ -68,7 +65,6 @@ export const LoginForm = () => {
             className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all pr-10"
           />
           
-          {/* Changed span to button for keyboard accessibility */}
           <button
             type="button" 
             onClick={() => setShowPassword((prev) => !prev)}
