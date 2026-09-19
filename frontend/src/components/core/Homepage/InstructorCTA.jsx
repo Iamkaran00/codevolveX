@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { HiArrowRight, HiWrenchScrewdriver, HiChartBar, HiGlobeAlt } from "react-icons/hi2";
 import { RiMoneyDollarCircleLine } from "react-icons/ri";
-
+import { useNavigate } from "react-router-dom";
 const PERKS = [
   {
     Icon: RiMoneyDollarCircleLine,
@@ -32,7 +32,7 @@ const PERKS = [
 export const InstructorCTA = () => {
   const ref = useRef(null);
   const [inView, setInView] = useState(false);
-
+const navigate = useNavigate() ; 
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([e]) => { if (e.isIntersecting) { setInView(true); observer.disconnect(); } },
@@ -51,11 +51,9 @@ export const InstructorCTA = () => {
           transition-all duration-700
           ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-7"}`}
       >
-        {/* Decorative glow blob */}
         <div className="absolute -right-20 -top-20 w-80 h-80 rounded-full bg-indigo-500/10 pointer-events-none" />
         <div className="absolute -left-10 -bottom-16 w-48 h-48 rounded-full bg-violet-500/10 pointer-events-none" />
 
-        {/* ── Left: Headline + CTA ─────────────────── */}
         <div
           className={`relative transition-all duration-700 delay-100
             ${inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-5"}`}
@@ -74,12 +72,14 @@ export const InstructorCTA = () => {
               text-white font-medium text-[15px] px-7 py-3.5 rounded-xl
               transition-all duration-200 hover:-translate-y-0.5
               shadow-[0_4px_20px_rgba(99,102,241,0.35)]"
+              onClick={()=> {
+                navigate('/signup') 
+              }}
           >
             Become an Instructor <HiArrowRight size={16} />
           </button>
         </div>
 
-        {/* ── Right: Perks grid ────────────────────── */}
         <div className="relative grid grid-cols-2 gap-6">
           {PERKS.map(({ Icon, title, desc, delay }, i) => (
             <div

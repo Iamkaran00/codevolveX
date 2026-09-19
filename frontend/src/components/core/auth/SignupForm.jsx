@@ -11,6 +11,7 @@ import { Link } from "react-router-dom";
 export const SignupForm = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const loading = useSelector(auth => state.auth)
   const [accountType, setAccountType] = useState(ACCOUNT_TYPE.STUDENT);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -166,14 +167,22 @@ export const SignupForm = () => {
             </div>
           </label>
         </div>
-        <motion.button
-          whileHover={{ y: -1 }}
-          whileTap={{ scale: 0.98 }}
-          type="submit"
-          className="mt-6 w-full rounded-xl bg-gradient-to-r bg-indigo-600 py-3.5  text-white shadow-lg shadow-indigo-200 transition-all hover:shadow-xl hover:shadow-indigo-300 focus:outline-none focus:ring-4 focus:ring-indigo-500/30"
-        >
-          Create Account
-        </motion.button>
+      <motion.button
+  whileHover={{ y: -1 }}
+  whileTap={{ scale: 0.98 }}
+  type="submit"
+  disabled={loading}
+  className="mt-6 w-full rounded-xl bg-gradient-to-r bg-indigo-600 py-3.5 text-white shadow-lg shadow-indigo-200 transition-all hover:shadow-xl hover:shadow-indigo-300 focus:outline-none focus:ring-4 focus:ring-indigo-500/30 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+>
+  {loading ? (
+    <>
+      <span className="h-5 w-5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+      Creating Account...
+    </>
+  ) : (
+    "Create Account"
+  )}
+</motion.button>
         <div className="flex m-auto gap-2">
         <p>Already have an account ? </p>
          <Link to = '/login' className="underline text-indigo-600" > 
