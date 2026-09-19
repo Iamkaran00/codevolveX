@@ -6,6 +6,10 @@ import { login } from "../../../services/operations/authAPI";
 export const LoginForm = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+<<<<<<< HEAD
+=======
+  
+>>>>>>> 7692e24ff71823518b7a30e3a7d94cc583c148c7
   const [formData, setFormData] = useState({
     email: "",
     password: "",
