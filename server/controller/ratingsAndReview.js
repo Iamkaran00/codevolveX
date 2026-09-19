@@ -58,8 +58,7 @@ const averageRatings = async (req, res) => {
     return 0;
     })
    
-      console.log(result);
-    return res.status(200).json({ success: true, message: "No ratings yet", averageRatings: result });
+    return res.status(200).json({ success: true, message: "No ratings yet", averageRatings: averageRatings });
   } catch (error) {
     return res.status(500).json({ success: false, message: "Something went wrong" });
   }

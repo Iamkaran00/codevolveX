@@ -12,9 +12,9 @@ const LINKS = {
 
 const SOCIALS = [
   { Icon: FaTwitter, href: "#", label: "Twitter" },
-  { Icon: FaLinkedinIn, href: "#", label: "LinkedIn" },
-  { Icon: SiGithub, href: "#", label: "GitHub" },
-  { Icon: SiYoutube, href: "#", label: "YouTube" },
+  { Icon: FaLinkedinIn, href: "https://www.linkedin.com/in/karan-sahu7", label: "LinkedIn" },
+  { Icon: SiGithub, href: "https://www.github.com/iamkaran00", label: "GitHub" },
+
 ];
 
 export const Footer = () => {
