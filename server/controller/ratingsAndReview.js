@@ -53,7 +53,7 @@ const averageRatings = async (req, res) => {
     ]);
   
     if (result.length > 0) {
-      return res.status(200).json({ success: true, averageRatings: result[0].averageRatings });
+      return result[0].averageRatings ; 
     }
     return 0;
     })
@@ -68,7 +68,7 @@ const reviewsAndRatingForCourse = async (req, res) => {
   try {
     const { courseId } = req.query;
      const cacheKey = `course:${courseId}:reviews` ;
-     const {data:reviews} = getOrSetCache(cacheKey , 600,async()=>{
+     const {data:reviews} = await getOrSetCache(cacheKey , 600,async()=>{
       const reviews = await ratingsAndReview
       .find({ course: courseId })
       .sort({ rating: "desc" })
