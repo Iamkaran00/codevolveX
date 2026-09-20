@@ -25,7 +25,7 @@ const resetPasswordToken = async (req, res) => {
       }
     );
     //createurl
-    const url = `http://localhost:5173/update-password/${token}`;
+    const url = `https://codevolvx.vercel.app/update-password/${token}`;
     //send mail
     await mailSender(
       email,
