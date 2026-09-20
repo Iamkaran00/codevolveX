@@ -46,7 +46,7 @@ console.log(Date.now(),'in limiter') ;
       })
      //automatic delete the key later 
       await redisClient.expire(key , windowSeconds) ; 
-
+    console.log(Date.now(),'in rate lmititer 2nd time');
       // allow request to continue ; 
         } catch(error) {
            console.error('Rate limiter error :' , error) ; 
