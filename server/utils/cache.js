@@ -5,7 +5,7 @@ export const getOrSetCache = async(key , ttlSeconds,fetchFn) => {
         const cached = await redisClient.get(key) ; 
         if(cached) {
             console.log(JSON.parse(cached)) ; 
-            console.log(cached data);
+            console.log(cached);
             return {data :JSON.parse(cached) , fromCache : true} 
         }
     } catch (error) {
