@@ -2,7 +2,7 @@ import {rateLimit} from 'express-rate-limit' ;
 import {RedisStore} from 'rate-limit-redis' ; 
 import redisClient from '../config/redis.js';
  export const slidingWindowLimiter = (maxRequests,windowSeconds ) => {
-    return async(req,resizeBy,next) => {
+    return async(req,res,next) => {
         // get email if available 
         const email = req.body?.email ; 
 
@@ -48,6 +48,7 @@ console.log(Date.now(),'in limiter') ;
       await redisClient.expire(key , windowSeconds) ; 
     console.log(Date.now(),'in rate lmititer 2nd time');
       // allow request to continue ; 
+      next();
         } catch(error) {
            console.error('Rate limiter error :' , error) ; 
            // if redis goes down , don't block the user 
