@@ -13,9 +13,8 @@ import fs from 'fs';
             "type": "text",
             "text": `
 You are an image moderation system for an educational website.
-
 Analyze this image and determine whether it is appropriate
-for use as a profile picture.
+for use as a profile picture and can be use as thumbnailImage.
 
 REJECT the image if it contains:
 - nudity

@@ -109,6 +109,7 @@ const updateDisplayPicture = async (req, res) => {
     const displayPicture = req.file?.path;
     const userId = req.user.id;
     const moderatedImage = await imageModeration(displayPicture) ;
+    console.log(moderatedImage.reason) ; 
        if (!moderatedImage.allowed) {
             return res.status(400).json({
                 success: false,
