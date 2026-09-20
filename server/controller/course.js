@@ -10,6 +10,7 @@ import { Order } from "../models/Payment.model.js";
 import { ratingsAndReview } from "../models/RatingAndReview.model.js";
 import mongoose from "mongoose";
 import { getOrSetCache, invalidateCache, invalidateCacheByPattern } from "../utils/cache.js";
+import imageModeration from "../AI/imageModeration.js";
 const createCourse = async (req, res) => {
   try {
     let {
@@ -22,6 +23,7 @@ const createCourse = async (req, res) => {
     } = req.body;
 
     let thumbnail = req.file.path;
+
     const thumbnail1 = thumbnail.toString();
     const arr = [
       courseName,
@@ -60,7 +62,14 @@ const createCourse = async (req, res) => {
         message: "category details not found",
       });
     }
-
+    const moderatedImage = imageModeration(thumbnail); 
+     if (!moderatedImage.allowed) {
+            return res.status(400).json({
+                success: false,
+                message: "This image cannot be used as a profile picture.",
+                reason: moderatedImage.reason,
+            });
+        }
     const thumbnailImage = await uploadOnCloudinary(thumbnail);
     const newCourse = await Course.create({
       courseName,
