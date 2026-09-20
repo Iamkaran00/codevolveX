@@ -149,12 +149,13 @@ const login = async (req, res) => {
         message: "All fields are required",
       });
     }
+    console.log(Date.now()) ; 
 
     const user = await User.findOne({ email }).populate("additionalDetails");
     if (!user) {
       return res.status(400).json({ success: false, message: "User not found" });
     }
-
+console.log(Date.now());
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ success: false, message: "Password is incorrect" });
@@ -172,7 +173,7 @@ const login = async (req, res) => {
       sameSite : 'strict',
       secure : process.env.NODE_ENV === 'production'
     };
-
+console.log(Date.now()) ;
     return res.cookie("token", token, options).status(200).json({
       success: true,
       token,

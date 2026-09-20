@@ -17,10 +17,10 @@ import redisClient from '../config/redis.js';
 
         // current time in milliseconds 
         const now = Date.now() ; 
-
+        
         // Beginning of sliding windows 
         const windowStart = now - windowSeconds * 1000 ; 
-
+console.log(Date.now(),'in limiter') ; 
         try {
             //Remove requests older than our window 
             await redisClient.zRemRangeByScore(
