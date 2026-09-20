@@ -21,6 +21,7 @@
     "express": "^4.21.1",
     "express-rate-limit": "^8.7.0",
     "fs": "^0.0.1-security",
+    "groq-sdk": "^1.6.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.8.3",
     "multer": "^1.4.5-lts.1",
