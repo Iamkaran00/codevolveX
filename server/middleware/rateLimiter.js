@@ -20,7 +20,6 @@ import redisClient from '../config/redis.js';
         
         // Beginning of sliding windows 
         const windowStart = now - windowSeconds * 1000 ; 
-console.log(Date.now(),'in limiter') ; 
         try {
             //Remove requests older than our window 
             await redisClient.zRemRangeByScore(
@@ -46,7 +45,6 @@ console.log(Date.now(),'in limiter') ;
       })
      //automatic delete the key later 
       await redisClient.expire(key , windowSeconds) ; 
-    console.log(Date.now(),'in rate lmititer 2nd time');
       // allow request to continue ; 
       next();
         } catch(error) {

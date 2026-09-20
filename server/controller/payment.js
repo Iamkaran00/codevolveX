@@ -22,7 +22,6 @@ const capturePayment=async(req,res)=>{
     });
   }
   let totalAmount=0;
-  console.log(courses);
   for(const course_id of Object.values(courses)){
     let course;
     try{

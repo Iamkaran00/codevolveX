@@ -45,6 +45,5 @@ app.listen(PORT, async () => {
   await redisClient.connect();
   await redisClient.set('test','hello') ; 
   const value = await redisClient.get('test') ; 
-console.log(value) ; 
   console.log("App is running at PORT ⚙️", PORT);
 });

@@ -106,7 +106,6 @@ export default function CourseInformationForm() {
         }
         
         setLoading(true);
-        console.log("Dispatching API call to editCourseDetails...");
         const result = await editCourseDetails(formData, token);
         setLoading(false);
         

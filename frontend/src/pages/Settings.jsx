@@ -26,8 +26,7 @@ const Field = ({ label, children }) => (
 
 const inputCls =
   "w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-[14px] font-medium text-gray-900 outline-none transition-all placeholder:text-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100";
-
-// YOUR ORIGINAL BUTTON DESIGNS (Kept exactly as they were)
+ 
 const btnGhost = {
   display: "inline-flex",
   alignItems: "center",

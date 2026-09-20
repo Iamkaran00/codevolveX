@@ -27,7 +27,7 @@ export const uploadVideo = multer({
 
 export const uploadImage = multer({
   storage,
-  limits: { fileSize: 10 * 1024 * 1024 },  // 10 mb ka allow kr dete hai 
+  limits: { fileSize: 10 * 1024 * 1024 }, 
   fileFilter: function (req, file, cb) {
 
     const allowed = /jpeg|jpg|png|webp/;

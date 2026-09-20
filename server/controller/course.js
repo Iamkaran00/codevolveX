@@ -23,7 +23,6 @@ const createCourse = async (req, res) => {
 
     let thumbnail = req.file.path;
     const thumbnail1 = thumbnail.toString();
-    console.log(thumbnail, "thumbnailImage");
     const arr = [
       courseName,
       courseDescription,
@@ -51,7 +50,6 @@ const createCourse = async (req, res) => {
         message: "Instructor Details not found",
       });
     }
-    console.log(category, typeof category, "hi there in createcourse");
     const categoryid = new mongoose.Types.ObjectId(category);
 
     //check given tag is valid
@@ -76,7 +74,6 @@ const createCourse = async (req, res) => {
       category: categoryDetails._id,
       thumbnail: thumbnailImage.secure_url,
     });
-    console.log(newCourse);
     await User.findByIdAndUpdate(
       {
         _id: instructorDetails._id,
@@ -90,7 +87,6 @@ const createCourse = async (req, res) => {
         new: true,
       },
     );
-    console.log("pushed");
     await Category.findByIdAndUpdate(
       { _id: categoryDetails.id },
       {

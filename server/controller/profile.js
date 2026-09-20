@@ -5,6 +5,7 @@ import mongoose, { mongo } from "mongoose";
 import { Course } from "../models/Course.model.js";
 import { CourseProgress } from "../models/CourseProgress.model.js";
 import convertSecondsToDuration from "../utils/sectoduration.js";
+import imageModeration from "../AI/imageModeration.js";
 const updateProfile = async (req, res) => {
   try {
     const { gender, dateOfBirth, contactNumber, about } = req.body;
@@ -107,6 +108,14 @@ const updateDisplayPicture = async (req, res) => {
   try {
     const displayPicture = req.file?.path;
     const userId = req.user.id;
+    const moderatedImage = await imageModeration(displayPicture) ;
+       if (!moderatedImage.allowed) {
+            return res.status(400).json({
+                success: false,
+                message: "This image cannot be used as a profile picture.",
+                reason: moderatedImage.reason,
+            });
+        }
     const image = await uploadOnCloudinary(displayPicture);
 
     if (!image || !image.secure_url) {

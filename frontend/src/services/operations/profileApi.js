@@ -27,7 +27,8 @@ export function updateDisplayPicture(token, formData) {
       localStorage.setItem("user", JSON.stringify(updatedUser));
     } catch (error) {
       console.log("failed to update profile image", error);
-      toast.error("Failed To Update Image");
+       toast.error(error?.response.data.message);
+       console.log(error?.message);
        console.log("status →", error.response?.status);
       console.log("error data →", error.response?.data);
     }
@@ -116,7 +117,6 @@ export const getPurchaseHistory = async (token) => {
       Authorization : `Bearer ${token}`
     })
     result = response.data?.data;
-    console.log(result);
   } catch (error) {
     console.log(error.response) ; 
     console.log("GET_PURCHASE_HISTORY_API_ERROR",error) ; 

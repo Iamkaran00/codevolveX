@@ -30,7 +30,6 @@ const {
 export const addCourseDetails = async (data, token) => {
   let result = null;
   const toastId = toast.loading("Creating course...");
-  console.log(CREATE_COURSE_API);
   try {
     const response = await apiConnector("POST", CREATE_COURSE_API, data, null
      ,{
@@ -41,9 +40,7 @@ export const addCourseDetails = async (data, token) => {
       throw new Error("Could not add course details");
     }
     toast.success("Course created successfully");
-    console.log(response)
     result = response?.data?.data;
-    console.log(result);
   } catch (error) {
     console.log("CREATE_COURSE_API ERROR", error);
     console.log(error.response) ;
@@ -62,7 +59,6 @@ export const editCourseDetails = async (data, token) => {
     const response = await apiConnector("POST", EDIT_COURSE_API,data, null ,{
       Authorization: `Bearer ${token}`,
     });
-    console.log("EDIT_COURSE_API RESPONSE", response);
     if (!response?.data?.success) {
       throw new Error("Could not update course details");
     }
@@ -83,7 +79,6 @@ export const deleteCourse = async (data, token) => {
     const response = await apiConnector("DELETE", DELETE_COURSE_API, data, {
       Authorization: `Bearer ${token}`,
     });
-    console.log("DELETE_COURSE_API RESPONSE", response);
     if (!response?.data?.success) {
       throw new Error("Could not delete course");
     }
@@ -103,7 +98,6 @@ export const getAllCourses = async () => {
   let result = [];
   try {
     const response = await apiConnector("GET", GET_ALL_COURSE_API);
-    console.log("GET_ALL_COURSE_API RESPONSE", response);
     if (!response?.data?.success) {
       throw new Error("Could not fetch courses");
     }
@@ -124,7 +118,6 @@ export const fetchCourseDetails = async (courseId) => {
     const response = await apiConnector("GET", COURSE_DETAILS_API,null,{
       courseId,
     });
-    console.log("COURSE_DETAILS_API RESPONSE", response);
     if (!response?.data?.success) {
       throw new Error(response?.data?.message);
     }
@@ -150,12 +143,10 @@ export const getFullDetailsOfCourse = async (courseId, token) => {
       null,
       { Authorization: `Bearer ${token}` }
     );
-    console.log("GET_FULL_COURSE_DETAILS_AUTHENTICATED RESPONSE", response);
     if (!response?.data?.success) {
       throw new Error(response?.data?.message);
     }
     result = response?.data?.data;
-    console.log(result);
   } catch (error) {
     console.log("GET_FULL_COURSE_DETAILS_AUTHENTICATED ERROR", error);
     result = error?.response?.data;

@@ -13,7 +13,6 @@ const mailsender = async (email, title, body) => {
       sender: { name: 'codevolveX', email: process.env.MAIL_USER },
       to: [{ email: email }],
     });
-    console.log('Email sent. Message ID:', result.messageId);
     return result;
   } catch (error) {
     console.log('Brevo Error', error.message);

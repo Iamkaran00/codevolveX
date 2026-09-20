@@ -18,7 +18,6 @@ const cartSlice = createSlice({
 
         addToCart : (state,action) => {
 
-            console.log(action);
             const course = action.payload ;
             const idx = state.cart.findIndex(item=>item._id===course._id) ;
             if(idx>=0)  {

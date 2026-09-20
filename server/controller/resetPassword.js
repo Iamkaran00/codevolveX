@@ -6,7 +6,6 @@ import crypto from "crypto";
 const resetPasswordToken = async (req, res) => {
   try {
     const { email } = req.body;
-   console.log("hello from reset password");
     //check user for this email , email validation
     const user = await User.findOne({ email });
     if (!user) {

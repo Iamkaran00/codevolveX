@@ -21,7 +21,6 @@ export function sendOtp(email, navigate) {
       });
       
       if (!response.data.success) {
-        console.log("hey there",response.data.message)
         throw new Error(response.data.message);
       }
       toast.success("OTP sent successfully");
