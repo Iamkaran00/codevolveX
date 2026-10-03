@@ -1,10 +1,28 @@
-import React, { useEffect, useState } from "react";
-import { Star, Terminal, CheckCircle2 } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
+import { Star, Terminal } from "lucide-react";
 import { motion } from "framer-motion";
 import { getAllReviews } from "../../services/operations/courseApi";
 
-function StaticStars({ rating, size = 15, className = "" }) {
-  const fullStars = Math.floor(rating);
+ 
+
+const SECONDS_PER_CARD = 3;  
+const MIN_PER_ROW = 6;  
+
+ 
+
+const nameOf = (r) =>
+  `${r.user?.firstName || ""} ${r.user?.lastName || ""}`.trim() || "Student";
+
+const initialsOf = (r) =>
+  `${r.user?.firstName?.charAt(0) || ""}${r.user?.lastName?.charAt(0) || ""}` ||
+  "?";
+
+const handleOf = (r) =>
+  (r.user?.firstName || "student").toLowerCase().replace(/[^a-z0-9]/g, "") ||
+  "student";
+
+function Stars({ rating = 5, size = 12, className = "" }) {
+  const full = Math.floor(rating);
   return (
     <div className={`flex items-center gap-0.5 ${className}`}>
       {Array.from({ length: 5 }).map((_, i) => (
@@ -12,103 +30,99 @@ function StaticStars({ rating, size = 15, className = "" }) {
           key={i}
           size={size}
           className={
-            i < fullStars
+            i < full
               ? "fill-[#ffb454] text-[#ffb454]"
-              : "fill-transparent text-[#3a3a40]"
+              : "fill-transparent text-[#4a4a52]"
           }
         />
       ))}
     </div>
   );
 }
-
+ 
 function ReviewCard({ r }) {
-  const initials = `${r.user?.firstName?.charAt(0) || ""}${
-    r.user?.lastName?.charAt(0) || ""
-  }`;
-  const slug =
-    (r.course?.courseName || "student-review")
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .slice(0, 18) || "review";
-
   return (
-    <div className="shrink-0 w-[360px] h-[280px] mx-3 [perspective:1400px] group">
-      <div
-        className="relative w-full h-full transition-transform duration-[650ms] [transform-style:preserve-3d]"
-        style={{ transitionTimingFunction: "cubic-bezier(0.23, 1, 0.32, 1)" }}
-        onMouseEnter={(e) =>
-          (e.currentTarget.style.transform = "rotateY(180deg)")
-        }
-        onMouseLeave={(e) => (e.currentTarget.style.transform = "rotateY(0deg)")}
-      >
-        <div className="absolute inset-0 [backface-visibility:hidden] rounded-2xl border border-[#232328] bg-[#141417] p-6 flex flex-col overflow-hidden">
-          <div className="flex items-center gap-2 pb-4 mb-4 border-b border-[#232328]">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]/50" />
-            <span className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]/50" />
-            <span className="w-2.5 h-2.5 rounded-full bg-[#27c93f]/50" />
-            <span className="ml-2 font-['JetBrains_Mono'] text-[11px] text-[#5c5c64] truncate">
-              ~/reviews/{slug}.log
+    <div className="shrink-0 w-[320px] sm:w-[380px] pr-4">
+      <div className="rv-card h-[300px]" tabIndex={0}>
+       <div className="rv-inner relative h-full w-full">
+        {/* front: a little terminal window with the review */}
+        <div className="rv-face absolute inset-0 flex flex-col overflow-hidden rounded-2xl border border-[#26262c] bg-[#111115]">
+          <div className="flex items-center gap-1.5 px-3 py-2 border-b border-[#26262c]">
+            <span className="w-2 h-2 rounded-full bg-[#ff5f56]/70" />
+            <span className="w-2 h-2 rounded-full bg-[#ffbd2e]/70" />
+            <span className="w-2 h-2 rounded-full bg-[#27c93f]/70" />
+            <span className="ml-2 font-['JetBrains_Mono'] text-[10.5px] text-[#5c5c64] truncate">
+              review_{handleOf(r)}.log
             </span>
           </div>
 
-          <StaticStars rating={r.rating || 5} />
-
-          <p className="mt-4 text-[14.5px] leading-relaxed text-[#c9c7c2] font-['IBM_Plex_Sans'] line-clamp-5 flex-1">
-            {r.review}
-          </p>
-
-          <div className="mt-4 pt-4 border-t border-[#232328] flex items-center justify-between">
-            <p className="font-['Space_Grotesk'] font-bold text-sm text-[#ede9e4] truncate">
-              {r.user?.firstName} {r.user?.lastName}
+          <div className="flex-1 min-h-0 px-4 pt-3">
+            <p className="font-['JetBrains_Mono'] text-[11px] text-[#ffb454]">
+              <span className="text-[#5c5c64]">$ </span>cat review.txt
             </p>
-            <span className="font-['JetBrains_Mono'] text-[10px] text-[#ffb454]/80 flex items-center gap-1">
-              <Terminal size={11} /> hover
+            <p className="mt-2 font-['IBM_Plex_Sans'] text-[14px] leading-relaxed text-[#d8d5d0] line-clamp-5">
+              {r.review}
+            </p>
+          </div>
+
+          <div className="flex items-center justify-between px-4 py-3">
+            <span className="font-['JetBrains_Mono'] text-[11px] text-[#27c93f] truncate">
+              {handleOf(r)}@codevolvex
             </span>
+            <Stars rating={r.rating || 5} />
           </div>
         </div>
 
-        <div className="absolute inset-0 [backface-visibility:hidden] [transform:rotateY(180deg)] rounded-2xl overflow-hidden border border-[#ffb454]/30">
+        {/* back: the card flips and their photo fills the box */}
+        <div className="rv-face rv-back absolute inset-0 overflow-hidden rounded-2xl border border-[#ffb454]/40 bg-[#111115]">
           {r.user?.image ? (
             <img
               src={r.user.image}
-              alt={r.user?.firstName}
-              className="absolute inset-0 w-full h-full object-cover"
+              alt={nameOf(r)}
+              className="absolute inset-0 h-full w-full object-cover"
             />
           ) : (
-            <div className="absolute inset-0 bg-[#1a1a1d] flex items-center justify-center">
-              <span className="font-['Space_Grotesk'] font-black text-[110px] text-[#232328]">
-                {initials}
-              </span>
+            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-[#2a2112] to-[#111115] font-['Space_Grotesk'] text-8xl font-black text-[#ffb454]/40">
+              {initialsOf(r)}
             </div>
           )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-black/20" />
 
-          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-black/10" />
-
-          <div className="absolute top-4 right-4 flex items-center gap-1 bg-black/50 backdrop-blur-sm border border-[#ffb454]/30 rounded-full px-2.5 py-1">
-            <CheckCircle2 size={12} className="text-[#ffb454]" />
-            <span className="font-['JetBrains_Mono'] text-[10px] text-[#ffb454]">
-              verified
-            </span>
-          </div>
-
-          <div className="absolute bottom-0 left-0 right-0 p-6">
-            <StaticStars rating={r.rating || 5} size={13} className="mb-2" />
-            <p className="font-['IBM_Plex_Sans'] text-[13px] italic text-[#ede9e4]/90 line-clamp-3 mb-3">
-              "{r.review}"
+          <div className="absolute inset-0 flex flex-col justify-end p-4">
+            <Stars rating={r.rating || 5} size={13} />
+            <p className="mt-2 font-['Space_Grotesk'] text-[18px] font-bold text-white truncate">
+              {nameOf(r)}
             </p>
-            <p className="font-['Space_Grotesk'] font-bold text-sm text-white">
-              {r.user?.firstName} {r.user?.lastName}
-            </p>
-            <p className="font-['JetBrains_Mono'] text-[11px] text-[#ffb454]/80 truncate">
-              {r.course?.courseName || "CodevolveX Student"}
+            <p className="font-['JetBrains_Mono'] text-[11px] text-[#ffb454] truncate">
+              {r.course?.courseName || "CodevolveX student"}
             </p>
           </div>
         </div>
+       </div>
       </div>
     </div>
   );
 }
+
+/* ---------- one sliding row ---------- */
+
+function Row({ items, reverse }) {
+  const duration = items.length * SECONDS_PER_CARD;
+  return (
+    <div className="rv-row overflow-hidden">
+      <div
+        className={`rv-track flex w-max ${reverse ? "rv-right" : "rv-left"}`}
+        style={{ animationDuration: `${duration}s` }}
+      >
+        {[...items, ...items].map((r, i) => (
+          <ReviewCard key={i} r={r} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ---------- section ---------- */
 
 export default function ReviewsMarquee() {
   const [reviews, setReviews] = useState([]);
@@ -121,20 +135,26 @@ export default function ReviewsMarquee() {
     load();
   }, []);
 
-  if (reviews.length === 0) return null;
+  const row = useMemo(() => {
+    if (!reviews.length) return [];
+    let out = reviews;
+    while (out.length < MIN_PER_ROW) out = out.concat(reviews);
+    return out;
+  }, [reviews]);
 
-  const track = [...reviews, ...reviews, ...reviews, ...reviews];
+  if (reviews.length === 0) return null;
 
   return (
     <section className="py-24 bg-white overflow-hidden">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-16 text-center flex flex-col items-center">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-14 text-center flex flex-col items-center">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="inline-flex items-center gap-2 border border-slate-200 bg-slate-50 text-indigo-600 font-['JetBrains_Mono'] text-xs px-4 py-2 rounded-full mb-6"
+          transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
+          className="inline-flex items-center gap-2 border border-slate-200 bg-slate-50 text-slate-600 font-['JetBrains_Mono'] text-xs px-4 py-2 rounded-full mb-6"
         >
-          <Terminal size={13} />
+          <Terminal size={13} className="text-[#e89a2c]" />
           $ cat reviews.log
         </motion.div>
 
@@ -142,7 +162,7 @@ export default function ReviewsMarquee() {
           initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ delay: 0.1 }}
+          transition={{ duration: 0.5, delay: 0.1, ease: [0.23, 1, 0.32, 1] }}
           className="font-['Space_Grotesk'] text-4xl md:text-5xl font-black text-slate-900 tracking-tight"
         >
           Don't just take our word for it.
@@ -152,36 +172,58 @@ export default function ReviewsMarquee() {
           initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ delay: 0.2 }}
+          transition={{ duration: 0.5, delay: 0.2, ease: [0.23, 1, 0.32, 1] }}
           className="mt-4 text-lg text-slate-500 font-['IBM_Plex_Sans'] max-w-2xl"
         >
-          Join thousands of developers who have accelerated their careers through our structured learning paths.
+          Real reviews from learners on CodevolveX. Hover a card to see who
+          wrote it.
         </motion.p>
       </div>
 
+      {/* outer dark box: side margins let the white page show on left and right */}
       <div className="mx-4 sm:mx-8 lg:mx-16">
-        <div className="relative flex flex-col gap-6 bg-[#101014] rounded-[2.5rem] py-10 overflow-hidden">
-          <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-[#101014] to-transparent z-20 pointer-events-none" />
-          <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-[#101014] to-transparent z-20 pointer-events-none" />
+        <div className="relative rounded-[2rem] bg-[#0c0c0f] py-8 sm:py-10 overflow-hidden">
+          {/* soft amber glow in the corners */}
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(ellipse at 0% 0%, rgba(255,180,84,0.10), transparent 45%), radial-gradient(ellipse at 100% 100%, rgba(255,180,84,0.10), transparent 45%)",
+            }}
+          />
 
-          <div className="flex animate-marquee-fast hover:[animation-play-state:paused] py-2">
-            {track.map((r, i) => (
-              <ReviewCard key={`row1-${r._id}-${i}`} r={r} />
-            ))}
-          </div>
+          <Row items={row} />
+
+          {/* dark, faded corners: cards dim and blur out as they slide in and out */}
+          <div className="pointer-events-none absolute inset-y-0 left-0 w-24 sm:w-48 bg-gradient-to-r from-[#0c0c0f] via-[#0c0c0f]/80 to-transparent backdrop-blur-[2px] [mask-image:linear-gradient(to_right,#000_40%,transparent)]" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-24 sm:w-48 bg-gradient-to-l from-[#0c0c0f] via-[#0c0c0f]/80 to-transparent backdrop-blur-[2px] [mask-image:linear-gradient(to_left,#000_40%,transparent)]" />
         </div>
       </div>
 
       <style>{`
-        @keyframes marquee {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
+        .rv-track { animation-timing-function: linear; animation-iteration-count: infinite; }
+        .rv-left  { animation-name: rv-left; }
+        .rv-right { animation-name: rv-right; }
+        @keyframes rv-left  { from { transform: translateX(0); }    to { transform: translateX(-50%); } }
+        @keyframes rv-right { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+        .rv-row { overflow: hidden; scrollbar-width: none; }
+        .rv-row::-webkit-scrollbar { display: none; }
+        .rv-card { perspective: 1000px; }
+        .rv-card:focus { outline: none; }
+        .rv-inner {
+          transform-style: preserve-3d;
+          transition: transform 0.7s cubic-bezier(0.23, 1, 0.32, 1);
         }
-        .animate-marquee-fast {
-          animation: marquee 50s linear infinite;
-          width: max-content;
-          will-change: transform;
+        .rv-face {
+          backface-visibility: hidden;
+          -webkit-backface-visibility: hidden;
         }
+        .rv-back { transform: rotateY(180deg); }
+        @media (hover: hover) {
+          .rv-card:hover .rv-inner { transform: rotateY(180deg); }
+        }
+        .rv-card:focus-within .rv-inner { transform: rotateY(180deg); }
+        .rv-row:hover .rv-track { animation-play-state: paused; }
       `}</style>
     </section>
   );
