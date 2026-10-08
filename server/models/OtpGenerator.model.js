@@ -1,6 +1,5 @@
 import { Schema, mongoose } from "mongoose";
-import otpTemplate from "../mail/templates/emailVerificationTemplate.js";
-import mailSender from "../utils/mailsender.js";
+
 const otpSchema = new Schema({
   email: {
     type: String,
@@ -17,23 +16,23 @@ const otpSchema = new Schema({
   },
 });
  
-async function sendVerificationEmail(email, otp) {
-  try {
-    const mailResponse = await mailSender(
-      email,
-      "Verification Email from codevolveX",
-      otpTemplate(otp)
-    )
-  } catch (error) {
-    console.log("error occurred while sending mails")
-    console.error(error)
-  }
-}
-otpSchema.pre("save", async function (next) {
+// async function sendVerificationEmail(email, otp) {
+//   try {
+//     const mailResponse = await mailSender(
+//       email,
+//       "Verification Email from codevolveX",
+//       otpTemplate(otp)
+//     )
+//   } catch (error) {
+//     console.log("error occurred while sending mails")
+//     console.error(error)
+//   }
+// }
+// otpSchema.pre("save", async function (next) {
 
-  if (this.isNew) {
-    await sendVerificationEmail(this.email, this.otp);
-  }
-  next();
-});
+//   if (this.isNew) {
+//     await sendVerificationEmail(this.email, this.otp);
+//   }
+//   next();
+// });
 export const otpgenerator = mongoose.model("otp", otpSchema);

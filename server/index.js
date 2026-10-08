@@ -9,6 +9,7 @@ import cookieParser from "cookie-parser";
 import  dbconnection from "./config/database.js";
 import cors from "cors";
 import redisClient from "./config/redis.js";
+import './workers/emailWorker.js'
 dotenv.config({
   path: "./.env",
 });

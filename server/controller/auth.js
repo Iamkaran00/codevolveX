@@ -6,7 +6,9 @@ import otpGenerator from "otp-generator";
 import jwt from "jsonwebtoken";
 import mailSender from "../utils/mailsender.js";
 import mongoose from "mongoose";
-
+import otpTemplate from "../mail/templates/emailVerificationTemplate.js";
+import { OTP_OPTIONS } from "../queues/emailQueue.js";
+import { queueEmail } from "../queues/emailQueue.js";
 const sendOTP = async (req, res) => {
   try {
     const { email } = req.body;
@@ -39,9 +41,21 @@ const sendOTP = async (req, res) => {
 
     await otpgenerator.create({ email, otp });
 
+  
+
+      await queueEmail(
+  "otp",
+  {
+    to: email,
+    subject: "Verification Email from codevolveX",
+    html: otpTemplate(otp),
+  },
+  OTP_OPTIONS
+    );
+
     return res.status(200).json({
       success: true,
-      message: "OTP Sent Successfully",
+      message: "Something is waiting for you in email head there",
     });
   } catch (error) {
     console.error(error);

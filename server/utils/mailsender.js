@@ -1,7 +1,8 @@
 import { BrevoClient } from '@getbrevo/brevo';
+import 'dotenv/config'
 
 const brevo = new BrevoClient({
-    
+
   apiKey: process.env.BREVO_API_KEY,
 });
 
@@ -15,8 +16,10 @@ const mailsender = async (email, title, body) => {
     });
     return result;
   } catch (error) {
+    console.log('hi');
+    
     console.log('Brevo Error', error.message);
-    return null;
+   throw error;
   }
 }
 export default mailsender;

@@ -1,7 +1,6 @@
-import { Queue, tryCatch } from "bullmq";
-import bullConnection from "../config/bullmqRedis";
-import mailsender from "../utils/mailsender";
-
+import { Queue } from "bullmq";
+import bullConnection from "../config/bullmqRedis.js";
+ 
 // lower number = high priority 
 
 export const PRIORITY = {
@@ -21,7 +20,7 @@ export const OTP_OPTIONS = {
 
 
 export const emailQueue = new Queue('email' , {
-    connection , 
+    connection :bullConnection , 
     defaultJobOptions : {
         attempts : 5 , 
         backoff : {type : 'exponential' , delay : 2000} , // 2s , 4s , 8s
@@ -36,6 +35,6 @@ export async function  queueEmail(type , data , opts = {}) {
         await emailQueue.add(type , data , opts) ;
 
     }catch(err) {
-console.error(data.tp , data.subject , data.html) ; 
+console.error(data.to , data.subject , data.html) ; 
     }
 }
