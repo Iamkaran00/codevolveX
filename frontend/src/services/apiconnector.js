@@ -1,7 +1,7 @@
 import axios from "axios";
 export const axiosInstance = axios.create({
-  // baseURL : "https://codevolvex.onrender.com/api/v1/",
-   baseURL : 'https://localhost:5502/api/v1/'
+  baseURL : "https://codevolvex.onrender.com/api/v1/",
+  //  baseURL : 'https://localhost:5502/api/v1/'
 });
 
 export const apiConnector = (method, url, bodyData, params, headers) => {
