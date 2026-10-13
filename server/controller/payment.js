@@ -87,8 +87,6 @@ const verifySignature=async(req,res)=>{
   let body=razorpay_order_id + "|" + razorpay_payment_id;
   const expectedSignature=crypto.createHmac("sha256",process.env.RAZORPAY_SECRET).update(body.toString()).digest("hex");
   if(expectedSignature===razorpay_signature){
-   
-
     await enrollStudents(courses,userId,res);
     
     const courseDocs = await Course.find({_id : {$in : Object.values(courses)}}) ;
@@ -138,7 +136,6 @@ const enrollStudents = async (courses, userId, res) => {
         userId: userId,
         completedVideo: [],
       });
-
       const enrolledStudent = await User.findByIdAndUpdate(
         userId,
         {

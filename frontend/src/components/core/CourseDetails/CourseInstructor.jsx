@@ -1,76 +1,108 @@
 import React from "react";
-import { motion } from "framer-motion";
 import { BadgeCheck, BookOpen, Users, Award } from "lucide-react";
+
+const display = "font-['Space_Grotesk',ui-sans-serif,system-ui,sans-serif]";
+const mono = "font-['JetBrains_Mono',ui-monospace,monospace]";
 
 export default function CourseInstructor({ course }) {
   const instructor = course.instructor;
   if (!instructor) return null;
 
-  const instructorName = `${instructor.firstName ?? ""} ${instructor.lastName ?? ""}`.trim() || "Expert Instructor";
+  const instructorName =
+    `${instructor.firstName ?? ""} ${instructor.lastName ?? ""}`.trim() ||
+    "Expert Instructor";
   const bio = instructor.additionalDetails?.about ?? "";
   const image = instructor.image ?? null;
   const totalCourses = instructor.courses?.length ?? 0;
+  const totalStudents = course.studentsEnrolled?.length ?? 0;
   const initial = instructorName.charAt(0).toUpperCase();
 
+  const stats = [
+    totalCourses > 0 && { Icon: BookOpen, value: totalCourses, label: "Courses" },
+    totalStudents > 0 && { Icon: Users, value: totalStudents, label: "Learners" },
+  ].filter(Boolean);
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      className="bg-white rounded-3xl border border-indigo-50 shadow-[0_4px_24px_-8px_rgba(79,70,229,0.08)] p-8"
-    >
-      <div className="flex items-center justify-between mb-8">
-        <h2 className="text-lg font-semibold text-indigo-950">About the Instructor</h2>
-        <div className="flex items-center gap-1.5 px-3 py-1 bg-violet-50 text-violet-700 rounded-full">
-          <Award size={14} />
-          <span className="text-[11px] font-bold uppercase tracking-wider">Expert</span>
+    <section className="group relative overflow-hidden rounded-3xl border border-white/[0.08] bg-[#14130f] p-7 transition-colors duration-500 hover:border-[#ffb454]/30 sm:p-9">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-[#ffb454]/[0.06] blur-3xl"
+      />
+
+      <div className="relative flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <span className="h-px w-8 bg-[#ffb454]" />
+          <h2 className={`text-[11px] uppercase tracking-[0.25em] text-zinc-500 ${mono}`}>
+            About the instructor
+          </h2>
         </div>
+        <span
+          className={`flex items-center gap-1.5 rounded-full border border-[#ffb454]/40 px-3 py-1 text-[10px] uppercase tracking-[0.2em] text-[#ffb454] ${mono}`}
+        >
+          <Award size={12} /> Expert
+        </span>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-6">
-        {/* Avatar Section */}
+      <div className="relative mt-9 flex flex-col gap-7 sm:flex-row sm:items-center">
+        {/* avatar */}
         <div className="relative shrink-0">
-          <div className="w-24 h-24 rounded-2xl overflow-hidden bg-gradient-to-tr from-indigo-100 to-violet-100 flex items-center justify-center border-4 border-white shadow-lg">
+          <div className="flex h-28 w-28 items-center justify-center overflow-hidden rounded-3xl bg-[#2a2112] ring-1 ring-[#ffb454]/40">
             {image ? (
-              <img src={image} alt={instructorName} className="w-full h-full object-cover" />
+              <img
+                src={image}
+                alt={instructorName}
+                className="h-full w-full object-cover saturate-[0.85] transition-all duration-[1200ms] ease-out group-hover:scale-105 group-hover:saturate-100"
+              />
             ) : (
-              <span className="text-3xl font-semibold text-indigo-600">{initial}</span>
+              <span className={`text-4xl font-semibold text-[#ffb454] ${display}`}>
+                {initial}
+              </span>
             )}
           </div>
-          <div className="absolute -bottom-1 -right-1 w-7 h-7 bg-white rounded-full flex items-center justify-center">
-            <BadgeCheck size={20} className="text-indigo-600" />
-          </div>
+          <span className="absolute -bottom-2 -right-2 flex h-8 w-8 items-center justify-center rounded-full border border-[#ffb454]/50 bg-[#14130f]">
+            <BadgeCheck size={18} className="text-[#ffb454]" />
+          </span>
         </div>
 
-        {/* Details Section */}
-        <div className="flex-1">
-          <h3 className="text-2xl font-semibold text-indigo-950">{instructorName}</h3>
-          <p className="text-sm font-medium text-indigo-500 mb-4">Verified Professional Instructor</p>
+        {/* details */}
+        <div className="min-w-0 flex-1">
+          <h3
+            className={`text-3xl font-semibold tracking-tight text-[#f3ece0] ${display}`}
+          >
+            {instructorName}
+            <span className="text-[#ffb454]">.</span>
+          </h3>
+          <p className={`mt-2 text-[11px] uppercase tracking-[0.2em] text-zinc-500 ${mono}`}>
+            Verified professional instructor
+          </p>
 
-          <div className="flex items-center gap-6">
-            {totalCourses > 0 && (
-              <div className="flex items-center gap-2">
-                <BookOpen size={16} className="text-indigo-300" />
-                <span className="text-sm font-semibold text-slate-700">{totalCourses} <span className="text-slate-400 font-normal">Courses</span></span>
-              </div>
-            )}
-            {course.studentsEnrolled?.length > 0 && (
-              <div className="flex items-center gap-2">
-                <Users size={16} className="text-indigo-300" />
-                <span className="text-sm font-semibold text-slate-700">{course.studentsEnrolled.length.toLocaleString()} <span className="text-slate-400 font-normal">Students</span></span>
-              </div>
-            )}
-          </div>
+          {stats.length > 0 && (
+            <div className="mt-6 flex flex-wrap gap-x-10 gap-y-4">
+              {stats.map(({ Icon, value, label }) => (
+                <div key={label} className="flex items-center gap-3">
+                  <Icon size={16} className="text-zinc-600" />
+                  <p className="text-sm text-zinc-500">
+                    <span
+                      className={`mr-1.5 text-xl font-semibold tabular-nums text-[#f3ece0] ${display}`}
+                    >
+                      {value.toLocaleString("en-IN")}
+                    </span>
+                    {label}
+                  </p>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
       {bio && (
-        <div className="mt-8 pt-8 border-t border-slate-100">
-          <p className="text-[15px] leading-relaxed text-slate-600">
+        <div className="relative mt-9 border-t border-white/[0.07] pt-8">
+          <p className="border-l-2 border-[#ffb454]/60 pl-5 text-[15px] leading-relaxed text-zinc-400">
             {bio}
           </p>
         </div>
       )}
-    </motion.div>
+    </section>
   );
 }

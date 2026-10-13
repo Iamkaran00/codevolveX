@@ -1,6 +1,14 @@
 import React, { useEffect, useState } from "react"
 import { useSelector } from "react-redux"
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion"
 import { HiOutlinePlusCircle, HiOutlineTrash } from "react-icons/hi2"
+
+/* ---------- design tokens (shared with the rest of the site) ---------- */
+const EASE = [0.23, 1, 0.32, 1]
+const display = "font-['Space_Grotesk',ui-sans-serif,system-ui,sans-serif]"
+
+const focusRing =
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb454]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#100f0d]"
 
 export default function RequirementsField({
   name,
@@ -13,6 +21,7 @@ export default function RequirementsField({
   const { editCourse, course } = useSelector((state) => state.course)
   const [requirement, setRequirement] = useState("")
   const [requirementsList, setRequirementsList] = useState([])
+  const reduce = useReducedMotion()
 
   useEffect(() => {
     if (editCourse && course?.instructions) {
@@ -42,67 +51,74 @@ export default function RequirementsField({
 
   return (
     <div className="flex flex-col gap-2">
-      {/* Dynamic Field Label */}
-      <label className="text-xs font-bold uppercase tracking-wider text-slate-500" htmlFor={name}>
-        {label} <sup className="text-red-500">*</sup>
+      <label htmlFor={name} className={`text-sm font-medium text-[#f3ece0] ${display}`}>
+        {label}{" "}
+        <span aria-hidden className="text-[#ffb454]">
+          *
+        </span>
       </label>
-      
-      {/* INPUT CONTROLS SECTION */}
-      <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">
+
+      <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
         <input
           type="text"
           id={name}
           value={requirement}
-          placeholder="e.g., Working knowledge of JavaScript syntax basic protocols"
+          placeholder="e.g. Basic JavaScript knowledge"
+          aria-invalid={!!errors[name]}
           onChange={(e) => setRequirement(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
-              e.preventDefault();
-              handleAddRequirement();
+              e.preventDefault()
+              handleAddRequirement()
             }
           }}
-          className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-800 placeholder:text-slate-300 outline-none transition-all focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50/60"
+          className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-[#f3ece0] outline-none transition-colors duration-300 placeholder:text-zinc-600 focus:border-[#ffb454]/60 aria-[invalid=true]:border-red-400/60"
         />
-        
+
         <button
           type="button"
           onClick={handleAddRequirement}
-          className="inline-flex h-[46px] items-center justify-center gap-1.5 rounded-xl border border-indigo-200 bg-indigo-50/40 px-5 text-xs font-bold text-indigo-600 transition-all hover:bg-indigo-600 hover:text-white shrink-0 active:scale-[0.97]"
+          className={`inline-flex h-[46px] shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-full border border-[#ffb454]/40 px-5 text-sm text-[#ffb454] transition-colors duration-300 hover:bg-[#ffb454] hover:text-[#1d1a16] active:scale-[0.98] ${focusRing}`}
         >
           <HiOutlinePlusCircle className="text-base" />
-          <span>Add</span>
+          Add
         </button>
       </div>
 
-      {/* REQUIREMENTS RENDERED LIST DATA TILES */}
       {requirementsList.length > 0 && (
-        <div className="mt-3 overflow-hidden rounded-xl border border-slate-100 bg-slate-50/30 p-2 flex flex-col gap-y-1.5">
-          {requirementsList.map((reqItem, index) => (
-            <div 
-              key={index} 
-              className="flex items-center justify-between gap-x-4 rounded-lg border border-slate-200/60 bg-white px-4 py-2.5 shadow-sm transition-all animate-scaleUp"
-            >
-              <span className="text-xs font-semibold text-slate-700 leading-relaxed break-all">
-                {reqItem}
-              </span>
-              
-              <button
-                type="button"
-                onClick={() => handleRemoveRequirement(index)}
-                className="inline-flex items-center justify-center p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors shrink-0"
-                title="Remove Requirement"
+        <ul className="mt-2 flex flex-col gap-2">
+          <AnimatePresence initial={false}>
+            {requirementsList.map((reqItem, index) => (
+              <motion.li
+                key={`${reqItem}-${index}`}
+                layout={!reduce}
+                initial={reduce ? false : { opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={reduce ? undefined : { opacity: 0, scale: 0.97 }}
+                transition={{ duration: 0.4, ease: EASE }}
+                className="flex items-center justify-between gap-4 rounded-xl border border-white/[0.07] bg-white/[0.02] px-4 py-2.5"
               >
-                <HiOutlineTrash className="text-sm" />
-              </button>
-            </div>
-          ))}
-        </div>
+                <span className="break-all text-sm leading-relaxed text-zinc-300">{reqItem}</span>
+
+                <button
+                  type="button"
+                  onClick={() => handleRemoveRequirement(index)}
+                  aria-label={`Remove requirement: ${reqItem}`}
+                  title="Remove"
+                  className={`inline-flex shrink-0 cursor-pointer items-center justify-center rounded-full p-2 text-zinc-500 transition-colors duration-300 hover:text-red-400 ${focusRing}`}
+                >
+                  <HiOutlineTrash className="text-base" />
+                </button>
+              </motion.li>
+            ))}
+          </AnimatePresence>
+        </ul>
       )}
 
       {errors[name] && (
-        <span className="text-xs font-semibold text-red-500 mt-0.5">
-          Please initialize at least one item row within {label.toLowerCase()} settings.
-        </span>
+        <p role="alert" className="text-xs text-red-400">
+          Add at least one {label.toLowerCase()} item.
+        </p>
       )}
     </div>
   )

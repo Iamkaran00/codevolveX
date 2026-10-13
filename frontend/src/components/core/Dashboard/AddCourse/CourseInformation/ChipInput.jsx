@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from "react"
 import { MdClose } from "react-icons/md"
 import { useSelector } from "react-redux"
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion"
+
+/* ---------- design tokens (shared with the rest of the site) ---------- */
+const EASE = [0.23, 1, 0.32, 1]
+const display = "font-['Space_Grotesk',ui-sans-serif,system-ui,sans-serif]"
 
 export default function ChipInput({
   label,
@@ -13,6 +18,7 @@ export default function ChipInput({
 }) {
   const { editCourse, course } = useSelector((state) => state.course)
   const [chips, setChips] = useState([])
+  const reduce = useReducedMotion()
 
   useEffect(() => {
     if (editCourse && course?.tag) {
@@ -31,7 +37,7 @@ export default function ChipInput({
     if (event.key === "Enter" || event.key === ",") {
       event.preventDefault()
       const chipValue = event.target.value.trim()
-      
+
       if (chipValue && !chips.includes(chipValue)) {
         const newChips = [...chips, chipValue]
         setChips(newChips)
@@ -47,51 +53,57 @@ export default function ChipInput({
 
   return (
     <div className="flex flex-col gap-2">
-      {/* Structural Field Label */}
-      <label className="text-xs font-bold uppercase tracking-wider text-slate-500" htmlFor={name}>
-        {label} <sup className="text-red-500">*</sup>
+      <label htmlFor={name} className={`text-sm font-medium text-[#f3ece0] ${display}`}>
+        {label}{" "}
+        <span aria-hidden className="text-[#ffb454]">
+          *
+        </span>
       </label>
-      
-      <div className="flex w-full flex-col gap-2">
-        {/* CHIPS DISPLAY BAR PANEL
-          Renders out active chips using elegant white-and-indigo structural modules
-        */}
+
+      <div className="flex w-full flex-col gap-3">
         {chips.length > 0 && (
-          <div className="flex w-full flex-wrap gap-1.5 p-1 rounded-xl bg-slate-50/50 border border-slate-100 min-h-[46px] items-center">
-            {chips.map((chip, index) => (
-              <div
-                key={index}
-                className="inline-flex items-center gap-1 rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-bold text-indigo-700 border border-indigo-100 m-0.5 shadow-sm transition-all animate-scaleUp"
-              >
-                <span>{chip}</span>
-                <button
-                  type="button"
-                  onClick={() => handleDeleteChip(index)}
-                  className="p-0.5 rounded-full text-indigo-400 hover:text-indigo-700 hover:bg-indigo-100/60 transition-colors outline-none"
+          <ul className="flex w-full flex-wrap gap-2">
+            <AnimatePresence initial={false}>
+              {chips.map((chip, index) => (
+                <motion.li
+                  key={chip}
+                  layout={!reduce}
+                  initial={reduce ? false : { opacity: 0, scale: 0.85 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={reduce ? undefined : { opacity: 0, scale: 0.85 }}
+                  transition={{ duration: 0.35, ease: EASE }}
+                  className="inline-flex items-center gap-1 rounded-full border border-[#ffb454]/40 bg-[#ffb454]/10 py-1 pl-3 pr-1.5 text-xs text-[#ffb454]"
                 >
-                  <MdClose className="text-xs" />
-                </button>
-              </div>
-            ))}
-          </div>
+                  <span>{chip}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteChip(index)}
+                    aria-label={`Remove tag ${chip}`}
+                    className="cursor-pointer rounded-full p-1 text-[#ffb454]/70 transition-colors duration-300 hover:bg-[#ffb454]/20 hover:text-[#ffb454] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb454]/70"
+                  >
+                    <MdClose className="text-xs" />
+                  </button>
+                </motion.li>
+              ))}
+            </AnimatePresence>
+          </ul>
         )}
 
-        {/* Dynamic Key Input Element */}
         <input
           id={name}
           name={name}
           type="text"
           placeholder={placeholder}
+          aria-invalid={!!errors[name]}
           onKeyDown={handleKeyDown}
-          className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-800 placeholder:text-slate-300 outline-none transition-all focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50/60"
+          className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-[#f3ece0] outline-none transition-colors duration-300 placeholder:text-zinc-600 focus:border-[#ffb454]/60 aria-[invalid=true]:border-red-400/60"
         />
       </div>
 
-      {/* Validation Errors Overlay */}
       {errors[name] && (
-        <span className="text-xs font-semibold text-red-500 mt-0.5">
-          At least one {label.toLowerCase()} attribute tag is required.
-        </span>
+        <p role="alert" className="text-xs text-red-400">
+          Add at least one {label.toLowerCase()} tag.
+        </p>
       )}
     </div>
   )

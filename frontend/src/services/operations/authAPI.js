@@ -10,6 +10,7 @@ const {
   LOGIN_API,
   RESETPASSTOKEN_API,
   RESETPASSWORD_API,
+  GOOGLE_AUTH_API
 } = endpoints;
 export function sendOtp(email, navigate) {
   return async (dispatch) => {
@@ -103,6 +104,35 @@ export function login(email, password, navigate) {
     toast.dismiss(toastId);
   };
 }
+export function googleLogin(credential , accountType , navigate) {
+  return async(dispatch) => {
+    const toastId = toast.loading('Signing in with google...') ; 
+    dispatch(setLoading(true)) ; 
+    try {
+      const response = await apiConnector('POST' , GOOGLE_AUTH_API , {credential , accountType}) ; 
+      if(!response.data.success) {
+        throw new Error(response.data.message) ; 
+      }
+ console.log(response , 'hi from authapi') ; 
+
+      toast.success('Logged In Successfully') ; 
+      dispatch(setToken(response.data.token)) ; 
+      dispatch(setUser(response.data.user)) ; 
+      localStorage.setItem('token' , JSON.stringify(response.data.token)) ; 
+      localStorage.setItem('user' , JSON.stringify(response.data.user)) ; 
+      navigate('/') ;
+    } catch (error) {
+      console.log(error.message) ; 
+      console.log('error on frontend') ; 
+      toast.error(error?.response?.data?.message || 'Google sign-in failed') ; 
+    } finally {
+      dispatch(setLoading(false)) ; 
+      toast.dismiss(toastId) ; 
+    }
+  }
+}
+
+
 export function logout(navigate) {
   return (dispatch) => {
     dispatch(setToken(null));

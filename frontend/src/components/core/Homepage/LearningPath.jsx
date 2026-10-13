@@ -1,5 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import {
   SiReact,
   SiNodedotjs,
@@ -8,126 +9,170 @@ import {
 } from "react-icons/si";
 import { HiArrowRight } from "react-icons/hi2";
 
+const EASE = [0.23, 1, 0.32, 1];
+
+const display = "font-['Space_Grotesk',ui-sans-serif,system-ui,sans-serif]";
+const mono = "font-['JetBrains_Mono',ui-monospace,monospace]";
+
+const GRAIN = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")`;
+
 const PATHS = [
   {
     Icon: SiReact,
-    color: "#0ea5e9", // Tailwind Sky 500
-    bg: "bg-sky-50",
-    ring: "group-hover:ring-sky-200",
+    color: "#61DAFB",
     title: "Frontend Developer",
     count: "12 courses · 6 months",
+    stops: ["HTML & CSS", "JavaScript", "React", "Ship it"],
   },
   {
     Icon: SiNodedotjs,
-    color: "#10b981", // Tailwind Emerald 500
-    bg: "bg-emerald-50",
-    ring: "group-hover:ring-emerald-200",
+    color: "#6CC24A",
     title: "Backend Engineer",
     count: "10 courses · 5 months",
+    stops: ["Node & Express", "Databases", "Auth & APIs", "Deploy"],
   },
   {
     Icon: SiTensorflow,
-    color: "#f97316", // Tailwind Orange 500
-    bg: "bg-orange-50",
-    ring: "group-hover:ring-orange-200",
+    color: "#FF6F00",
     title: "ML & AI Engineer",
     count: "14 courses · 8 months",
+    stops: ["Python & maths", "Data handling", "Training models", "Ship a model"],
   },
   {
     Icon: SiKubernetes,
-    color: "#6366f1", // Tailwind Indigo 500
-    bg: "bg-indigo-50",
-    ring: "group-hover:ring-indigo-200",
+    color: "#5B8DEF",
     title: "Cloud & DevOps",
     count: "9 courses · 4 months",
+    stops: ["Linux & Git", "Docker", "Kubernetes", "CI/CD"],
   },
 ];
 
-// Framer Motion Variants
-const containerVariants = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.15 },
-  },
-};
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 30 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: { type: "spring", stiffness: 80, damping: 15 },
-  },
+const containerV = { hidden: {}, show: { transition: { staggerChildren: 0.12 } } };
+const cardV = {
+  hidden: { opacity: 0, y: 26 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.95, ease: EASE } },
 };
 
 export default function LearningPaths() {
-  return (
-    <section className="py-24 bg-white sm:py-32 font-['Inter',sans-serif]">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        
-        {/* ── Header ───────────────────────────────── */}
-        <div className="mb-16 md:text-center md:mx-auto md:max-w-2xl">
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-          >
-            <h2 className="text-sm font-bold tracking-widest text-indigo-600 uppercase">
-              Learning Paths
-            </h2>
-            <p className="mt-3 text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl font-['Plus_Jakarta_Sans',sans-serif]">
-              Unlock your coding potential.
-            </p>
-            <p className="mt-4 text-lg text-gray-500">
-              Structured roadmaps by industry experts — pick your path and go
-              from first line to first job.
-            </p>
-          </motion.div>
-        </div>
+  const navigate = useNavigate();
 
-        {/* ── Grid ─────────────────────────────────── */}
+  return (
+    <section className="relative overflow-hidden bg-[#100f0d] px-5 py-24 sm:px-8 sm:py-32">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-[0.06] mix-blend-overlay"
+        style={{ backgroundImage: GRAIN }}
+      />
+
+      <div className="relative mx-auto max-w-7xl">
+        {/* header */}
         <motion.div
-          variants={containerVariants}
+          initial={{ opacity: 0, y: 18 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.95, ease: EASE }}
+          className="mb-16 flex flex-col justify-between gap-8 lg:flex-row lg:items-end"
+        >
+          <div>
+            <div className="flex items-center gap-3">
+              <span className="h-px w-8 bg-[#ffb454]" />
+              <p className={`text-[11px] uppercase tracking-[0.25em] text-zinc-500 ${mono}`}>
+                Learning paths
+              </p>
+            </div>
+            <h2
+              className={`mt-6 text-4xl font-semibold leading-[1.04] tracking-tight text-[#f3ece0] sm:text-6xl ${display}`}
+            >
+              From first line
+              <br />
+              to first job<span className="text-[#ffb454]">.</span>
+            </h2>
+          </div>
+          <p className="max-w-md text-lg leading-relaxed text-zinc-400">
+            Structured roadmaps by industry experts. Pick a path, follow the
+            route, and ship something real at every stop.
+          </p>
+        </motion.div>
+
+        {/* cards */}
+        <motion.div
+          variants={containerV}
           initial="hidden"
           whileInView="show"
           viewport={{ once: true, margin: "-50px" }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
+          className="grid auto-rows-fr grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4"
         >
-          {PATHS.map(({ Icon, color, bg, ring, title, count }, i) => (
-            <motion.div
-              key={i}
-              variants={cardVariants}
-              whileHover={{ y: -8 }}
-              className="group relative flex flex-col bg-white rounded-3xl border border-gray-100 p-8 shadow-sm hover:shadow-[0_8px_30px_rgb(0,0,0,0.06)] transition-all duration-300 cursor-pointer overflow-hidden"
+          {PATHS.map(({ Icon, color, title, count, stops }, i) => (
+            <motion.article
+              key={title}
+              variants={cardV}
+              role="link"
+              tabIndex={0}
+              onClick={() => navigate("/catalogue")}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  navigate("/catalogue");
+                }
+              }}
+              style={{ "--brand": color }}
+              className="group flex h-full cursor-pointer flex-col rounded-3xl border border-white/[0.08] bg-[#14130f] p-7 outline-none transition-all duration-500 hover:-translate-y-1 hover:border-[#ffb454]/40 focus-visible:border-[#ffb454]"
             >
-              {/* Top Right Arrow Indicator */}
-              <div className="absolute top-6 right-6 opacity-0 -translate-x-2 -translate-y-2 group-hover:opacity-100 group-hover:translate-x-0 group-hover:translate-y-0 transition-all duration-300 ease-out text-gray-400 group-hover:text-indigo-600">
-                <HiArrowRight size={20} />
+              {/* icon + index */}
+              <div className="flex items-start justify-between">
+                <span className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.03] transition-colors duration-500 group-hover:border-white/20">
+                  <Icon
+                    size={26}
+                    className="text-zinc-500 transition-all duration-700 group-hover:scale-110 group-hover:text-[var(--brand)]"
+                  />
+                </span>
+                <span
+                  className={`text-5xl font-semibold leading-none text-transparent ${display}`}
+                  style={{ WebkitTextStroke: "1px rgba(243,236,220,0.35)" }}
+                >
+                  {String(i + 1).padStart(2, "0")}
+                </span>
               </div>
 
-              {/* Icon Container */}
-              <div
-                className={`mb-6 flex h-14 w-14 items-center justify-center rounded-2xl ${bg} ring-1 ring-black/5 transition-all duration-300 group-hover:ring-4 ${ring}`}
+              {/* title */}
+              <h3
+                className={`mt-7 text-xl font-semibold tracking-tight text-[#f3ece0] ${display}`}
               >
-                <Icon size={28} color={color} className="transition-transform duration-300 group-hover:scale-110" />
-              </div>
-
-              {/* Text Content */}
-              <h3 className="mb-2 text-lg font-bold text-gray-900 font-['Plus_Jakarta_Sans',sans-serif] group-hover:text-indigo-600 transition-colors">
                 {title}
               </h3>
-              
-              <p className="text-sm font-medium text-gray-500 mt-auto">
-                {count}
-              </p>
-              
-              {/* Bottom Subtle Gradient Line (Optional purely decorative touch) */}
-              <div className="absolute bottom-0 left-0 h-1 w-0 bg-indigo-500 transition-all duration-300 group-hover:w-full opacity-0 group-hover:opacity-100" />
-            </motion.div>
+              <p className={`mt-1.5 text-xs text-zinc-500 ${mono}`}>{count}</p>
+
+              {/* route */}
+              <div className="relative mt-8">
+                <span className="absolute bottom-2 left-[5px] top-2 w-px bg-white/10" />
+                <span className="absolute left-[5px] top-2 h-0 w-px bg-[#ffb454] transition-all duration-[1400ms] ease-out group-hover:h-[calc(100%-1rem)]" />
+
+                <ul className="flex flex-col gap-4">
+                  {stops.map((stop, s) => (
+                    <li key={stop} className="relative flex items-center gap-4">
+                      <span
+                        style={{ transitionDelay: `${s * 280}ms` }}
+                        className="relative z-10 h-[11px] w-[11px] shrink-0 rounded-full border border-white/25 bg-[#14130f] transition-all duration-700 group-hover:border-[#ffb454] group-hover:bg-[#ffb454]"
+                      />
+                      <span
+                        style={{ transitionDelay: `${s * 280}ms` }}
+                        className="text-[14px] text-zinc-500 transition-colors duration-700 group-hover:text-zinc-200"
+                      >
+                        {stop}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* footer */}
+              <div className="mt-auto flex items-center gap-2 pt-8 text-sm text-zinc-500 transition-colors duration-500 group-hover:text-[#ffb454]">
+                Start this path
+                <HiArrowRight className="transition-transform duration-500 group-hover:translate-x-1.5" />
+              </div>
+            </motion.article>
           ))}
         </motion.div>
-
       </div>
     </section>
   );

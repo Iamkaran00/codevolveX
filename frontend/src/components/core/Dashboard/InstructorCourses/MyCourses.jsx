@@ -1,260 +1,322 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import { FiEdit2, FiSearch } from "react-icons/fi";
 import { RiDeleteBin6Line } from "react-icons/ri";
-import { HiOutlineStatusOnline } from "react-icons/hi";
+import { HiArrowRight } from "react-icons/hi2";
 import { TbFileCode } from "react-icons/tb";
 
-import { fetchInstructorCourses,deleteCourse } from "../../../../services/operations/courseApi";
+import { fetchInstructorCourses, deleteCourse } from "../../../../services/operations/courseApi";
 import { formatDate } from "../../../../services/formateDate";
 import { COURSE_STATUS } from "../../../../utils/constants";
 import ConfirmationModal from "../../../common/ConfirmationModal";
-
 import SpotlightCard from "../../../common/Spotlight";
-import ShinyText from "../../../common/ShinyText";
-const SkeletonCard = () => (
-  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 p-5 rounded-2xl border border-slate-200/50 bg-white">
-    <div className="aspect-[16/10] w-[140px] rounded-xl bg-slate-100 animate-pulse shrink-0" />
-    <div className="flex flex-col gap-3 flex-1 w-full">
-      <div className="h-5 w-2/3 max-w-[280px] rounded-md bg-slate-100 animate-pulse" />
-      <div className="h-4 w-1/2 max-w-[180px] rounded-md bg-slate-100 animate-pulse" />
-    </div>
-    <div className="hidden md:flex gap-12 px-6">
-      <div className="h-10 w-12 rounded-md bg-slate-100 animate-pulse" />
-      <div className="h-10 w-16 rounded-md bg-slate-100 animate-pulse" />
+
+/* ---------- design tokens (shared with the hero) ---------- */
+const EASE = [0.23, 1, 0.32, 1];
+const display = "font-['Space_Grotesk',ui-sans-serif,system-ui,sans-serif]";
+const mono = "font-['JetBrains_Mono',ui-monospace,monospace]";
+const GRAIN = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")`;
+
+const container = { hidden: {}, show: { transition: { staggerChildren: 0.1, delayChildren: 0.05 } } };
+const item = {
+  hidden: { opacity: 0, y: 18 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.8, ease: EASE } },
+};
+
+const ROW = "md:grid md:grid-cols-[minmax(0,1fr)_88px_88px_112px_92px] md:items-center md:gap-4";
+const focusRing =
+  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb454]/70 focus-visible:ring-offset-2 focus-visible:ring-offset-[#100f0d]";
+
+/* ---------- small pieces ---------- */
+const SkeletonRow = () => (
+  <div className="flex items-center gap-5 rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
+    <div className="aspect-[16/10] w-[140px] shrink-0 animate-pulse rounded-xl bg-white/[0.05]" />
+    <div className="flex flex-1 flex-col gap-3">
+      <div className="h-5 w-2/3 max-w-[280px] animate-pulse rounded bg-white/[0.05]" />
+      <div className="h-4 w-1/2 max-w-[180px] animate-pulse rounded bg-white/[0.05]" />
     </div>
   </div>
 );
 
-const cardVariants = {
-  hidden: { opacity: 0, scale: 0.9, y: 30 },
-  show: { 
-    opacity: 1, scale: 1, y: 0,
-    transition: { type: "spring", stiffness: 260, damping: 20, mass: 1 }
-  },
-  exit: { opacity: 0, scale: 0.95, transition: { duration: 0.2 } }
-};
+const StatusPill = ({ status }) =>
+  status === COURSE_STATUS.DRAFT ? (
+    <span className="inline-flex items-center gap-2 rounded-full border border-white/15 px-3 py-1 text-xs text-zinc-400">
+      <span className="h-1.5 w-1.5 rounded-full bg-zinc-600" />
+      Draft
+    </span>
+  ) : (
+    <span className="inline-flex items-center gap-2 rounded-full border border-[#ffb454]/40 bg-[#ffb454]/10 px-3 py-1 text-xs text-[#ffb454]">
+      <span className="h-1.5 w-1.5 rounded-full bg-[#ffb454]" />
+      Published
+    </span>
+  );
 
+/* ---------- page ---------- */
 export default function MyCourses() {
   const { token } = useSelector((state) => state.auth);
   const navigate = useNavigate();
-  
+  const reduce = useReducedMotion();
+
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [confirmationModal, setConfirmationModal] = useState(null);
-  
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState("All");
 
-  useEffect(() => {
-    const fetchCourses = async () => {
-      setLoading(true);
+  const loadCourses = async () => {
+    setLoading(true);
+    try {
       const result = await fetchInstructorCourses(token);
       if (result) setCourses(result);
+    } finally {
       setLoading(false);
-    };
-    if (token) fetchCourses();
+    }
+  };
+
+  useEffect(() => {
+    if (token) loadCourses();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   const handleDelete = async (courseId) => {
-    setLoading(true);
-    await deleteCourse({ courseId }, token);
-    const result = await fetchInstructorCourses(token);
-    if (result) setCourses(result);
-    setConfirmationModal(null);
-    setLoading(false);
+    try {
+      await deleteCourse({ courseId }, token);
+      await loadCourses();
+    } finally {
+      setConfirmationModal(null);
+    }
   };
 
+  const askDelete = (course) =>
+    setConfirmationModal({
+      text1: `Delete “${course.courseName}”?`,
+      text2: "This can't be undone. The course and all its content will be removed.",
+      btn1Text: "Delete",
+      btn2Text: "Cancel",
+      btn1Handler: () => handleDelete(course._id),
+      btn2Handler: () => setConfirmationModal(null),
+    });
+
   const filteredCourses = useMemo(() => {
-    return courses.filter((course) => {
-      const searchStr = searchQuery.toLowerCase().trim();
-      const matchesSearch = course.courseName.toLowerCase().includes(searchStr) || 
-                            course.courseDescription.toLowerCase().includes(searchStr);
-      const matchesStatus = filterStatus === "All" || course.status === filterStatus;
+    const q = searchQuery.toLowerCase().trim();
+    return courses.filter((c) => {
+      const matchesSearch =
+        c.courseName.toLowerCase().includes(q) || (c.courseDescription || "").toLowerCase().includes(q);
+      const matchesStatus = filterStatus === "All" || c.status === filterStatus;
       return matchesSearch && matchesStatus;
     });
   }, [courses, searchQuery, filterStatus]);
 
+  const facts = useMemo(
+    () => [
+      ["Courses", courses.length],
+      ["Students", courses.reduce((n, c) => n + (c.studentsEnrolled?.length || 0), 0)],
+      ["Published", courses.filter((c) => c.status === COURSE_STATUS.PUBLISHED).length],
+    ],
+    [courses]
+  );
+
   return (
-    <div className="w-full min-h-screen bg-[#FAFAFC] pb-16 pt-6 font-sans">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 w-full flex flex-col gap-8">
-        
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between border-b border-slate-200/80 pb-6">
+    <div className="relative min-h-screen w-full overflow-hidden bg-[#100f0d] pb-24 pt-10">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-[0.06] mix-blend-overlay"
+        style={{ backgroundImage: GRAIN }}
+      />
+
+      <motion.div
+        variants={container}
+        initial={reduce ? false : "hidden"}
+        animate="show"
+        className="relative mx-auto flex w-full max-w-7xl flex-col gap-10 px-4 sm:px-6 lg:px-8"
+      >
+        {/* header */}
+        <motion.div variants={item} className="flex flex-col gap-6 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-4xl font-bold  ">
-              <ShinyText text="Catalogue" disabled={false} speed={3} className="!text-indigo-600" />
-            </p>
-            <p className="text-2xl  text-slate-500 font-medium ">
-              Create, manage, and deploy your educational tracks.
+            <h1 className={`text-4xl font-semibold tracking-tight text-[#f3ece0] sm:text-5xl ${display}`}>
+              Your courses
+            </h1>
+            <p className="mt-3 max-w-md text-base leading-relaxed text-zinc-400">
+              Create, edit and publish the courses students see in the catalogue.
             </p>
           </div>
-          
+
           <button
             onClick={() => navigate("/dashboard/add-course")}
-            className="group relative inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-6 py-3 text-sm font-bold text-white transition-all duration-300 hover:bg-slate-800 hover:shadow-[0_8px_20px_-6px_rgba(0,0,0,0.3)] active:scale-[0.97] shrink-0 overflow-hidden"
+            className={`group flex shrink-0 cursor-pointer items-center justify-center gap-2 rounded-full bg-[#ffb454] px-7 py-3.5 text-sm font-semibold text-[#1d1a16] transition-all duration-500 hover:bg-[#ffc272] active:scale-[0.98] ${focusRing}`}
           >
-            <span className="relative z-10">Deploy New Track</span>
-            <div className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/10 to-transparent transition-transform duration-700 ease-in-out group-hover:translate-x-full" />
+            New course
+            <HiArrowRight className="h-4 w-4 transition-transform duration-500 group-hover:translate-x-1" />
           </button>
-        </div>
+        </motion.div>
 
-         
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between z-10">
-          <div className="relative group flex-1 max-w-lg">
+        {/* quick facts */}
+        <motion.dl
+          variants={item}
+          className="grid grid-cols-3 gap-6 border-y border-white/[0.07] py-6"
+        >
+          {facts.map(([label, value]) => (
+            <div key={label}>
+              <dd className={`text-3xl font-semibold tabular-nums text-[#f3ece0] sm:text-4xl ${display}`}>
+                {loading ? "–" : value}
+              </dd>
+              <dt className={`mt-1 text-xs text-zinc-500 ${mono}`}>{label}</dt>
+            </div>
+          ))}
+        </motion.dl>
+
+        {/* controls */}
+        <motion.div variants={item} className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="relative w-full max-w-lg">
+            <FiSearch className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-lg text-zinc-600" />
             <input
               type="text"
-              placeholder="Search by title or keyword..."
+              aria-label="Search courses"
+              placeholder="Search by title or keyword"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full rounded-full border border-black-200/80 bg-white py-3 pl-12 pr-4 text-sm font-medium text-slate-900 shadow-[0_2px_8px_-4px_rgba(0,0,0,0.05)] outline-none transition-all placeholder:text-slate-400 focus:border-slate-400 focus:ring-4 focus:ring-slate-100"
+              className="w-full rounded-full border border-white/10 bg-white/[0.03] py-3 pl-11 pr-4 text-sm text-[#f3ece0] outline-none transition-colors duration-300 placeholder:text-zinc-600 focus:border-[#ffb454]/60"
             />
-            <FiSearch className="absolute right-4 top-1/2 -translate-y-1/2 text-black/60  text-lg transition-colors group-focus-within:text-slate-900" />
-
           </div>
 
-          <div className="flex items-center p-1 rounded-full bg-black border border-slate-200/30 shrink-0">
-            {["All", COURSE_STATUS.PUBLISHED, COURSE_STATUS.DRAFT].map((status) => (
-              <button
-                key={status}
-                onClick={() => setFilterStatus(status)}
-                className={`px-6 py-2 text-xs font-bold rounded-full transition-all duration-300 whitespace-nowrap
-                  ${filterStatus === status 
-                    ? "bg-white text-black shadow-[0_2px_8px_-2px_rgba(0,0,0,0.08)]" 
-                    : "text-white "
+          <div role="tablist" aria-label="Filter by status" className="flex shrink-0 items-center rounded-full border border-white/10 p-1">
+            {["All", COURSE_STATUS.PUBLISHED, COURSE_STATUS.DRAFT].map((status) => {
+              const active = filterStatus === status;
+              return (
+                <button
+                  key={status}
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => setFilterStatus(status)}
+                  className={`relative cursor-pointer whitespace-nowrap rounded-full px-5 py-2 text-xs font-medium transition-colors duration-300 ${focusRing} ${
+                    active ? "text-[#1d1a16]" : "text-zinc-400 hover:text-[#f3ece0]"
                   }`}
-              >
-                {status}
-              </button>
-            ))}
+                >
+                  {active && (
+                    <motion.span
+                      layoutId="status-pill"
+                      transition={{ duration: reduce ? 0 : 0.5, ease: EASE }}
+                      className="absolute inset-0 rounded-full bg-[#ffb454]"
+                    />
+                  )}
+                  <span className="relative">{status}</span>
+                </button>
+              );
+            })}
           </div>
-        </div>
+        </motion.div>
 
-        <div className="flex flex-col gap-5 relative w-full">
-          <div className="hidden md:flex items-center px-6 pb-2 text-[10px] font-extrabold uppercase tracking-widest text-slate-400 select-none">
-            <div className="flex-1">Track Data</div>
-            <div className="w-[100px] text-center">Enrollment</div>
-            <div className="w-[100px] text-center">Value</div>
-            <div className="w-[120px] text-center">Status</div>
-            <div className="w-[100px]" />
+        {/* list */}
+        <motion.div variants={item} className="flex flex-col gap-3">
+          <div className={`hidden px-5 pb-1 text-xs text-zinc-600 ${ROW} ${mono}`}>
+            <span>Course</span>
+            <span className="text-center">Students</span>
+            <span className="text-center">Price</span>
+            <span className="text-center">Status</span>
+            <span />
           </div>
+
           {loading ? (
-            [1, 2, 3].map((i) => <SkeletonCard key={i} />)
+            [1, 2, 3].map((i) => <SkeletonRow key={i} />)
           ) : filteredCourses.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-24 px-6 text-center rounded-3xl border border-dashed border-slate-300 bg-transparent">
-              <div className="h-14 w-14 rounded-2xl bg-white flex items-center justify-center mb-6 shadow-sm border border-slate-200">
-                <TbFileCode className="text-2xl text-slate-400" />
+            <div className="flex flex-col items-center rounded-3xl border border-dashed border-white/15 px-6 py-24 text-center">
+              <div className="mb-6 flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.03]">
+                <TbFileCode className="text-2xl text-[#ffb454]" />
               </div>
-              <p className="text-xl font-bold text-slate-900 tracking-tight">No tracks found</p>
-              <p className="text-sm font-medium text-slate-500 mt-2 max-w-sm leading-relaxed">
-                {searchQuery ? "Try adjusting your search filters to find what you're looking for." : "Your workspace is pristine. Initialize your first educational track to begin."}
+              <p className={`text-xl font-semibold tracking-tight text-[#f3ece0] ${display}`}>
+                {searchQuery || filterStatus !== "All" ? "No matching courses" : "No courses yet"}
+              </p>
+              <p className="mt-2 max-w-sm text-sm leading-relaxed text-zinc-500">
+                {searchQuery || filterStatus !== "All"
+                  ? "Clear the search or switch the status filter to see more."
+                  : "Create your first course and it will show up here."}
               </p>
             </div>
           ) : (
-            <AnimatePresence mode="popLayout">
+            <AnimatePresence mode="popLayout" initial={false}>
               {filteredCourses.map((course) => (
                 <motion.div
-                  layout
-                  variants={cardVariants}
-                  initial="hidden"
-                  whileInView="show"
-                  viewport={{ once: true, amount: 0.15 }} 
-                  exit="exit"
                   key={course._id}
-                  className="group relative"
+                  layout={!reduce}
+                  initial={reduce ? false : { opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.97 }}
+                  transition={{ duration: 0.6, ease: EASE }}
+                  className="group"
                 >
-                  <SpotlightCard 
-                    className="rounded-2xl bg-white border border-slate-200/60 shadow-[0_2px_8px_-4px_rgba(0,0,0,0.05)] transition-transform duration-300 hover:-translate-y-1" 
-                    spotlightColor="rgba(99, 102, 241, 0.12)"
+                  <SpotlightCard
+                    className="rounded-2xl border border-white/[0.07] bg-white/[0.02] transition-colors duration-500 hover:border-[#ffb454]/30"
+                    spotlightColor="rgba(255, 180, 84, 0.10)"
                   >
-                    <div className="flex flex-col md:flex-row items-start md:items-center gap-6 p-5 w-full h-full relative z-10">
-                      
-                      
-                      <div className="flex items-start sm:items-center gap-5 flex-1 w-full md:w-auto">
-                        <div className="relative shrink-0 overflow-hidden rounded-xl border border-slate-100/50 bg-slate-50">
+                    <div className={`relative z-10 flex flex-col gap-5 p-5 ${ROW}`}>
+                      {/* course */}
+                      <div className="flex min-w-0 items-center gap-5">
+                        <div className="relative shrink-0 overflow-hidden rounded-xl bg-white/[0.04]">
                           <img
                             src={course.thumbnail}
-                            alt="Thumbnail"
-                            className="aspect-[16/10] w-[140px] object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+                            alt=""
+                            loading="lazy"
+                            className="aspect-[16/10] w-[120px] object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04] sm:w-[140px]"
                           />
-                          <div className="absolute inset-0 ring-1 ring-inset ring-black/5 rounded-xl" />
+                          <div className="absolute inset-0 rounded-xl ring-1 ring-inset ring-white/10" />
                         </div>
-                        
-                        <div className="flex flex-col justify-center min-w-0 py-1">
-                          <h3 className="text-[17px] font-bold text-slate-900 tracking-tight truncate">
+                        <div className="min-w-0">
+                          <h3 className={`truncate text-[17px] font-semibold tracking-tight text-[#f3ece0] ${display}`}>
                             {course.courseName}
                           </h3>
-                          <p className="text-sm font-medium text-slate-500 line-clamp-1 mt-1 leading-relaxed pr-4">
-                            {course.courseDescription}
-                          </p>
-                          <p className="text-[11px] font-bold text-slate-400 mt-3 uppercase tracking-widest flex items-center gap-1.5">
-                            <span className="h-1 w-1 rounded-full bg-slate-300" />
-                            Built {formatDate(course.createdAt)}
+                          <p className="mt-1 line-clamp-1 text-sm text-zinc-500">{course.courseDescription}</p>
+                          <p className={`mt-3 text-xs text-zinc-600 ${mono}`}>
+                            Created {formatDate(course.createdAt)}
                           </p>
                         </div>
                       </div>
 
-                      <div className="hidden md:flex flex-col items-center justify-center w-[100px]">
-                        <span className="text-[10px] font-bold uppercase text-slate-400 mb-1 tracking-widest">students</span>
-                        <span className="text-base font-bold text-slate-800">{course.studentsEnrolled?.length || 0}</span>
-                      </div>
-                      
-                      <div className="hidden md:flex flex-col items-center justify-center w-[100px]">
-                        <span className="text-[10px] font-bold uppercase text-slate-400 mb-1 tracking-widest">Price</span>
-                        <span className="text-base font-bold text-slate-800">₹{course.price}</span>
-                      </div>
-
-                      <div className="hidden md:flex items-center justify-center w-[120px]">
-                        {course.status === COURSE_STATUS.DRAFT ? (
-                          <span className="inline-flex items-center justify-center rounded-lg bg-slate-100 px-3.5 py-1.5 text-xs font-bold text-slate-600 border border-slate-200">
-                            Draft
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center justify-center rounded-lg bg-indigo-50 px-3.5 py-1.5 text-xs font-bold text-indigo-700 border border-indigo-100/60">
-                            <HiOutlineStatusOnline className="mr-1.5 text-sm" />
-                            Published
-                          </span>
-                        )}
+                      {/* numbers */}
+                      <p className={`hidden text-center text-base tabular-nums text-[#f3ece0] md:block ${display}`}>
+                        {course.studentsEnrolled?.length || 0}
+                      </p>
+                      <p className={`hidden text-center text-base tabular-nums text-[#f3ece0] md:block ${display}`}>
+                        ₹{course.price}
+                      </p>
+                      <div className="hidden justify-center md:flex">
+                        <StatusPill status={course.status} />
                       </div>
 
-                      <div className="flex items-center justify-end w-full md:w-[100px] gap-3 mt-4 md:mt-0 opacity-100 md:opacity-0 transition-opacity duration-300 group-hover:opacity-100 relative z-20">
-                        <button
-                          onClick={() => navigate(`/dashboard/edit-course/${course._id}`)}
-                          className="flex h-10 w-10 items-center cursor-pointer justify-center rounded-xl bg-white text-slate-400 border border-slate-200 shadow-sm transition-all duration-200 hover:text-slate-900 hover:border-slate-300 hover:shadow-md active:scale-95"
-                          title="Edit Track"
-                        >
-                          <FiEdit2 size={16} />
-                        </button>
-
-                        <button
-                          onClick={() => { return( setConfirmationModal({
-                            text1: "Delete this educational track?",
-                            text2: "This action is destructive and irreversible. All associated data will be wiped.",
-                            btn1Text: "Delete",
-                            btn2Text: "Cancel",
-                            btn1Handler: () => handleDelete(course._id),
-                            btn2Handler: () => setConfirmationModal(null),
-                          })
-                        )
-                         
-                        
-                        }}
-                          className="flex h-10 cursor-pointer w-10 items-center justify-center rounded-xl bg-white text-slate-400 border border-slate-200 shadow-sm transition-all duration-200 hover:text-red-600 hover:border-red-200 hover:bg-red-50 hover:shadow-md active:scale-95"
-                          title="Delete Track"
-                        >
-                          <RiDeleteBin6Line size={16} />
-                        </button>
+                      {/* mobile meta + actions */}
+                      <div className="flex items-center justify-between gap-3 md:justify-end">
+                        <div className="flex items-center gap-3 md:hidden">
+                          <StatusPill status={course.status} />
+                          <span className={`text-xs text-zinc-500 ${mono}`}>₹{course.price}</span>
+                        </div>
+                        <div className="flex gap-2 transition-opacity duration-300 md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100">
+                          <button
+                            onClick={() => navigate(`/dashboard/edit-course/${course._id}`)}
+                            aria-label={`Edit ${course.courseName}`}
+                            title="Edit course"
+                            className={`flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-white/10 text-zinc-400 transition-colors duration-300 hover:border-[#ffb454]/50 hover:text-[#ffb454] active:scale-95 ${focusRing}`}
+                          >
+                            <FiEdit2 size={16} />
+                          </button>
+                          <button
+                            onClick={() => askDelete(course)}
+                            aria-label={`Delete ${course.courseName}`}
+                            title="Delete course"
+                            className={`flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-white/10 text-zinc-400 transition-colors duration-300 hover:border-red-400/50 hover:text-red-400 active:scale-95 ${focusRing}`}
+                          >
+                            <RiDeleteBin6Line size={16} />
+                          </button>
+                        </div>
                       </div>
-
                     </div>
                   </SpotlightCard>
                 </motion.div>
               ))}
             </AnimatePresence>
           )}
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
 
       {confirmationModal && <ConfirmationModal modalData={confirmationModal} />}
     </div>

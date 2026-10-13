@@ -1,7 +1,7 @@
-import React from 'react'
-import { useSelector } from 'react-redux'
-import { Outlet } from 'react-router-dom'
-import Sidebar from '../components/core/Dashboard/Sidebar'
+import React from "react"
+import { useSelector } from "react-redux"
+import { Outlet } from "react-router-dom"
+import Sidebar from "../components/core/Dashboard/Sidebar"
 
 const Dashboard = () => {
   const { loading: authLoading } = useSelector((state) => state.auth)
@@ -9,27 +9,26 @@ const Dashboard = () => {
 
   if (authLoading || profileLoading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-slate-50">
-        {/* Placeholder for a better skeleton loader later */}
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+      <div
+        role="status"
+        aria-label="Loading"
+        className="flex h-screen items-center justify-center bg-[#100f0d]"
+      >
+        <span className="h-10 w-10 animate-spin rounded-full border-2 border-white/10 border-t-[#ffb454]" />
       </div>
     )
   }
 
   return (
-     
+    <div className="relative flex min-h-screen bg-[#100f0d] pt-16 text-[#f3ece0]">
+      <Sidebar />
 
-  <div className="relative flex min-h-[calc(100vh-4rem)] pt-16 bg-slate-50 text-slate-900">
-    <Sidebar />
-
-    <div className="h-[calc(100vh-4rem)] flex-1 overflow-auto bg-slate-50">
-      <div className="mx-auto w-11/12 max-w-[1000px] py-10">
+      {/* each page brings its own padding and max width */}
+      <main className="h-[calc(100vh-4rem)] min-w-0 flex-1 overflow-y-auto bg-[#100f0d] [scrollbar-color:rgba(255,255,255,0.12)_transparent] [scrollbar-width:thin]">
         <Outlet />
-      </div>
+      </main>
     </div>
-  </div>
-);
-  
+  )
 }
 
 export default Dashboard

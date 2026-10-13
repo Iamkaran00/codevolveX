@@ -1,113 +1,172 @@
 import React from "react";
-import { motion } from "framer-motion";
-import { BookOpen, Lock, Layers } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
+import { HiLockClosed, HiBookOpen } from "react-icons/hi2";
+
+const EASE = [0.23, 1, 0.32, 1];
+
+const display = "font-['Space_Grotesk',ui-sans-serif,system-ui,sans-serif]";
+const mono = "font-['JetBrains_Mono',ui-monospace,monospace]";
+
+const GRAIN = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")`;
+
+const listV = { hidden: {}, show: { transition: { staggerChildren: 0.08, delayChildren: 0.2 } } };
+const rowV = {
+  hidden: { opacity: 0, y: 18 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.85, ease: EASE } },
+};
+
+const pad = (n) => String(n).padStart(2, "0");
+
+const lecturesIn = (s) => s.subSection?.length ?? s.SubSection?.length ?? 0;
 
 export default function CourseAccordion({ course }) {
+  const reduce = useReducedMotion();
+
   const sections = course?.courseContent ?? [];
-  const totalLectures = sections.reduce(
-    (sum, s) => sum + (s.subSection?.length ?? s.SubSection?.length ?? 0),
-    0
-  );
+  const totalLectures = sections.reduce((sum, s) => sum + lecturesIn(s), 0);
 
   if (!sections.length) return null;
 
-  // Stagger animation variants for a smoother, premium reveal
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    show: {
-      opacity: 1,
-      transition: { staggerChildren: 0.08, delayChildren: 0.1 },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 12, filter: "blur(4px)" },
-    show: { 
-      opacity: 1, 
-      y: 0, 
-      filter: "blur(0px)",
-      transition: { type: "spring", stiffness: 280, damping: 24 } 
-    },
-  };
-
   return (
-    <div className="w-full max-w-3xl mx-auto bg-white p-6 md:p-8 rounded-[2rem] shadow-[0_2px_40px_-12px_rgba(79,70,229,0.05)] ring-1 ring-indigo-50 antialiased">
-      {/* Header section */}
-      <div className="flex items-center gap-4 mb-8">
-        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-100/50 flex items-center justify-center shrink-0 shadow-inner">
-          <Layers className="w-6 h-6 text-indigo-600" strokeWidth={1.5} />
-        </div>
-        <div>
-          <h2 className="text-2xl font-semibold tracking-tight text-indigo-950">
-            Course Curriculum
-          </h2>
-          <div className="flex items-center gap-2 mt-1">
-            <span className="text-sm font-medium text-violet-600/80">
-              {sections.length} Sections
-            </span>
-            <span className="w-1 h-1 rounded-full bg-indigo-200"></span>
-            <span className="text-sm font-medium text-indigo-400">
-              {totalLectures} Lectures
-            </span>
-          </div>
-        </div>
-      </div>
+    <motion.section
+      initial={reduce ? false : { opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ duration: 1, ease: EASE }}
+      className="relative mx-auto w-full max-w-3xl overflow-hidden rounded-3xl border border-white/[0.08] bg-[#14130f] p-7 sm:p-10"
+    >
+      {/* grain */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-[0.06] mix-blend-overlay"
+        style={{ backgroundImage: GRAIN }}
+      />
 
-      {/* Sections List */}
-      <motion.div 
-        variants={containerVariants}
-        initial="hidden"
-        animate="show"
-        className="space-y-3"
-      >
-        {sections.map((section, i) => {
-          const lectureCount =
-            section.subSection?.length ?? section.SubSection?.length ?? 0;
+      {/* soft amber glow */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-[#ffb454] opacity-[0.08] blur-3xl"
+      />
 
-          return (
-            <motion.div
-              key={section._id ?? i}
-              variants={itemVariants}
-              className="group relative bg-white rounded-2xl border border-indigo-50 p-4 md:px-5 md:py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-violet-200 hover:bg-gradient-to-r hover:from-indigo-50/40 hover:to-violet-50/40 hover:shadow-[0_8px_30px_-12px_rgba(124,58,237,0.15)] transition-all duration-300 ease-out cursor-pointer overflow-hidden"
+      <div className="relative">
+        {/* header */}
+        <div className="flex items-end justify-between gap-6">
+          <div>
+            <div className="flex items-center gap-3">
+              <motion.span
+                initial={reduce ? false : { scaleX: 0 }}
+                whileInView={{ scaleX: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.9, ease: EASE, delay: 0.2 }}
+                style={{ originX: 0 }}
+                className="h-px w-8 bg-[#ffb454]"
+              />
+              <p className={`text-[11px] uppercase tracking-[0.25em] text-zinc-500 ${mono}`}>
+                Curriculum · the full route
+              </p>
+            </div>
+            <h2
+              className={`mt-5 text-3xl font-semibold leading-[1.05] tracking-tight text-[#f3ece0] sm:text-4xl ${display}`}
             >
-              {/* Left edge accent line on hover */}
-              <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-indigo-400 to-violet-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-l-2xl" />
+              Course
+              <br />
+              curriculum<span className="text-[#ffb454]">.</span>
+            </h2>
+          </div>
 
-              <div className="flex items-center gap-4">
-                <span className="w-8 flex justify-center text-sm font-semibold text-indigo-300 group-hover:text-violet-500 transition-colors duration-300">
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <span className="text-[15px] font-medium tracking-tight text-indigo-900 group-hover:text-indigo-950 transition-colors">
-                  {section.sectionName}
-                </span>
-              </div>
+          <dl className="flex gap-6 text-right sm:gap-8">
+            <div>
+              <dd className={`text-3xl font-semibold tabular-nums text-[#ffb454] sm:text-4xl ${display}`}>
+                {pad(sections.length)}
+              </dd>
+              <dt className={`mt-1 text-[11px] uppercase tracking-[0.2em] text-zinc-600 ${mono}`}>
+                Sections
+              </dt>
+            </div>
+            <div>
+              <dd className={`text-3xl font-semibold tabular-nums text-[#f3ece0] sm:text-4xl ${display}`}>
+                {pad(totalLectures)}
+              </dd>
+              <dt className={`mt-1 text-[11px] uppercase tracking-[0.2em] text-zinc-600 ${mono}`}>
+                Lectures
+              </dt>
+            </div>
+          </dl>
+        </div>
 
-              <div className="flex items-center gap-3 shrink-0 md:ml-4 pl-12 md:pl-0">
-                <span className="flex items-center gap-1.5 text-[13px] font-medium text-indigo-500/80 bg-indigo-50/50 group-hover:bg-white group-hover:text-violet-600 px-3 py-1 rounded-full border border-indigo-100/30 group-hover:border-violet-100 transition-all duration-300">
-                  <BookOpen className="w-3.5 h-3.5" />
-                  {lectureCount} {lectureCount === 1 ? "Lesson" : "Lessons"}
-                </span>
-                <div className="w-8 h-8 rounded-full bg-slate-50 group-hover:bg-violet-100 border border-slate-100 group-hover:border-violet-200 flex items-center justify-center transition-all duration-300 shadow-sm">
-                  <Lock className="w-3.5 h-3.5 text-slate-400 group-hover:text-violet-600 transition-colors" />
-                </div>
-              </div>
-            </motion.div>
-          );
-        })}
-      </motion.div>
+        {/* route */}
+        <div className="relative mt-10 border-t border-white/[0.07] pt-8">
+          {/* spine that draws down the list */}
+          <motion.span
+            aria-hidden
+            initial={reduce ? false : { scaleY: 0 }}
+            whileInView={{ scaleY: 1 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 1.6, ease: EASE, delay: 0.2 }}
+            style={{ originY: 0 }}
+            className="absolute bottom-6 left-[11px] top-12 w-px bg-gradient-to-b from-[#ffb454] via-[#ffb454]/30 to-white/10"
+          />
 
-      {/* Lock CTA Banner */}
-      <motion.div 
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5, duration: 0.4 }}
-        className="mt-6 flex items-center justify-center gap-2.5 py-4 bg-gradient-to-r from-indigo-50 via-white to-violet-50 rounded-2xl border border-indigo-100/60 shadow-sm"
-      >
-        <Lock className="w-4 h-4 text-indigo-400" />
-        <p className="text-sm font-semibold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-violet-600 tracking-wide">
-          Enroll to unlock the full curriculum
-        </p>
-      </motion.div>
-    </div>
+          <motion.ul
+            variants={listV}
+            initial={reduce ? false : "hidden"}
+            whileInView="show"
+            viewport={{ once: true, margin: "-60px" }}
+            className="flex flex-col gap-3"
+          >
+            {sections.map((section, i) => {
+              const count = lecturesIn(section);
+              return (
+                <motion.li
+                  key={section._id ?? i}
+                  variants={rowV}
+                  className="group relative flex items-center gap-5"
+                >
+                  {/* node on the spine */}
+                  <span className="relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-white/15 bg-[#14130f] transition-colors duration-500 group-hover:border-[#ffb454]">
+                    <span className="h-1.5 w-1.5 rounded-full bg-zinc-600 transition-colors duration-500 group-hover:bg-[#ffb454]" />
+                  </span>
+
+                  <div className="flex min-w-0 flex-1 flex-col justify-between gap-3 rounded-2xl border border-white/[0.07] bg-white/[0.02] px-5 py-4 transition-all duration-500 group-hover:border-[#ffb454]/40 group-hover:bg-[#ffb454]/[0.04] sm:flex-row sm:items-center">
+                    <p className="flex min-w-0 items-baseline gap-3 text-[15px] text-zinc-300 transition-colors duration-500 group-hover:text-[#f3ece0]">
+                      <span className={`shrink-0 text-xs text-zinc-700 transition-colors duration-500 group-hover:text-[#ffb454] ${mono}`}>
+                        {pad(i + 1)}
+                      </span>
+                      <span className="truncate">{section.sectionName}</span>
+                    </p>
+
+                    <div className="flex shrink-0 items-center gap-3">
+                      <span
+                        className={`inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.15em] text-zinc-500 ${mono}`}
+                      >
+                        <HiBookOpen className="h-3.5 w-3.5" />
+                        {count} {count === 1 ? "lesson" : "lessons"}
+                      </span>
+                      <span className="flex h-8 w-8 items-center justify-center rounded-full border border-white/15 text-zinc-500 transition-all duration-500 group-hover:border-[#ffb454] group-hover:bg-[#ffb454] group-hover:text-[#1d1a16]">
+                        <HiLockClosed className="h-3.5 w-3.5" />
+                      </span>
+                    </div>
+                  </div>
+                </motion.li>
+              );
+            })}
+          </motion.ul>
+        </div>
+
+        {/* unlock banner */}
+        <motion.div
+          initial={reduce ? false : { opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.9, ease: EASE, delay: 0.3 }}
+          className="mt-8 flex items-center justify-center gap-3 rounded-2xl border border-dashed border-[#ffb454]/30 px-6 py-5"
+        >
+          <HiLockClosed className="h-4 w-4 text-[#ffb454]" />
+          <p className={`text-[12px] uppercase tracking-[0.2em] text-zinc-400 ${mono}`}>
+            Enroll to unlock the full curriculum
+          </p>
+        </motion.div>
+      </div>
+    </motion.section>
   );
 }

@@ -1,99 +1,153 @@
-import React, { useEffect, useRef, useState } from "react";
+import React from "react";
+import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 import {
   SiOpenai,
   SiNextdotjs,
   SiEthereum,
   SiKalilinux,
-  SiDocker,
   SiApachekafka,
   SiPytorch,
   SiGraphql,
-  SiTensorflow,
 } from "react-icons/si";
 import { FaRobot, FaVrCardboard, FaCloudArrowUp } from "react-icons/fa6";
-import { HiSparkles } from "react-icons/hi2";
+import { HiArrowUpRight } from "react-icons/hi2";
+
+const EASE = [0.23, 1, 0.32, 1];
+
+const display = "font-['Space_Grotesk',ui-sans-serif,system-ui,sans-serif]";
+const mono = "font-['JetBrains_Mono',ui-monospace,monospace]";
+
+const GRAIN = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")`;
 
 const TRENDING_TOPICS = [
-  { Icon: SiOpenai, color: "#10a37f", bg: "bg-emerald-50", ring: "group-hover:ring-emerald-500/30", name: "Generative AI", count: "18 Masterclasses" },
-  { Icon: SiNextdotjs, color: "#000000", bg: "bg-gray-100", ring: "group-hover:ring-gray-500/30", name: "Next.js & React 19", count: "24 Courses" },
-  { Icon: FaCloudArrowUp, color: "#0ea5e9", bg: "bg-sky-50", ring: "group-hover:ring-sky-500/30", name: "Cloud Native", count: "31 Courses" },
-  { Icon: FaRobot, color: "#f97316", bg: "bg-orange-50", ring: "group-hover:ring-orange-500/30", name: "Agentic Systems", count: "9 Courses" },
-  { Icon: SiEthereum, color: "#6366f1", bg: "bg-indigo-50", ring: "group-hover:ring-indigo-500/30", name: "Web3 & Blockchain", count: "14 Courses" },
-  { Icon: SiKalilinux, color: "#3b82f6", bg: "bg-blue-50", ring: "group-hover:ring-blue-500/30", name: "Cybersecurity", count: "22 Courses" },
-  { Icon: SiPytorch, color: "#ee4c2c", bg: "bg-red-50", ring: "group-hover:ring-red-500/30", name: "Deep Learning", count: "17 Courses" },
-  { Icon: SiApachekafka, color: "#14b8a6", bg: "bg-teal-50", ring: "group-hover:ring-teal-500/30", name: "Data Engineering", count: "26 Courses" },
-  { Icon: FaVrCardboard, color: "#d946ef", bg: "bg-fuchsia-50", ring: "group-hover:ring-fuchsia-500/30", name: "Spatial Computing", count: "8 Courses" },
-  { Icon: SiGraphql, color: "#e10098", bg: "bg-pink-50", ring: "group-hover:ring-pink-500/30", name: "Modern APIs", count: "19 Courses" },
+  { Icon: SiOpenai, color: "#10a37f", name: "Generative AI", count: "18 Masterclasses" },
+  { Icon: SiNextdotjs, color: "#e5e5e5", name: "Next.js & React 19", count: "24 Courses" },
+  { Icon: FaCloudArrowUp, color: "#0ea5e9", name: "Cloud Native", count: "31 Courses" },
+  { Icon: FaRobot, color: "#f97316", name: "Agentic Systems", count: "9 Courses" },
+  { Icon: SiEthereum, color: "#8b8dfc", name: "Web3 & Blockchain", count: "14 Courses" },
+  { Icon: SiKalilinux, color: "#3b82f6", name: "Cybersecurity", count: "22 Courses" },
+  { Icon: SiPytorch, color: "#ee4c2c", name: "Deep Learning", count: "17 Courses" },
+  { Icon: SiApachekafka, color: "#14b8a6", name: "Data Engineering", count: "26 Courses" },
+  { Icon: FaVrCardboard, color: "#d946ef", name: "Spatial Computing", count: "8 Courses" },
+  { Icon: SiGraphql, color: "#e10098", name: "Modern APIs", count: "19 Courses" },
 ];
 
+const listV = { hidden: {}, show: { transition: { staggerChildren: 0.07 } } };
+const rowV = {
+  hidden: { opacity: 0, y: 18 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.9, ease: EASE } },
+};
+
+const Row = ({ topic, index, onOpen }) => {
+  const { Icon, color, name, count } = topic;
+  return (
+    <motion.li variants={rowV}>
+      <button
+        type="button"
+        onClick={onOpen}
+        style={{ "--brand": color }}
+        className="group relative flex w-full items-center gap-5 py-6 text-left outline-none"
+      >
+        <span className={`w-7 shrink-0 text-xs text-zinc-700 transition-colors duration-500 group-hover:text-[#ffb454] ${mono}`}>
+          {String(index + 1).padStart(2, "0")}
+        </span>
+
+        <Icon
+          size={26}
+          className="shrink-0 text-zinc-600 transition-all duration-700 group-hover:scale-110 group-hover:text-[var(--brand)] group-focus-visible:text-[var(--brand)]"
+        />
+
+        <span
+          className={`flex-1 truncate text-xl font-medium tracking-tight text-zinc-400 transition-all duration-500 group-hover:translate-x-2 group-hover:text-[#f3ece0] group-focus-visible:text-[#f3ece0] sm:text-2xl ${display}`}
+        >
+          {name}
+        </span>
+
+        <span className={`hidden shrink-0 text-xs text-zinc-600 sm:block ${mono}`}>
+          {count}
+        </span>
+
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-white/10 text-zinc-600 transition-all duration-500 group-hover:border-[#ffb454] group-hover:bg-[#ffb454] group-hover:text-[#1d1a16] group-focus-visible:border-[#ffb454]">
+          <HiArrowUpRight size={16} />
+        </span>
+
+        {/* hairline + amber line that draws in on hover */}
+        <span className="absolute inset-x-0 bottom-0 h-px bg-white/[0.07]" />
+        <span className="absolute bottom-0 left-0 h-px w-0 bg-[#ffb454] transition-all duration-[900ms] ease-out group-hover:w-full group-focus-visible:w-full" />
+      </button>
+    </motion.li>
+  );
+};
+
 export default function TrendingCategories() {
-  const ref = useRef(null);
-  const [inView, setInView] = useState(false);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setInView(true);
-          observer.disconnect();
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    if (ref.current) observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, []);
+  const navigate = useNavigate();
+  const half = Math.ceil(TRENDING_TOPICS.length / 2);
+  const columns = [TRENDING_TOPICS.slice(0, half), TRENDING_TOPICS.slice(half)];
 
   return (
-    <section ref={ref} className="py-24 bg-white sm:py-32 border-t border-gray-100">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        
-        {/* Header Section */}
-        <div className="text-center max-w-2xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 text-indigo-600 text-xs font-bold uppercase tracking-widest mb-4">
-            <HiSparkles className="h-4 w-4" />
-            Future-Proof Your Career
-          </div>
-          
-          <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-            Master the most in-demand tech.
-          </h2>
-          
-          <p className="mt-4 text-lg text-gray-500 font-medium">
-            Stay ahead of the curve with cutting-edge curriculum curated by top industry engineers and researchers.
-          </p>
-        </div>
+    <section className="relative overflow-hidden border-t border-white/[0.07] bg-[#100f0d] px-5 py-24 sm:px-8 sm:py-32">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-[0.06] mix-blend-overlay"
+        style={{ backgroundImage: GRAIN }}
+      />
 
-        {/* Grid Section */}
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-          {TRENDING_TOPICS.map(({ Icon, color, bg, ring, name, count }, i) => (
-            <div
-              key={name}
-              className={`transition-all duration-700 ease-out ${
-                inView ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-              }`}
-              style={{ transitionDelay: `${i * 75}ms` }}
-            >
-              <div className="group flex flex-col items-center justify-center bg-white rounded-3xl border border-gray-100 px-4 py-8 text-center transition-all duration-300 ease-out cursor-pointer hover:border-indigo-100 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:-translate-y-1">
-                <div className={`mb-4 flex h-16 w-16 items-center justify-center rounded-2xl ${bg} ring-1 ring-black/5 transition-all duration-300 group-hover:ring-4 ${ring}`}>
-                  <Icon 
-                    size={32} 
-                    color={color} 
-                    className="transition-transform duration-300 ease-out group-hover:scale-110 group-hover:-rotate-3 drop-shadow-sm" 
-                  />
-                </div>
-                <h3 className="mb-1.5 text-[15px] font-bold text-gray-900 leading-tight group-hover:text-indigo-600 transition-colors">
-                  {name}
-                </h3>
-                <p className="text-[12px] font-semibold text-gray-400">
-                  {count}
-                </p>
-              </div>
+      <div className="relative mx-auto max-w-7xl">
+        {/* header */}
+        <motion.div
+          initial={{ opacity: 0, y: 18 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.95, ease: EASE }}
+          className="mb-14 flex flex-col justify-between gap-8 lg:flex-row lg:items-end"
+        >
+          <div>
+            <div className="flex items-center gap-3">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#ffb454] opacity-50" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-[#ffb454]" />
+              </span>
+              <p className={`text-[11px] uppercase tracking-[0.25em] text-zinc-500 ${mono}`}>
+                Trending now
+              </p>
             </div>
+            <h2
+              className={`mt-6 text-4xl font-semibold leading-[1.04] tracking-tight text-[#f3ece0] sm:text-6xl ${display}`}
+            >
+              Master the most
+              <br />
+              in-demand tech<span className="text-[#ffb454]">.</span>
+            </h2>
+          </div>
+          <p className="max-w-md text-lg leading-relaxed text-zinc-400">
+            Stay ahead of the curve with a curriculum shaped by working
+            engineers and researchers.
+          </p>
+        </motion.div>
+
+        {/* topic index */}
+        <div className="grid gap-x-16 lg:grid-cols-2">
+          {columns.map((col, c) => (
+            <motion.ul
+              key={c}
+              variants={listV}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, margin: "-60px" }}
+              className="border-t border-white/[0.07]"
+            >
+              {col.map((topic, i) => (
+                <Row
+                  key={topic.name}
+                  topic={topic}
+                  index={c * half + i}
+                  onOpen={() => navigate("/catalogue")}
+                />
+              ))}
+            </motion.ul>
           ))}
         </div>
-
       </div>
     </section>
   );

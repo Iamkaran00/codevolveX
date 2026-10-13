@@ -5,7 +5,7 @@ import {
 } from "../middleware/multer.middleware.js";
 const router = express.Router();
  
-import { login ,signUp, sendOTP, changePassword } from "../controller/auth.js";
+import { login ,signUp, sendOTP, changePassword , googleAuth } from "../controller/auth.js";
 import { createSubSection } from "../controller/subsection.js";
 import { createSection } from "../controller/section.js";
 
@@ -31,6 +31,8 @@ router.post(
 );
 // Route for user login
 router.post("/login",slidingWindowLimiter(10,900), login);
+
+router.post('/google' , googleAuth) ; 
 // Route for user signup
 router.post(
   "/signup",

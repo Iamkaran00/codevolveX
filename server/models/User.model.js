@@ -9,19 +9,23 @@ const userSchema = new Schema(
     },
     lastName: {
       type: String,
-      required: true,
+   
       trim: true,
+      default : "" 
     },
     email: {
       type: String,
       required: true,
       trim: true,
+      lowercase :true
     },
     password: {
       type: String,
-      required: true,
+      required: function() {return this.authProvider === 'local'},
     },
-
+    googleId : {type : String , unique : true , sparse: true} , 
+    authProvider : {type : String, enum : ['local' , 'google'] , default : 'local'},
+    
     accountType: {
       type: String,
       enum: ["Student", "Instructor", "Admin"],
@@ -52,7 +56,7 @@ const userSchema = new Schema(
     courseProgress: [
       {
         type: Schema.Types.ObjectId,
-        ref: " CourseProgress",
+        ref: "CourseProgress",
       },
     ],
     token: {

@@ -1,361 +1,356 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { NavLink } from "react-router-dom";
-import { motion } from "framer-motion";
-import { SiReact, SiPython, SiKubernetes } from "react-icons/si";
-import { FaAws, FaTrophy } from "react-icons/fa6";
-import { HiArrowRight, HiPlay, HiStar, HiFire } from "react-icons/hi2";
+import { motion, useReducedMotion } from "framer-motion";
+import { HiArrowRight, HiPlay } from "react-icons/hi2";
 import { useSelector } from "react-redux";
 
-const containerVariants = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.15, delayChildren: 0.1 },
-  },
+const EASE = [0.23, 1, 0.32, 1];
+
+const display = "font-['Space_Grotesk',ui-sans-serif,system-ui,sans-serif]";
+const mono = "font-['JetBrains_Mono',ui-monospace,monospace]";
+
+const GRAIN = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")`;
+
+const container = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.13, delayChildren: 0.1 } },
+};
+const item = {
+  hidden: { opacity: 0, y: 22 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.95, ease: EASE } },
 };
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 80, damping: 15 } },
+// Illustrative sample course shown in the visual
+const LESSONS = [
+  { title: "Hooks that actually click", time: "14 min" },
+  { title: "Context without the headache", time: "11 min" },
+  { title: "JWT auth, end to end", time: "22 min" },
+  { title: "State at scale with Redux", time: "18 min" },
+  { title: "Deploy to production", time: "9 min" },
+];
+
+const FACTS = [
+  ["Structured paths", "Lessons in an order that makes sense"],
+  ["Track progress", "Mark lessons done and pick up where you left off"],
+  ["Built by instructors", "Courses from people who ship for a living"],
+];
+
+/* ------------------------------------------------------------------ */
+/*  Learning path visual                                               */
+/* ------------------------------------------------------------------ */
+
+const StatusIcon = ({ state }) => {
+  if (state === "done") {
+    return (
+      <motion.span
+        initial={{ scale: 0.6, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.6, ease: EASE }}
+        className="flex h-6 w-6 items-center justify-center rounded-full bg-[#ffb454]"
+      >
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <motion.path
+            d="M2.5 6.2l2.4 2.4 4.6-5"
+            stroke="#1d1a16"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: 1 }}
+            transition={{ duration: 0.6, ease: EASE, delay: 0.1 }}
+          />
+        </svg>
+      </motion.span>
+    );
+  }
+  if (state === "active") {
+    return (
+      <span className="flex h-6 w-6 items-center justify-center rounded-full border border-[#ffb454]/70">
+        <motion.span
+          animate={{ scale: [1, 1.35, 1], opacity: [1, 0.6, 1] }}
+          transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+          className="h-2 w-2 rounded-full bg-[#ffb454]"
+        />
+      </span>
+    );
+  }
+  return <span className="h-6 w-6 rounded-full border border-white/15" />;
 };
 
-const BADGES = [
-  {
-    Icon: SiReact,
-    color: "#0ea5e9",
-    bg: "bg-sky-50",
-    label: "React",
-    sub: "18K learners",
-    pos: "top-[-10%] left-[-15%]",  
-    delay: 0,
-    dur: 6,
-  },
-  {
-    Icon: SiPython,
-    color: "#10b981",
-    bg: "bg-emerald-50",
-    label: "Python",
-    sub: "24K learners",
-    pos: "top-[15%] right-[-20%]",
-    delay: 0.5,
-    dur: 7,
-  },
-  {
-    Icon: FaAws,
-    color: "#f97316",
-    bg: "bg-orange-50",
-    label: "AWS Cloud",
-    sub: "11K learners",
-    pos: "bottom-[-5%] right-[-10%]",
-    delay: 1,
-    dur: 5,
-  },
-  {
-    Icon: SiKubernetes,
-    color: "#6366f1",
-    bg: "bg-indigo-50",
-    label: "Kubernetes",
-    sub: "9.8K learners",
-    pos: "bottom-[20%] left-[-25%]",
-    delay: 1.5,
-    dur: 8,
-  },
-];
+const LearningPath = ({ reduce }) => {
+  const total = LESSONS.length;
+  const [step, setStep] = useState(reduce ? 3 : 0); // lessons completed
 
-const MODULES = [
-  { label: "Hooks", state: "done" },
-  { label: "Context", state: "done" },
-  { label: "Auth", state: "active" },
-  { label: "Redux", state: "locked" },
-];
+  useEffect(() => {
+    if (reduce) return undefined;
+    const id = setInterval(() => {
+      setStep((s) => (s >= total ? 0 : s + 1));
+    }, 2000);
+    return () => clearInterval(id);
+  }, [reduce, total]);
 
-const STREAK_DAYS = ["M", "T", "W", "T", "F", "S", "S"];
-const STREAK_DONE = [0, 1, 2, 3];
-const STREAK_TODAY = 4;
+  const pct = Math.round((step / total) * 100);
+  const fill = Math.min(step, total - 1) / (total - 1);
 
-
-function FloatLoop({ children, y = 14, duration = 6, delay = 0, className }) {
   return (
-    <motion.div
-      className={className}
-      animate={{ y: [0, -y, 0] }}
-      transition={{ duration, repeat: Infinity, ease: "easeInOut", delay }}
-    >
-      {children}
-    </motion.div>
-  );
-}
-
-function ScreenContent() {
-  return (
-    <div className="h-full w-full flex flex-col p-4 bg-gray-950 text-white relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/20 blur-2xl rounded-full" />
-      
-      {/* Topbar */}
-      <div className="flex items-center justify-between mb-4 z-10">
-        <div className="flex gap-1.5">
-          <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
-          <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-          <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
+    <div className="rounded-3xl border border-white/[0.07] bg-white/[0.02] p-7 sm:p-9">
+      <div className="flex items-end justify-between gap-4">
+        <div>
+          <p className={`text-[11px] uppercase tracking-[0.2em] text-zinc-600 ${mono}`}>
+            Sample course
+          </p>
+          <h3
+            className={`mt-2 text-xl font-semibold tracking-tight text-[#f3ece0] ${display}`}
+          >
+            React Auth Mastery
+          </h3>
         </div>
-        <div className="flex gap-2">
-          <span className="text-[9px] font-mono px-2 py-1 bg-indigo-500/20 text-indigo-300 rounded">Course</span>
-          <span className="text-[9px] font-mono px-2 py-1 bg-white/5 text-gray-400 rounded">Projects</span>
-        </div>
+        <p className={`text-3xl font-semibold tabular-nums text-[#ffb454] ${display}`}>
+          {pct}%
+        </p>
       </div>
 
-      
-      <div className="relative h-24 bg-gradient-to-br from-indigo-900/50 to-slate-900 rounded-lg border border-white/10 flex-shrink-0 mb-4 flex flex-col justify-end p-3 z-10">
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-8 h-8 rounded-full bg-white/10 backdrop-blur border border-white/20 flex items-center justify-center pl-0.5">
-            <HiPlay className="text-white/80 w-4 h-4" />
-          </div>
-        </div>
-        <div className="font-mono text-[9px] leading-relaxed text-gray-300 z-10">
-          <p className="text-2xl">codevolveX</p>
-          <p><span className="text-pink-400">const</span> <span className="text-blue-300">useAuth</span> = () <span className="text-pink-400">=&gt;</span> {"{"}</p>
-          <p className="pl-2"><span className="text-pink-400">const</span> [user] = <span className="text-emerald-300">useState</span>(null)</p>
-          <p className="pl-2 text-gray-500">// JWT refresh logic</p>
-        </div>
-      </div>
-
-      {/* Progress */}
-      <div className="bg-white/5 border border-white/10 rounded-lg p-3 z-10">
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-[10px] font-bold text-gray-200">React Auth Mastery</span>
-          <span className="text-[10px] font-mono text-indigo-400">72%</span>
-        </div>
-        <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden mb-3">
-          <motion.div 
-            initial={{ width: 0 }} 
-            animate={{ width: "72%" }} 
-            transition={{ duration: 1.5, delay: 0.5 }}
-            className="h-full bg-gradient-to-r from-indigo-500 to-cyan-400" 
+      <div className="relative mt-8">
+        <div className="absolute bottom-6 left-3 top-6 w-px bg-white/10">
+          <motion.div
+            animate={{ height: `${fill * 100}%` }}
+            transition={{ duration: 1.2, ease: EASE }}
+            className="w-px bg-[#ffb454]"
           />
         </div>
-        <div className="grid grid-cols-2 gap-2">
-          {MODULES.map(({ label, state }) => (
-            <div key={label} className="flex items-center gap-1.5 bg-white/5 p-1.5 rounded">
-              <div className={`w-1.5 h-1.5 rounded-full ${state === 'done' ? 'bg-emerald-400' : state === 'active' ? 'bg-indigo-400 animate-pulse' : 'bg-white/20'}`} />
-              <span className={`text-[8px] font-bold ${state === 'done' ? 'text-emerald-400' : state === 'active' ? 'text-indigo-300' : 'text-gray-500'}`}>{label}</span>
-            </div>
-          ))}
-        </div>
+
+        <ul className="flex flex-col">
+          {LESSONS.map((lesson, i) => {
+            const state = i < step ? "done" : i === step ? "active" : "idle";
+            return (
+              <li key={lesson.title} className="relative flex items-center gap-5 py-3.5">
+                <StatusIcon state={state} />
+                <div className="flex min-w-0 flex-1 items-baseline justify-between gap-4">
+                  <p
+                    className={`truncate text-[15px] transition-colors duration-700 ${
+                      state === "active"
+                        ? "text-[#f3ece0]"
+                        : state === "done"
+                        ? "text-zinc-500"
+                        : "text-zinc-600"
+                    }`}
+                  >
+                    <span className={`mr-3 text-xs text-zinc-700 ${mono}`}>
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    {lesson.title}
+                  </p>
+                  <span className={`shrink-0 text-xs text-zinc-700 ${mono}`}>
+                    {lesson.time}
+                  </span>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
       </div>
     </div>
   );
-}
+};
 
+/* ------------------------------------------------------------------ */
+/*  Signature credit                                                   */
+/* ------------------------------------------------------------------ */
+
+const FONT_CSS =
+  "@import url('https://fonts.googleapis.com/css2?family=Mrs+Saint+Delafield&display=swap');";
+const script =
+  "font-['Mrs_Saint_Delafield','Segoe_Script','Brush_Script_MT',cursive]";
+
+const WRITE_DELAY = 1.8;
+const WRITE_TIME = 2.8;
+const WRITE_EASE = [0.65, 0, 0.35, 1];
+
+const Signature = ({ reduce }) => (
+  <div className="pointer-events-none absolute bottom-6 right-6 z-10 select-none text-right sm:bottom-10 sm:right-10">
+    <style>{FONT_CSS}</style>
+
+    <motion.p
+      initial={reduce ? false : { opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 1.2, delay: 1.3 }}
+      className={`text-[11px] tracking-wide text-zinc-600 ${mono}`}
+    >
+      Designed &amp; built by
+    </motion.p>
+
+    <div className="relative mt-1 inline-block">
+      {/* the name, revealed left to right like it's being written */}
+      <motion.span
+        initial={reduce ? false : { clipPath: "inset(0 100% 0 0)" }}
+        animate={{ clipPath: "inset(0 0% 0 0)" }}
+        transition={{ duration: WRITE_TIME, ease: WRITE_EASE, delay: WRITE_DELAY }}
+        className={`block -rotate-3 whitespace-nowrap px-1 pb-2 text-6xl leading-none text-[#f3ece0] sm:text-7xl ${script}`}
+      >
+        Karan Sahu
+      </motion.span>
+
+      {/* tiny ink dot that leads the pen */}
+      {!reduce && (
+        <motion.span
+          aria-hidden
+          initial={{ left: "0%", opacity: 0 }}
+          animate={{ left: ["0%", "100%"], opacity: [0, 1, 1, 0] }}
+          transition={{
+            duration: WRITE_TIME,
+            ease: WRITE_EASE,
+            delay: WRITE_DELAY,
+            opacity: {
+              duration: WRITE_TIME,
+              delay: WRITE_DELAY,
+              times: [0, 0.06, 0.94, 1],
+            },
+          }}
+          className="absolute top-[52%] h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-[#ffb454]"
+        />
+      )}
+
+      {/* hand-drawn flourish underneath */}
+      <svg
+        viewBox="0 0 260 20"
+        preserveAspectRatio="none"
+        className="-mt-1 block h-4 w-full"
+        fill="none"
+        aria-hidden
+      >
+        <motion.path
+          d="M4 14 C 52 2, 96 20, 146 10 S 226 4, 256 12"
+          stroke="#ffb454"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+          initial={reduce ? false : { pathLength: 0, opacity: 0 }}
+          animate={{ pathLength: 1, opacity: 1 }}
+          transition={{
+            duration: 1.3,
+            ease: EASE,
+            delay: WRITE_DELAY + WRITE_TIME + 0.1,
+          }}
+        />
+      </svg>
+    </div>
+
+    <motion.p
+      initial={reduce ? false : { opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 1.2, delay: WRITE_DELAY + WRITE_TIME + 0.6 }}
+      className={`mt-1 text-[10px] tracking-[0.2em] text-zinc-700 ${mono}`}
+    >
+      CODEVOLVEX · 2026
+    </motion.p>
+  </div>
+);
+
+/* ------------------------------------------------------------------ */
+/*  Hero                                                               */
+/* ------------------------------------------------------------------ */
 
 export default function HeroSection() {
-  const {user} = useSelector(state => state.profile);
+  const { user } = useSelector((state) => state.profile);
+  const reduce = useReducedMotion();
 
   return (
-    <section className="relative overflow-hidden bg-gray-50 px-4 py-20 sm:px-6 lg:px-8 lg:py-32">
-      
-     
-      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-[20%] right-[10%] w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-10%] left-[-5%] w-[500px] h-[500px] bg-sky-500/10 rounded-full blur-[100px]" />
-      </div>
+    <section className="relative overflow-hidden bg-[#100f0d] px-5 pb-24 pt-36 sm:px-8 lg:pb-32 lg:pt-44">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-[0.06] mix-blend-overlay"
+        style={{ backgroundImage: GRAIN }}
+      />
 
-      <div className="relative z-10 mx-auto max-w-7xl grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-8 items-center">
-        
-         <motion.div
-
-          variants={containerVariants}
-
-          initial="hidden"
-
+      <div className="relative mx-auto grid max-w-7xl items-center gap-16 lg:grid-cols-[1.1fr_0.9fr] lg:gap-20">
+        {/* left: words */}
+        <motion.div
+          variants={container}
+          initial={reduce ? false : "hidden"}
           animate="show"
-
           className="max-w-2xl"
-
         >
+          <motion.div variants={item} className="flex items-center gap-3">
+            <span className="h-px w-8 bg-[#ffb454]" />
+            <p className="text-sm text-zinc-500">
+              {user?.firstName
+                ? `Welcome back, ${user.firstName}`
+                : "Video courses for developers"}
+            </p>
+          </motion.div>
 
- 
-
-
-
-
-          <motion.h1 variants={itemVariants} className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-gray-900 leading-[1.1]">
-
-            Master the skills
-
+          <motion.h1
+            variants={item}
+            className={`mt-7 text-5xl font-semibold leading-[1.02] tracking-tight text-[#f3ece0] sm:text-6xl lg:text-[5.25rem] ${display}`}
+          >
+            Learn by building
             <br />
-
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-sky-500">
-
-              industry demands.
-
-            </span>
-
+            <span className="text-[#ffb454]">real</span> things.
           </motion.h1>
 
-
-
-          {/* Paragraph */}
-
-          <motion.p variants={itemVariants} className="mt-6 text-lg sm:text-xl leading-8 text-gray-500 max-w-lg font-medium">
-
-            Hands-on courses built by industry experts. Learn at your pace, ship real projects, and land the role you want — starting today.
-
+          <motion.p
+            variants={item}
+            className="mt-7 max-w-lg text-lg leading-relaxed text-zinc-400"
+          >
+            Hands-on courses from working instructors. Go at your own pace,
+            ship projects as you learn, and keep your progress wherever you
+            left off.
           </motion.p>
 
+          <motion.div
+            variants={item}
+            className="mt-10 flex flex-col gap-4 sm:flex-row sm:items-center"
+          >
+            {user?.accountType == "Instructor" ? (
+              <NavLink to="/dashboard/my-courses">
+                <button className="group flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-[#ffb454] px-8 py-4 text-sm font-semibold text-[#1d1a16] transition-all duration-500 hover:bg-[#ffc272] active:scale-[0.98] sm:w-auto">
+                  Your Courses
+                  <HiArrowRight className="h-4 w-4 transition-transform duration-500 group-hover:translate-x-1" />
+                </button>
+              </NavLink>
+            ) : (
+              <NavLink to="/catalogue">
+                <button className="group flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-[#ffb454] px-8 py-4 text-sm font-semibold text-[#1d1a16] transition-all duration-500 hover:bg-[#ffc272] active:scale-[0.98] sm:w-auto">
+                  Explore Catalogue
+                  <HiArrowRight className="h-4 w-4 transition-transform duration-500 group-hover:translate-x-1" />
+                </button>
+              </NavLink>
+            )}
 
-
-
-          <motion.div variants={itemVariants} className="mt-10 flex flex-col sm:flex-row gap-4">
-    {user?.accountType == 'Instructor' ? (   <NavLink to="/dashboard/my-courses">
-
-              <button className="flex w-full sm:w-auto items-center justify-center gap-2 rounded-2xl bg-gray-900 px-8 py-4 text-sm font-bold text-white transition-all hover:bg-indigo-600 hover:shadow-lg hover:shadow-indigo-500/25 hover:-translate-y-0.5 active:scale-95">
-               Your Courses
-
-                <HiArrowRight className="h-4 w-4" />
-
-              </button>
-
-            </NavLink>) : (   <NavLink to="/catalogue">
-
-              <button className="flex w-full sm:w-auto cursor-pointer items-center justify-center gap-2 rounded-2xl bg-gray-900 px-8 py-4 text-sm font-bold text-white transition-all hover:bg-indigo-600 hover:shadow-lg hover:shadow-indigo-500/25 hover:-translate-y-0.5 active:scale-95">
-
-               Explore Catalogue
-                <HiArrowRight className="h-4 w-4" />
-
-              </button>
-
-            </NavLink>)}
-         
-
-
-
-            <button className="flex w-full sm:w-auto items-center justify-center gap-2 rounded-2xl border border-gray-200 bg-white px-8 py-4 text-sm font-bold transition-all hover:border-gray-900 hover:bg-gray-50 active:scale-95">
-
-              <HiPlay className="h-5 w-5 text-indigo-600" />
-
-          <span className="text-indigo-600">Watch Demo</span>    
-
+            <button className="group flex w-full items-center justify-center gap-2.5 rounded-full px-6 py-4 text-sm text-zinc-300 transition-colors duration-500 hover:text-[#ffb454] sm:w-auto">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full border border-white/15 transition-colors duration-500 group-hover:border-[#ffb454]/60">
+                <HiPlay className="h-3.5 w-3.5 translate-x-px" />
+              </span>
+              Watch demo
             </button>
-
           </motion.div>
 
-
+          <motion.dl
+            variants={item}
+            className="mt-16 grid grid-cols-1 gap-6 border-t border-white/[0.07] pt-8 sm:grid-cols-3"
+          >
+            {FACTS.map(([title, text]) => (
+              <div key={title}>
+                <dt className={`text-[15px] font-medium text-[#f3ece0] ${display}`}>
+                  {title}
+                </dt>
+                <dd className="mt-1.5 text-sm leading-relaxed text-zinc-500">
+                  {text}
+                </dd>
+              </div>
+            ))}
+          </motion.dl>
+        </motion.div>
 
        
-
-          <motion.div variants={itemVariants} className="mt-14 flex items-center gap-8 border-t border-gray-100 pt-8">
-
-            {[
-
-              ["120K+", "Learners"],
-
-              ["450+", "Courses"],
-
-              ["4.9★", "Rating"],
-
-            ].map(([num, label], i) => (
-
-              <div key={i} className="flex flex-col">
-
-                <span className="text-2xl font-black text-gray-900">{num}</span>
-
-                <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider mt-1">{label}</span>
-
-              </div>
-
-            ))}
-
-          </motion.div>
-
+        <motion.div
+          initial={reduce ? false : { opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1.1, ease: EASE, delay: 0.4 }}
+        >
+          <LearningPath reduce={reduce} />
         </motion.div>
-<div className="relative w-full h-[500px] lg:h-[600px] flex items-center justify-center [perspective:1200px]">
-          
-           
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8, y: 40 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 0.9, type: "spring" }}
-            className="relative z-10 w-full max-w-sm"
-          >
-            <motion.div
-              animate={{ y: [0, -15, 0], rotateY: [-8, -12, -8], rotateX: [12, 8, 12] }}
-              transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-              className="relative [transform-style:preserve-3d]"
-            >
-              
-              <div className="relative w-full aspect-[16/11] bg-gray-900 rounded-t-2xl border-[4px] border-gray-800 shadow-2xl overflow-hidden [transform-style:preserve-3d]">
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-16 h-3 bg-gray-800 rounded-b-md z-20 flex justify-center items-center">
-                  <div className="w-1 h-1 rounded-full bg-blue-900/50" />
-                </div>
-                <ScreenContent />
-              </div>
-
-              <div className="relative w-[110%] -ml-[5%] h-5 bg-gradient-to-b from-gray-300 to-gray-400 rounded-b-xl shadow-[0_20px_40px_rgba(0,0,0,0.4)] flex justify-center [transform:translateZ(10px)] border-t border-gray-200">
-                <div className="w-20 h-1.5 bg-gray-400/50 rounded-b-md mt-0.5" />
-              </div>
-
-               
-              <FloatLoop y={10} duration={5} delay={0.2} className="absolute -bottom-15 -left-12 sm:-left-20 z-50">
-                <div className="bg-gradient-to-br from-indigo-950 to-indigo-900 border border-indigo-500/30 shadow-xl shadow-indigo-900/20 rounded-2xl p-4 text-white w-36">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-3xl font-black">14</span>
-                    <HiFire className="text-orange-500 w-6 h-6" />
-                  </div>
-                  <p className="text-[10px] text-indigo-200 font-bold uppercase tracking-wider mb-3">Day Streak</p>
-                  <div className="flex gap-1 justify-between">
-                    {STREAK_DAYS.map((d, i) => (
-                      <div key={i} className={`w-4 h-4 flex items-center justify-center rounded text-[8px] font-bold ${
-                        i === STREAK_TODAY ? 'bg-indigo-500 text-white shadow-[0_0_8px_theme(colors.indigo.500)]' : 
-                        STREAK_DONE.includes(i) ? 'bg-indigo-500/30 text-indigo-200' : 'bg-white/5 text-white/30'
-                      }`}>
-                        {d}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </FloatLoop>
-
-              
-              <FloatLoop y={12} duration={6} delay={1} className="absolute -top-8 -right-8 sm:-right-16 z-30">
-                <div className="bg-white/95 backdrop-blur-md border border-gray-100 shadow-2xl shadow-gray-200/50 rounded-2xl p-3 flex items-center gap-3 w-56">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-inner flex-shrink-0">
-                    <FaTrophy className="text-white w-5 h-5" />
-                  </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-gray-900">Certificate Earned!</h4>
-                    <p className="text-[10px] text-gray-500 mt-0.5">Priya completed React</p>
-                    <div className="flex text-amber-400 text-[10px] mt-1 gap-0.5">
-                      <HiStar /><HiStar /><HiStar /><HiStar /><HiStar />
-                    </div>
-                  </div>
-                </div>
-              </FloatLoop>
-
-            </motion.div>
-
-            {BADGES.map((badge, i) => (
-              <FloatLoop key={i} y={15} duration={badge.dur} delay={badge.delay} className={`absolute ${badge.pos} z-0 hidden sm:block`}>
-                <motion.div 
-                  initial={{ opacity: 0, scale: 0 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 1 + i * 0.2, type: 'spring' }}
-                  className="bg-white border border-gray-100 shadow-xl rounded-2xl p-2.5 pr-4 flex items-center gap-3"
-                >
-                  <div className={`w-10 h-10 rounded-xl ${badge.bg} flex items-center justify-center`}>
-                    <badge.Icon className="w-5 h-5" style={{ color: badge.color }} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-gray-900">{badge.label}</p>
-                    <p className="text-[10px] font-medium text-gray-500">{badge.sub}</p>
-                  </div>
-                </motion.div>
-              </FloatLoop>
-            ))}
-
-          </motion.div>
-        </div>
-
       </div>
+      <Signature reduce={reduce} />
     </section>
   );
 }

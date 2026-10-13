@@ -1,82 +1,176 @@
-import React from "react"
-import { Footer } from "../components/common/Footer"
-import ContactUsForm from "../components/common/ContactUsform"
+import React from "react";
+import { motion, useReducedMotion } from "framer-motion";
+import { HiChatBubbleLeftRight, HiMapPin, HiPhone, HiArrowUpRight } from "react-icons/hi2";
+import ContactUsForm from "../components/common/ContactUsform";
+
+const EASE = [0.23, 1, 0.32, 1];
+
+const display = "font-['Space_Grotesk',ui-sans-serif,system-ui,sans-serif]";
+const mono = "font-['JetBrains_Mono',ui-monospace,monospace]";
+
+const GRAIN = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")`;
+
+const container = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.12, delayChildren: 0.1 } },
+};
+const item = {
+  hidden: { opacity: 0, y: 22 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.95, ease: EASE } },
+};
 
 const contactDetails = [
   {
-    icon: "💬",
+    icon: HiChatBubbleLeftRight,
     heading: "Chat with us",
     description: "Our AI agents and human mentors are here to help.",
     details: "support@codevolvex.com",
+    href: "mailto:support@codevolvex.com",
   },
   {
-    icon: "🌍",
+    icon: HiMapPin,
     heading: "Visit us",
     description: "Our engineering hub in the heart of MP.",
     details: "Jabalpur, Madhya Pradesh, India",
   },
   {
-    icon: "📞",
+    icon: HiPhone,
     heading: "Call us",
     description: "Mon - Fri From 8am to 5pm.",
     details: "+91-7440682926",
+    href: "tel:+917440682926",
   },
-]
+];
+
+const ContactCard = ({ element, index }) => {
+  const Icon = element.icon;
+  const Wrapper = element.href ? "a" : "div";
+
+  return (
+    <motion.li variants={item}>
+      <Wrapper
+        {...(element.href ? { href: element.href } : {})}
+        className="group relative flex gap-5 overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.02] p-6 outline-none transition-all duration-500 hover:-translate-y-1 hover:border-[#ffb454]/40 hover:bg-[#ffb454]/[0.04] focus-visible:border-[#ffb454]"
+      >
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-white/15 text-[#ffb454] transition-all duration-500 group-hover:border-[#ffb454] group-hover:bg-[#ffb454] group-hover:text-[#1d1a16]">
+          <Icon className="h-5 w-5" />
+        </span>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-between gap-3">
+            <h3 className={`text-lg font-semibold tracking-tight text-[#f3ece0] ${display}`}>
+              {element.heading}
+            </h3>
+            <span className={`text-xs text-zinc-700 ${mono}`}>{String(index + 1).padStart(2, "0")}</span>
+          </div>
+          <p className="mt-1.5 text-sm leading-relaxed text-zinc-500">{element.description}</p>
+          <p
+            className={`mt-3 flex items-center gap-2 break-all text-[13px] text-[#ffb454] ${mono}`}
+          >
+            {element.details}
+            {element.href && (
+              <HiArrowUpRight className="h-3.5 w-3.5 shrink-0 opacity-0 transition-all duration-500 group-hover:translate-x-0.5 group-hover:opacity-100" />
+            )}
+          </p>
+        </div>
+      </Wrapper>
+    </motion.li>
+  );
+};
 
 const Contact = () => {
+  const reduce = useReducedMotion();
+
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
-      <div className="mx-auto flex w-11/12 max-w-7xl flex-col justify-between gap-16 py-20 lg:flex-row lg:py-32">
-        
-        {/* Contact Details (Left Side) */}
-        <div className="flex flex-col gap-10 lg:w-[35%]">
-          <div className="space-y-4">
-            <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-indigo-600">Get in Touch</h2>
-            <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
-              Let's connect
-            </h1>
-            <p className="text-lg text-slate-500 font-medium">
-              We’re here to help you accelerate your engineering journey. Choose your preferred channel.
-            </p>
+    <section className="relative overflow-hidden bg-[#100f0d] px-5 pb-24 pt-36 sm:px-8 lg:pb-32 lg:pt-44">
+      {/* grain */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-[0.06] mix-blend-overlay"
+        style={{ backgroundImage: GRAIN }}
+      />
+      {/* ambient glow */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -left-32 top-24 h-96 w-96 rounded-full bg-[#ffb454] opacity-[0.06] blur-3xl"
+      />
+
+      <div className="relative mx-auto flex max-w-7xl flex-col justify-between gap-16 lg:flex-row lg:gap-20">
+        {/* left: details */}
+        <motion.div
+          variants={container}
+          initial={reduce ? false : "hidden"}
+          animate="show"
+          className="flex flex-col gap-10 lg:w-[38%]"
+        >
+          <div>
+            <motion.div variants={item} className="flex items-center gap-3">
+              <span className="h-px w-8 bg-[#ffb454]" />
+              <p className={`text-[11px] uppercase tracking-[0.25em] text-zinc-500 ${mono}`}>
+                Get in touch
+              </p>
+            </motion.div>
+
+            <motion.h1
+              variants={item}
+              className={`mt-6 text-5xl font-semibold leading-[1.02] tracking-tight text-[#f3ece0] sm:text-6xl ${display}`}
+            >
+              Let's
+              <br />
+              connect<span className="text-[#ffb454]">.</span>
+            </motion.h1>
+
+            <motion.p variants={item} className="mt-6 max-w-md text-lg leading-relaxed text-zinc-400">
+              We're here to help you accelerate your engineering journey. Choose your preferred
+              channel.
+            </motion.p>
           </div>
 
-          <div className="flex flex-col gap-8">
+          <ul className="flex flex-col gap-4">
             {contactDetails.map((element, index) => (
-              <div
-                className="group flex gap-5 rounded-2xl border border-slate-200 bg-white p-6 transition-all hover:border-indigo-200 hover:shadow-xl hover:shadow-indigo-50/50"
-                key={index}
-              >
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-2xl">
-                  {element.icon}
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-slate-900">{element.heading}</h3>
-                  <p className="text-sm font-medium text-slate-500 mt-1">{element.description}</p>
-                  <p className="mt-2 text-sm font-bold text-indigo-600">{element.details}</p>
-                </div>
-              </div>
+              <ContactCard key={element.heading} element={element} index={index} />
             ))}
-          </div>
-        </div>
+          </ul>
+        </motion.div>
 
-        {/* Contact Form Section (Right Side) */}
-        <div className="lg:w-[55%]">
-          <div className="rounded-[2.5rem] border border-slate-200 bg-white p-8 shadow-2xl shadow-slate-200/60 sm:p-12">
-            <h2 className="mb-2 text-3xl font-extrabold tracking-tight text-slate-900">
-              Send us a message
-            </h2>
-            <p className="mb-10 text-slate-500 font-medium">
-              Whether you are looking to accelerate your engineering career, report a bug, or partner with us—drop a message below.
-            </p>
-            
-            <ContactUsForm />
+        {/* right: form */}
+        <motion.div
+          initial={reduce ? false : { opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1.1, ease: EASE, delay: 0.4 }}
+          className="lg:w-[56%]"
+        >
+          <div className="relative overflow-hidden rounded-3xl border border-white/[0.08] bg-[#14130f] p-8 sm:p-12">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 opacity-[0.06] mix-blend-overlay"
+              style={{ backgroundImage: GRAIN }}
+            />
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full bg-[#ffb454] opacity-[0.08] blur-3xl"
+            />
+
+            <div className="relative">
+              <h2
+                className={`text-3xl font-semibold leading-[1.05] tracking-tight text-[#f3ece0] ${display}`}
+              >
+                Send us a message<span className="text-[#ffb454]">.</span>
+              </h2>
+              <p className="mt-4 text-sm leading-relaxed text-zinc-500">
+                Whether you are looking to accelerate your engineering career, report a bug, or
+                partner with us—drop a message below.
+              </p>
+
+              <div className="mt-10 border-t border-white/[0.07] pt-10">
+                <ContactUsForm />
+              </div>
+            </div>
           </div>
-        </div>
-        
+        </motion.div>
       </div>
-      
-    </div>
-  )
-}
+    </section>
+  );
+};
 
-export default Contact
+export default Contact;

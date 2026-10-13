@@ -3,7 +3,7 @@ import React, { useRef, useState } from "react";
 export default function SpotlightCard({ 
   children, 
   className = "", 
-  spotlightColor = "rgba(99, 102, 241, 0.12)" // Default CodevolveX Indigo glow
+  spotlightColor = "rgba(99, 102, 241, 0.12)"  
 }) {
   const divRef = useRef(null);
   const [isFocused, setIsFocused] = useState(false);

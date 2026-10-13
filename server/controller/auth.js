@@ -9,6 +9,89 @@ import mongoose from "mongoose";
 import otpTemplate from "../mail/templates/emailVerificationTemplate.js";
 import { OTP_OPTIONS } from "../queues/emailQueue.js";
 import { queueEmail } from "../queues/emailQueue.js";
+
+import {OAuth2Client} from 'google-auth-library' ; 
+import { tryCatch } from "bullmq";
+import { create } from "domain";
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID) ; 
+
+const googleAuth = async (req ,res) => {
+  try{
+    const {credential , accountType} = req.body ; 
+    if(!credential) {
+      return res.status(400).json({success : false , message : "Missing Credentials"}) ; 
+    }
+    const ticket = await googleClient.verifyIdToken({
+      idToken : credential,
+      audience : process.env.GOOGLE_CLIENT_ID , 
+    }) ; 
+    const {sub , email , email_verified , given_name , family_name , picture} = ticket.getPayload() ; 
+    if(!email_verified) {
+      return res.status(401).json({success : false , message : 'Google Email is not verified'}) ; 
+    }
+    const normalizedEmail = email.toLowerCase() ;
+    let user = await User.findOne({
+      $or : [{googleId : sub} , {email : normalizedEmail}] , 
+    }).populate('additionalDetails') ; 
+    
+    if(user && user.active === false) {
+      return res.status(403).json({success : false , message : "Account is deactivated"}) ; 
+    }
+    if(!user) {
+      // never accepting admin role fromclient 
+      const role = accountType === "Instructor" ? "Instructor" : "Student" ; 
+      const firstName = given_name || normalizedEmail.split('@')[0] ; 
+      const lastName = family_name || "" ; 
+      const profileDetails = await Profile.create({
+        gender : null , 
+        dateOfBirth : null , 
+        about : null  ,
+        contactNumber : null ,
+      }); 
+      const created = await User.create({
+        firstName , 
+        lastName , 
+        email : normalizedEmail , 
+        googleId : sub , 
+        authProvider : "google" , 
+        accountType : role, 
+        approved : role !== 'Instructor'  ,
+        additionalDetails :profileDetails._id , 
+        image : picture || `https://api.dicebear.com/5.x/initials/svg?seed=${firstName}`,
+      }) ; 
+      user = await User.findById(created._id).populate('additionalDetails') ; 
+    } else if(!user.googleId) {
+      // existing email / password acount : link it to google 
+      user.googleId = sub ; 
+      await user.save() ; 
+    }
+
+    const payload = {email : user.email , id : user.id , accountType : user.accountType} ; 
+    const token = jwt.sign(payload, process.env.JWT_SECRET , {expiresIn : '24h'}) ; 
+    user.token = token; 
+    user.password =undefined ; 
+    const options = {
+      expires : new Date(Date.now() + 30* 24 *60 * 60 * 1000) ,
+      httpOnly : true , 
+      sameSite : 'strict' , 
+      secure : process.env.NODE_ENV === 'production' , 
+    }
+  return res.cookie("token", token, options).status(200).json({
+      success: true,
+      token,
+      user,
+      message: "Logged in successfully",
+    });
+  }catch(error){
+  console.error("Google auth error:", error);
+    return res.status(401).json({
+      success: false,
+      message: "Google authentication failed",
+    });
+  }
+}
+
+
 const sendOTP = async (req, res) => {
   try {
     const { email } = req.body;
@@ -168,6 +251,12 @@ const login = async (req, res) => {
     if (!user) {
       return res.status(400).json({ success: false, message: "User not found" });
     }
+    if (!user.password) {
+  return res.status(400).json({
+    success: false,
+    message: "This account uses Google sign-in. Please continue with Google.",
+  });
+}
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ success: false, message: "Password is incorrect" });
@@ -205,6 +294,12 @@ const changePassword = async (req, res) => {
     }
 
     const user = await User.findById(new mongoose.Types.ObjectId(req.user.id));
+    if (!user.password) {
+  return res.status(400).json({
+    success: false,
+    message: "Your account uses Google sign-in, so there is no password to change",
+  });
+}
     const isMatch = await bcrypt.compare(oldPassword, user.password);
     if (!isMatch) {
       return res.status(401).json({ success: false, message: "Old password is incorrect" });
@@ -230,4 +325,4 @@ const changePassword = async (req, res) => {
   }
 };
 
-export { login, signUp, sendOTP, changePassword };
+export { login, signUp, sendOTP, changePassword,googleAuth};

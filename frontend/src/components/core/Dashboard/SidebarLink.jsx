@@ -1,47 +1,50 @@
-import React from 'react';
-import * as Icons from 'react-icons/vsc';
-import { NavLink, useLocation, matchPath } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import React from "react"
+import * as Icons from "react-icons/vsc"
+import { NavLink, matchPath, useLocation } from "react-router-dom"
+import { motion, useReducedMotion } from "framer-motion"
 
-const SidebarLink = ({ link, iconName }) => {
-  const Icon = Icons[iconName];
-  const location = useLocation();
+const display = "font-['Space_Grotesk',ui-sans-serif,system-ui,sans-serif]"
 
-  const matchRoute = (route) => {
-    return matchPath({ path: route }, location.pathname);
-  };
-
-  const isActive = matchRoute(link.path);
+export default function SidebarLink({ link, iconName }) {
+  const Icon = Icons[iconName]
+  const location = useLocation()
+  const reduce = useReducedMotion()
+  const active = !!matchPath({ path: link.path }, location.pathname)
 
   return (
     <NavLink
       to={link.path}
-      className={`relative flex items-center gap-x-3 px-6 py-2.5 text-sm font-semibold transition-all duration-200 group
-        ${isActive 
-          ? "text-indigo-600 bg-indigo-50/60 font-bold" 
-          : "text-slate-500 hover:text-slate-900 hover:bg-slate-50/80"
-        }
-      `}
+      aria-current={active ? "page" : undefined}
+      className="group relative flex items-center gap-3.5 rounded-full px-4 py-2.5 outline-none focus-visible:ring-1 focus-visible:ring-[#ffb454]/70"
     >
-      {isActive && (
+      {/* one highlight that slides between links as the route changes */}
+      {active && (
         <motion.span
-          layoutId="active-sidebar-indicator"
-          className="absolute left-0 top-0 h-full w-[3.5px] bg-indigo-600 rounded-r-full shadow-[0_0_8px_rgba(79,70,229,0.4)]"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.2 }}
+          layoutId="dashboard-active-link"
+          transition={reduce ? { duration: 0 } : { type: "spring", stiffness: 380, damping: 34 }}
+          className="absolute inset-0 rounded-full border border-[#ffb454]/25 bg-[#ffb454]/[0.08]"
         />
       )}
-      {Icon && (
-        <Icon 
-          className={`text-lg transition-transform duration-200 group-hover:scale-105 
-            ${isActive ? "text-indigo-600" : "text-slate-400 group-hover:text-slate-600"}`} 
-        />
-      )}
-      
-      <span className="tracking-wide">{link.name}</span>
-    </NavLink>
-  );
-};
 
-export default SidebarLink;
+      <span
+        className={`relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-all duration-500 ${
+          active
+            ? "border-[#ffb454] bg-[#ffb454] text-[#1d1a16]"
+            : "border-white/10 text-zinc-500 group-hover:border-[#ffb454]/50 group-hover:text-[#ffb454]"
+        }`}
+      >
+        {Icon && <Icon className="text-[15px]" />}
+      </span>
+
+      <span
+        className={`relative truncate text-[15px] transition-colors duration-500 ${display} ${
+          active
+            ? "font-medium text-[#f3ece0]"
+            : "text-zinc-400 group-hover:text-[#f3ece0]"
+        }`}
+      >
+        {link.name}
+      </span>
+    </NavLink>
+  )
+}

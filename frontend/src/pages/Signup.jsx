@@ -7,8 +7,11 @@ function Signup() {
     <Template
       title={
         <>
-          Join the millions learning to code with  
-         codevolve<span className="text-1xl text-indigo-600">X</span> for free
+          Join the millions learning to code with{" "}
+          <span className="whitespace-nowrap">
+            codevolve<span className="text-[#ffb454]">X</span>
+          </span>{" "}
+          for free<span className="text-[#ffb454]">.</span>
         </>
       }
       description1="Build skills for today, tomorrow, and beyond."

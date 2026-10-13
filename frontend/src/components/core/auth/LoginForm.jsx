@@ -1,17 +1,39 @@
 import React, { useState } from "react";
-import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai"; 
+import { HiEye, HiEyeSlash, HiArrowRight } from "react-icons/hi2";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
+import { motion, useReducedMotion } from "framer-motion";
+import GoogleAuthButton from "./GoogleAuthButton";
 import { login } from "../../../services/operations/authAPI";
+
+const EASE = [0.23, 1, 0.32, 1];
+
+const display = "font-['Space_Grotesk',ui-sans-serif,system-ui,sans-serif]";
+const mono = "font-['JetBrains_Mono',ui-monospace,monospace]";
+
+const formV = { hidden: {}, show: { transition: { staggerChildren: 0.07, delayChildren: 0.1 } } };
+const fieldV = {
+  hidden: { opacity: 0, y: 16 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.8, ease: EASE } },
+};
+
+const inputStyles =
+  "w-full rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3.5 text-[15px] text-[#f3ece0] placeholder-zinc-600 outline-none transition-all duration-500 hover:border-white/20 focus:border-[#ffb454]/70 focus:bg-[#ffb454]/[0.04] focus:ring-4 focus:ring-[#ffb454]/10";
+const labelStyles = `mb-2 block text-[11px] uppercase tracking-[0.2em] text-zinc-500 ${mono}`;
+
+const Required = () => <span className="ml-1 text-[#ffb454]">*</span>;
+
 export const LoginForm = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
- 
+  const reduce = useReducedMotion();
+
+  const loading = useSelector((state) => state.auth?.loading);
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
-  
   const [showPassword, setShowPassword] = useState(false);
   const { email, password } = formData;
 
@@ -28,76 +50,108 @@ export const LoginForm = () => {
   };
 
   return (
-    <form 
-      onSubmit={handleOnSubmit} 
-      className="flex flex-col gap-y-5 w-full max-w-md mx-auto p-6 bg-white rounded-lg  relative right-13"
+    <motion.form
+      variants={formV}
+      initial={reduce ? false : "hidden"}
+      animate="show"
+      onSubmit={handleOnSubmit}
+      className="flex w-full flex-col gap-y-5"
     >
-      <div className="flex flex-col gap-y-1">
-        <label htmlFor="email" className="text-sm font-medium text-gray-700">
-          Email Address <span className="text-red-500">*</span>
+      <motion.div variants={fieldV}>
+        <label htmlFor="email" className={labelStyles}>
+          Email address
+          <Required />
         </label>
         <input
           id="email"
           required
-          type="email"  
+          type="email"
           name="email"
+          autoComplete="email"
           value={email}
           onChange={handleOnChange}
           placeholder="Enter email address"
-          className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+          className={inputStyles}
         />
-      </div>
- 
-      <div className="flex flex-col gap-y-1">
-        <label htmlFor="password" className="text-sm font-medium text-gray-700">
-          Password <span className="text-red-500">*</span>
-        </label>
-        
+      </motion.div>
+
+      <motion.div variants={fieldV}>
+        <div className="flex items-baseline justify-between">
+          <label htmlFor="password" className={labelStyles}>
+            Password
+            <Required />
+          </label>
+          <Link
+            to="/forgot-password"
+            className={`mb-2 text-[11px] uppercase tracking-[0.15em] text-zinc-500 underline decoration-white/10 underline-offset-4 transition-colors duration-500 hover:text-[#ffb454] hover:decoration-[#ffb454] ${mono}`}
+          >
+            Forgot password?
+          </Link>
+        </div>
+
         <div className="relative">
           <input
             id="password"
             required
             type={showPassword ? "text" : "password"}
             name="password"
+            autoComplete="current-password"
             value={password}
             onChange={handleOnChange}
-            placeholder="Enter Password"
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all pr-10"
+            placeholder="Enter password"
+            className={`${inputStyles} pr-12`}
           />
-          
           <button
-            type="button" 
+            type="button"
             onClick={() => setShowPassword((prev) => !prev)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none focus:text-blue-500 transition-colors"
             aria-label={showPassword ? "Hide password" : "Show password"}
+            className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer rounded-full p-1.5 text-zinc-500 transition-colors duration-500 hover:text-[#ffb454] focus-visible:text-[#ffb454] focus-visible:outline-none"
           >
-            {showPassword ? (
-              <AiOutlineEyeInvisible size={20} />
-            ) : (
-              <AiOutlineEye size={20} />
-            )}
+            {showPassword ? <HiEyeSlash size={18} /> : <HiEye size={18} />}
           </button>
         </div>
+      </motion.div>
 
-        {/* Forgot Password Link */}
-        <div className="flex justify-end mt-1">
-          <Link 
-            to="/forgot-password" 
-            className="text-xs text-blue-600 hover:text-blue-800 hover:underline transition-colors"
-          >
-            Forgot Password?
-          </Link>
-        </div>
-      </div>
-
-      {/* Submit Button */}
-      <button 
+      <motion.button
+        variants={fieldV}
         type="submit"
-        className="w-full mt-2 bg-blue-600 text-white font-semibold py-2.5 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all active:scale-[0.98]"
+        disabled={loading}
+        className="group mt-2 flex w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-[#ffb454] px-8 py-4 text-sm font-semibold text-[#1d1a16] transition-all duration-500 hover:bg-[#ffc272] focus:outline-none focus-visible:ring-4 focus-visible:ring-[#ffb454]/30 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
       >
-        Sign In
-      </button>
-    </form>
+        {loading ? (
+          <>
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#1d1a16] border-t-transparent" />
+            Signing in...
+          </>
+        ) : (
+          <>
+            Sign in
+            <HiArrowRight className="h-4 w-4 transition-transform duration-500 group-hover:translate-x-1" />
+          </>
+        )}
+      </motion.button>
+
+      {/* divider */}
+      <motion.div variants={fieldV} className="flex items-center gap-4">
+        <span className="h-px flex-1 bg-white/[0.07]" />
+        <span className={`text-[11px] uppercase tracking-[0.25em] text-zinc-600 ${mono}`}>or</span>
+        <span className="h-px flex-1 bg-white/[0.07]" />
+      </motion.div>
+
+      <motion.div variants={fieldV}>
+        <GoogleAuthButton />
+      </motion.div>
+
+      <motion.p variants={fieldV} className="text-center text-sm text-zinc-500">
+        New here?{" "}
+        <Link
+          to="/signup"
+          className={`font-medium text-[#ffb454] underline decoration-[#ffb454]/30 underline-offset-4 transition-colors duration-500 hover:decoration-[#ffb454] ${display}`}
+        >
+          Create an account
+        </Link>
+      </motion.p>
+    </motion.form>
   );
 };
 

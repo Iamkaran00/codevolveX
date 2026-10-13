@@ -38,7 +38,7 @@ const ContactUsForm = () => {
   }, [reset, isSubmitSuccessful])
 
   const labelClasses = "text-[11px] font-bold uppercase tracking-[0.25em] text-slate-400 transition-colors duration-300 mb-2 block"
-  const inputClasses = "w-full bg-transparent border-b-2 border-slate-200 py-3 text-slate-900 text-lg font-medium placeholder:text-slate-300 focus:border-indigo-600 focus:outline-none transition-all duration-300 rounded-none px-0"
+  const inputClasses = "w-full text-white bg-transparent border-b-2 border-slate-200 py-3 text-lg font-medium placeholder:text-slate-300 focus:border-indigo-600 focus:outline-none transition-all duration-300 rounded-none px-0"
   const errorClasses = "absolute -bottom-6 left-0 text-[10px] font-bold uppercase tracking-widest text-red-500"
 
   const ErrorMsg = ({ show, msg }) => (
@@ -55,7 +55,7 @@ const ContactUsForm = () => {
   )
 
   return (
-    <form className="flex w-full flex-col gap-10 p-4 sm:p-8" onSubmit={handleSubmit(submitContactForm)}>
+    <form className="flex w-full flex-col gap-10 p-4 sm:p-8" text-white onSubmit={handleSubmit(submitContactForm)}>
       
       {/* Name Row */}
       <div className="flex flex-col gap-10 md:flex-row md:gap-12">
@@ -133,9 +133,9 @@ const ContactUsForm = () => {
       <div className="pt-4">
         <button
           disabled={loading} type="submit"
-          className="group relative inline-flex h-16 w-full items-center justify-center overflow-hidden bg-slate-900 px-12 font-bold text-white transition-all disabled:opacity-50"
+          className="group relative inline-flex rounded-full h-16 w-full items-center justify-center overflow-hidden bg-amber-200-900 px-12 font-bold text-white transition-all disabled:opacity-50"
         >
-          <span className="absolute inset-0 h-full w-full bg-indigo-600 transition-all duration-500 ease-out -translate-x-full group-hover:translate-x-0"></span>
+          <span className="absolute inset-0 h-full w-full bg-amber-600 transition-all duration-500 ease-out -translate-x-full group-hover:translate-x-0"></span>
           <span className="relative z-10 flex items-center gap-3 text-sm tracking-[0.2em] uppercase">
             {loading ? "Processing..." : (
               <>

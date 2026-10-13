@@ -6,6 +6,10 @@ import { useSelector } from "react-redux";
 import "video-react/dist/video-react.css";
 import { Player } from "video-react";
 
+/* ---------- design tokens (shared with the rest of the site) ---------- */
+const display = "font-['Space_Grotesk',ui-sans-serif,system-ui,sans-serif]";
+const mono = "font-['JetBrains_Mono',ui-monospace,monospace]";
+
 export default function Upload({
   name,
   label,
@@ -35,7 +39,7 @@ export default function Upload({
       ? { "image/*": [".jpeg", ".jpg", ".png"] }
       : { "video/*": [".mp4"] },
     onDrop,
-    disabled: !!viewData, // Disable dropzone interactivity if it's strictly view-only mode
+    disabled: !!viewData, // view-only mode: no interaction
   });
 
   const previewFile = (file) => {
@@ -56,77 +60,86 @@ export default function Upload({
 
   return (
     <div className="flex flex-col gap-2">
-      <label className="text-xs font-bold uppercase tracking-wider text-slate-500" htmlFor={name}>
-        {label} {!viewData && <sup className="text-red-500">*</sup>}
+      <label htmlFor={name} className={`text-sm font-medium text-[#f3ece0] ${display}`}>
+        {label}{" "}
+        {!viewData && (
+          <span aria-hidden className="text-[#ffb454]">
+            *
+          </span>
+        )}
       </label>
-      
-      {/* 1. Moved getRootProps to the outer container so the entire zone reacts to drop/clicks */}
+
+      {/* root props on the outer container so the whole zone reacts to drops and clicks */}
       <div
         {...getRootProps()}
-        className={`flex min-h-[250px] cursor-pointer items-center justify-center rounded-2xl border-2 border-dashed transition-all duration-200 overflow-hidden
-          ${isDragActive 
-            ? "border-indigo-500 bg-indigo-50/30" 
-            : "border-slate-200 bg-slate-50/50 hover:border-indigo-400 hover:bg-white"
-          }`}
+        className={`group flex min-h-[250px] cursor-pointer items-center justify-center overflow-hidden rounded-2xl border border-dashed transition-colors duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb454]/70 ${
+          isDragActive
+            ? "border-[#ffb454] bg-[#ffb454]/10"
+            : errors[name]
+            ? "border-red-400/60 bg-white/[0.02]"
+            : "border-white/15 bg-white/[0.02] hover:border-[#ffb454]/50 hover:bg-white/[0.04]"
+        }`}
       >
-        {/* 2. Hidden input MUST always sit directly inside the root props wrapper element */}
-        <input {...getInputProps()} />
+        {/* hidden input must stay directly inside the root props wrapper */}
+        <input {...getInputProps({ id: name })} />
 
         {previewSource ? (
           <div className="flex w-full flex-col p-5">
             {!video ? (
               <img
                 src={previewSource}
-                alt="Preview Canvas"
-                className="max-h-[350px] w-full rounded-xl object-cover shadow-sm border border-slate-100"
+                alt="Selected thumbnail preview"
+                className="max-h-[350px] w-full rounded-xl border border-white/10 object-cover"
               />
             ) : (
-              <div className="rounded-xl overflow-hidden shadow-sm border border-slate-100 bg-black" onClick={(e) => e.stopPropagation()}>
-                {/* e.stopPropagation prevents opening file browser when pressing play on a video */}
+              <div
+                className="overflow-hidden rounded-xl border border-white/10 bg-black"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* stopPropagation keeps the file browser from opening when pressing play */}
                 <Player aspectRatio="16:9" playsInline src={previewSource} />
               </div>
             )}
-            
+
             {!viewData && (
               <button
                 type="button"
                 onClick={(e) => {
-                  e.stopPropagation(); // Prevents reopening file selector when clearing file
+                  e.stopPropagation(); // don't reopen the file selector when clearing
                   setPreviewSource("");
                   setSelectedFile(null);
                   setValue(name, null);
                 }}
-                className="mt-4 self-center text-xs font-bold text-red-500 hover:text-red-700 hover:underline underline-offset-4"
+                className="mt-4 cursor-pointer self-center rounded-full px-4 py-1.5 text-xs text-zinc-400 underline-offset-4 transition-colors duration-300 hover:text-red-400 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ffb454]/70"
               >
-                Remove File and Replace
+                Remove and replace
               </button>
             )}
           </div>
         ) : (
-          <div className="flex w-full flex-col items-center p-6 text-center select-none">
-            {/* Circular Cloud Icon Node */}
-            <div className="grid h-14 w-14 place-items-center rounded-full bg-indigo-50 border border-indigo-100 text-indigo-600 shadow-sm transition-transform group-hover:scale-105">
+          <div className="flex w-full select-none flex-col items-center p-6 text-center">
+            <div className="grid h-14 w-14 place-items-center rounded-full border border-[#ffb454]/40 bg-[#ffb454]/10 text-[#ffb454] transition-transform duration-500 group-hover:scale-105">
               <FiUploadCloud className="text-2xl" />
             </div>
-            
-            <p className="mt-4 max-w-[260px] text-sm font-medium text-slate-600 leading-relaxed">
-              Drag and drop an {!video ? "image asset" : "MP4 video clip"}, or click to{" "}
-              <span className="font-bold text-indigo-600 underline decoration-indigo-200 decoration-2 underline-offset-2">Browse</span> files
+
+            <p className="mt-4 max-w-[260px] text-sm leading-relaxed text-zinc-400">
+              Drag and drop {!video ? "an image" : "an MP4 video"}, or click to{" "}
+              <span className="text-[#ffb454] underline decoration-[#ffb454]/40 underline-offset-4">
+                browse files
+              </span>
             </p>
-            
-            <ul className="mt-8 flex items-center justify-center gap-x-8 text-[11px] font-bold uppercase tracking-wider text-slate-400 border-t border-slate-200/60 pt-4 w-11/12 max-w-sm">
-              <li>Aspect Ratio 16:9</li>
-              <li className="list-disc">Max Size 50MB</li>
-            </ul>
+
+            <p className={`mt-6 w-11/12 max-w-sm border-t border-white/[0.07] pt-4 text-xs text-zinc-600 ${mono}`}>
+              16:9 ratio, up to 50 MB
+            </p>
           </div>
         )}
       </div>
 
-     
       {errors[name] && (
-        <span className="text-xs font-semibold tracking-wide text-red-500 mt-0.5">
-          {label} attachment is required to process this asset module.
-        </span>
+        <p role="alert" className="text-xs text-red-400">
+          Add {video ? "a video" : "an image"} to continue.
+        </p>
       )}
     </div>
   );

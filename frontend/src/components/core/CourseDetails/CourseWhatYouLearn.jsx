@@ -1,56 +1,125 @@
-import React from "react"
-import { motion } from "framer-motion"
-import { CheckCircle2 } from "lucide-react"
+import React from "react";
+import { motion, useReducedMotion } from "framer-motion";
+import { HiArrowUpRight } from "react-icons/hi2";
+
+const EASE = [0.23, 1, 0.32, 1];
+
+const display = "font-['Space_Grotesk',ui-sans-serif,system-ui,sans-serif]";
+const mono = "font-['JetBrains_Mono',ui-monospace,monospace]";
+
+const GRAIN = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")`;
+
+const outline = { WebkitTextStroke: "1px rgba(243,236,220,0.35)" };
+
+const gridV = { hidden: {}, show: { transition: { staggerChildren: 0.07, delayChildren: 0.15 } } };
+const cardV = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.85, ease: EASE } },
+};
+
+const pad = (n) => String(n).padStart(2, "0");
 
 export default function CourseWhatYouLearn({ course }) {
-  const points = Array.isArray(course.whatWillYouLearn)
-    ? course.whatWillYouLearn
-    : course.whatWillYouLearn?.split("\n").filter(Boolean) ?? []
+  const reduce = useReducedMotion();
 
-  if (!points.length) return null
+  const points = Array.isArray(course?.whatWillYouLearn)
+    ? course.whatWillYouLearn
+    : course?.whatWillYouLearn?.split("\n").filter(Boolean) ?? [];
+
+  if (!points.length) return null;
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 24 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: 0.1, ease: [0.23, 1, 0.32, 1] }}
-      className="relative bg-white rounded-3xl border border-slate-100 overflow-hidden"
+    <motion.section
+      initial={reduce ? false : { opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-60px" }}
+      transition={{ duration: 1, ease: EASE }}
+      className="relative overflow-hidden rounded-3xl border border-white/[0.08] bg-[#14130f] p-7 sm:p-10"
     >
-      {/* Accent bar */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-500" />
+      {/* grain */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-[0.06] mix-blend-overlay"
+        style={{ backgroundImage: GRAIN }}
+      />
 
-      <div className="p-8">
-        <div className="flex items-center gap-3 mb-7">
-          <div className="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center shrink-0">
-            <CheckCircle2 size={20} className="text-indigo-600" />
-          </div>
+      {/* soft amber glow */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-[#ffb454] opacity-[0.08] blur-3xl"
+      />
+
+      <div className="relative">
+        {/* header */}
+        <div className="flex items-end justify-between gap-6">
           <div>
-            <h2 className="text-xl font-black text-slate-900">What you'll learn</h2>
-            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mt-0.5">
-              {points.length} key outcomes
+            <div className="flex items-center gap-3">
+              <motion.span
+                initial={reduce ? false : { scaleX: 0 }}
+                whileInView={{ scaleX: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.9, ease: EASE, delay: 0.2 }}
+                style={{ originX: 0 }}
+                className="h-px w-8 bg-[#ffb454]"
+              />
+              <p className={`text-[11px] uppercase tracking-[0.25em] text-zinc-500 ${mono}`}>
+                Outcomes · what you walk away with
+              </p>
+            </div>
+            <h2
+              className={`mt-5 text-3xl font-semibold leading-[1.05] tracking-tight text-[#f3ece0] sm:text-4xl ${display}`}
+            >
+              What you'll
+              <br />
+              learn<span className="text-[#ffb454]">.</span>
+            </h2>
+          </div>
+
+          <div className="text-right">
+            <p className={`text-4xl font-semibold tabular-nums text-[#ffb454] sm:text-5xl ${display}`}>
+              {pad(points.length)}
+            </p>
+            <p className={`mt-1 text-[11px] uppercase tracking-[0.2em] text-zinc-600 ${mono}`}>
+              Key outcomes
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {/* outcomes */}
+        <motion.ul
+          variants={gridV}
+          initial={reduce ? false : "hidden"}
+          whileInView="show"
+          viewport={{ once: true, margin: "-60px" }}
+          className="mt-10 grid grid-cols-1 gap-4 border-t border-white/[0.07] pt-10 sm:grid-cols-2"
+        >
           {points.map((point, i) => (
-            <motion.div
+            <motion.li
               key={i}
-              initial={{ opacity: 0, x: -8 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.3, delay: 0.1 + i * 0.04, ease: "easeOut" }}
-              className="flex items-start gap-3 bg-slate-50 rounded-2xl px-4 py-3.5"
+              variants={cardV}
+              className="group relative flex min-h-[132px] flex-col justify-between overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5 transition-all duration-500 hover:-translate-y-1 hover:border-[#ffb454]/40 hover:bg-[#ffb454]/[0.04]"
             >
-              <div className="w-5 h-5 rounded-full bg-indigo-100 flex items-center justify-center shrink-0 mt-0.5">
-                <CheckCircle2 size={12} className="text-indigo-600" />
+              <div className="flex items-start justify-between gap-4">
+                <span
+                  className={`text-5xl font-semibold leading-none text-transparent transition-all duration-500 group-hover:[-webkit-text-stroke:1px_#ffb454] ${display}`}
+                  style={outline}
+                >
+                  {pad(i + 1)}
+                </span>
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/15 text-zinc-500 transition-all duration-500 group-hover:border-[#ffb454] group-hover:bg-[#ffb454] group-hover:text-[#1d1a16]">
+                  <HiArrowUpRight size={14} />
+                </span>
               </div>
-              <span className="text-sm font-medium text-slate-700 leading-relaxed">
+
+              <p className="mt-6 text-[15px] leading-relaxed text-zinc-300 transition-colors duration-500 group-hover:text-[#f3ece0]">
                 {point}
-              </span>
-            </motion.div>
+              </p>
+ 
+              <span className="absolute bottom-0 left-0 h-px w-full origin-left scale-x-0 bg-[#ffb454] transition-transform duration-700 ease-out group-hover:scale-x-100" />
+            </motion.li>
           ))}
-        </div>
+        </motion.ul>
       </div>
-    </motion.div>
-  )
+    </motion.section>
+  );
 }

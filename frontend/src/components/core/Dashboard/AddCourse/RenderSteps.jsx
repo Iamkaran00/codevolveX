@@ -1,75 +1,119 @@
 import React from "react";
-import { FaCheck } from "react-icons/fa";
 import { useSelector } from "react-redux";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 
 import CourseBuilderForm from "./CourseBuilder/CourseBuilderForm";
 import CourseInformationForm from "./CourseInformation/CourseInformationForm";
 import PublishCourse from "./PublishCourse";
 
+/* ---------- design tokens (shared with the hero) ---------- */
+const EASE = [0.23, 1, 0.32, 1];
+const display = "font-['Space_Grotesk',ui-sans-serif,system-ui,sans-serif]";
+const mono = "font-['JetBrains_Mono',ui-monospace,monospace]";
+
+const STEPS = [
+  { id: 1, title: "Course information" },
+  { id: 2, title: "Course builder" },
+  { id: 3, title: "Publish settings" },
+];
+
+const StepDot = ({ state, number, reduce }) => {
+  if (state === "done") {
+    return (
+      <motion.span
+        initial={reduce ? false : { scale: 0.6, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.5, ease: EASE }}
+        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#ffb454]"
+      >
+        <svg width="14" height="14" viewBox="0 0 12 12" fill="none" aria-hidden>
+          <motion.path
+            d="M2.5 6.2l2.4 2.4 4.6-5"
+            stroke="#1d1a16"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            initial={reduce ? false : { pathLength: 0 }}
+            animate={{ pathLength: 1 }}
+            transition={{ duration: 0.5, ease: EASE, delay: 0.1 }}
+          />
+        </svg>
+      </motion.span>
+    );
+  }
+  const active = state === "active";
+  return (
+    <span
+      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border text-sm transition-colors duration-500 ${mono} ${
+        active
+          ? "border-[#ffb454]/70 bg-[#ffb454]/10 text-[#ffb454]"
+          : "border-white/15 text-zinc-600"
+      }`}
+    >
+      {number}
+    </span>
+  );
+};
+
 export default function RenderSteps() {
   const { step } = useSelector((state) => state.course);
-  const steps = [
-    { id: 1, title: "Course Information" },
-    { id: 2, title: "Course Builder" },
-    { id: 3, title: "Publish Settings" },
-  ];
+  const reduce = useReducedMotion();
 
   return (
-    <div className="w-full flex flex-col items-center">
-      
-       
-      <div className="relative mb-4 flex w-full max-w-[600px] items-center justify-between px-4">
-        {steps.map((item, index) => (
-          <React.Fragment key={item.id}>
-            <div className="flex items-center">
-            
-              <div
-                className={`grid h-9 w-9 place-items-center rounded-full border-2 font-bold text-sm transition-all duration-300 shadow-sm
-                  ${step === item.id
-                    ? "border-indigo-600 bg-white text-indigo-600 ring-4 ring-indigo-50"
-                    : step > item.id
-                    ? "border-indigo-600 bg-indigo-600 text-white"
-                    : "border-slate-200 bg-slate-50 text-slate-400"
-                  }`}
-              >
-                {step > item.id ? (
-                  <FaCheck className="text-xs transition-transform animate-scaleUp" />
-                ) : (
-                  item.id
+    <div className="flex w-full flex-col">
+      <ol className="mb-12 flex w-full max-w-[640px]" aria-label="Course creation progress">
+        {STEPS.map((s, i) => {
+          const state = step > s.id ? "done" : step === s.id ? "active" : "idle";
+          const last = i === STEPS.length - 1;
+          return (
+            <li
+              key={s.id}
+              aria-current={state === "active" ? "step" : undefined}
+              className={last ? "" : "flex-1"}
+            >
+              <div className="flex items-center">
+                <StepDot state={state} number={s.id} reduce={reduce} />
+                {!last && (
+                  <div className="relative mx-3 h-px flex-1 overflow-hidden bg-white/10">
+                    <motion.div
+                      initial={false}
+                      animate={{ scaleX: step > s.id ? 1 : 0 }}
+                      transition={{ duration: reduce ? 0 : 0.9, ease: EASE }}
+                      className="absolute inset-0 origin-left bg-[#ffb454]"
+                    />
+                  </div>
                 )}
               </div>
-            </div>
+              <p
+                className={`mt-3 whitespace-nowrap text-sm transition-colors duration-500 ${display} ${
+                  state === "active"
+                    ? "font-medium text-[#f3ece0]"
+                    : state === "done"
+                    ? "text-zinc-400"
+                    : "text-zinc-600"
+                }`}
+              >
+                {s.title}
+              </p>
+            </li>
+          );
+        })}
+      </ol>
 
-            {/* Dashed Connecting Line Tracker Bar */}
-            {index !== steps.length - 1 && (
-              <div
-                className={`h-0.5 flex-1 border-t-2 border-dashed transition-all duration-500 mx-2
-                  ${step > item.id ? "border-indigo-500" : "border-slate-200"}`}
-              />
-            )}
-          </React.Fragment>
-        ))}
-      </div>
-
-      
-      <div className="relative mb-12 flex w-full max-w-[660px] select-none justify-between px-1 text-center">
-        {steps.map((item) => (
-          <div key={item.id} className="flex min-w-[140px] flex-col items-center">
-            <p
-              className={`text-xs font-bold tracking-tight uppercase
-                ${step >= item.id ? "text-slate-800" : "text-slate-400"}`}
-            >
-              {item.title}
-            </p>
-          </div>
-        ))}
-      </div>
-
-      <div className="w-150 animate-fadeIn">
-        {step === 1 && <CourseInformationForm />}
-        {step === 2 && <CourseBuilderForm />}
-        {step === 3 && <PublishCourse />}
-      </div>
+      <AnimatePresence mode="wait" initial={false}>
+        <motion.div
+          key={step}
+          initial={reduce ? false : { opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={reduce ? undefined : { opacity: 0, y: -8 }}
+          transition={{ duration: 0.45, ease: EASE }}
+          className="w-full max-w-[640px]"
+        >
+          {step === 1 && <CourseInformationForm />}
+          {step === 2 && <CourseBuilderForm />}
+          {step === 3 && <PublishCourse />}
+        </motion.div>
+      </AnimatePresence>
     </div>
   );
 }

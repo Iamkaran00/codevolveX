@@ -1,60 +1,84 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { motion } from "framer-motion";
 import { FiAlertTriangle, FiInfo } from "react-icons/fi";
 
+const EASE = [0.23, 1, 0.32, 1];
+
+const display = "font-['Space_Grotesk',ui-sans-serif,system-ui,sans-serif]";
+
 export default function ConfirmationModal({ modalData }) {
-  // Explicit Color Strategy: Reads the color directly from your input. Defaults  indigo.
-  const themeColor = modalData?.btn1Color === "red" ? "red" : "indigo";
-  const isRed = themeColor === "red";
+  const isRed = modalData?.btn1Color === "red";
+
+  // Esc closes the modal the same way the secondary button does
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === "Escape") modalData?.btn2Handler?.();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [modalData]);
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/20 backdrop-blur-md p-4 transition-all duration-300 animate-fadeIn">
-      
-      <div className="w-full max-w-[420px] rounded-3xl border border-slate-200/60 bg-white p-8 shadow-[0_8px_30px_rgb(0,0,0,0.08)] animate-scaleUp relative overflow-hidden font-sans">
-        
-        <div className={`absolute -top-10 -right-10 h-32 w-32 rounded-full blur-3xl opacity-[0.15] pointer-events-none ${
-          isRed ? 'bg-red-500' : 'bg-indigo-500'
-        }`} />
-
-        <div className="flex items-start gap-4 relative z-10">
-          
-          <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full border ${
-            isRed ? 'bg-red-50 border-red-100 text-red-600' : 'bg-indigo-50 border-indigo-100 text-indigo-600'
-          }`}>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.4, ease: EASE }}
+      onClick={() => modalData?.btn2Handler?.()}
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm"
+    >
+      <motion.div
+        role="dialog"
+        aria-modal="true"
+        initial={{ opacity: 0, y: 16, scale: 0.97 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.6, ease: EASE }}
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-[440px] rounded-3xl border border-white/10 bg-[#14130f] p-8 shadow-[0_40px_80px_-30px_rgba(0,0,0,0.9)]"
+      >
+        <div className="flex items-start gap-5">
+          <div
+            className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-full border ${
+              isRed
+                ? "border-red-400/30 bg-red-400/10 text-red-300"
+                : "border-[#ffb454]/30 bg-[#ffb454]/10 text-[#ffb454]"
+            }`}
+          >
             {isRed ? <FiAlertTriangle className="text-xl" /> : <FiInfo className="text-xl" />}
           </div>
 
-          <div className="flex flex-col pt-1">
-            <h3 className="text-xl font-bold tracking-tight text-slate-900">
+          <div className="flex flex-col pt-0.5">
+            <h3
+              className={`text-xl font-semibold tracking-tight text-[#f3ece0] ${display}`}
+            >
               {modalData?.text1}
             </h3>
-            <p className="mt-2 text-sm font-medium text-slate-500 leading-relaxed pr-2">
+            <p className="mt-2 pr-2 text-[15px] leading-relaxed text-zinc-400">
               {modalData?.text2}
             </p>
           </div>
         </div>
-        
-        <div className="mt-8 flex flex-col-reverse sm:flex-row items-center justify-end gap-3 relative z-10">
-          
-          <button 
-            className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-bold text-slate-600 transition-all hover:bg-slate-50 hover:text-slate-900 active:scale-[0.98]" 
+
+        <div className="mt-9 flex flex-col-reverse items-center justify-end gap-3 sm:flex-row">
+          <button
+            autoFocus
             onClick={modalData?.btn2Handler}
+            className="inline-flex w-full items-center justify-center rounded-full border border-white/15 px-6 py-2.5 text-sm text-zinc-300 transition-all duration-500 hover:border-white/30 hover:bg-white/[0.05] hover:text-[#f3ece0] active:scale-[0.98] sm:w-auto"
           >
             {modalData?.btn2Text}
           </button>
 
           <button
             onClick={modalData?.btn1Handler}
-            className={`w-full sm:w-auto inline-flex items-center justify-center rounded-xl px-6 py-2.5 text-sm font-bold text-white transition-all duration-300 active:scale-[0.98] ${
-              isRed 
-                ? "bg-red-600 hover:bg-red-700 shadow-[0_4px_14px_0_rgba(220,38,38,0.35)] hover:shadow-[0_6px_20px_rgba(220,38,38,0.25)]" 
-                : "bg-indigo-600 hover:bg-indigo-700 shadow-[0_4px_14px_0_rgba(79,70,229,0.35)] hover:shadow-[0_6px_20px_rgba(79,70,229,0.25)]"
+            className={`inline-flex w-full items-center justify-center rounded-full px-7 py-2.5 text-sm font-semibold transition-all duration-500 active:scale-[0.98] sm:w-auto ${
+              isRed
+                ? "bg-red-500 text-white hover:bg-red-400"
+                : "bg-[#ffb454] text-[#1d1a16] hover:bg-[#ffc272]"
             }`}
           >
             {modalData?.btn1Text}
           </button>
-          
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

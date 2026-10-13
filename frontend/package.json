@@ -16,6 +16,7 @@
     "@mui/x-charts": "^9.4.0",
     "@mui/x-data-grid": "^9.4.0",
     "@mui/x-date-pickers": "^9.4.0",
+    "@react-oauth/google": "^0.13.5",
     "@reduxjs/toolkit": "^2.12.0",
     "@tailwindcss/vite": "^4.3.0",
     "axios": "^1.18.1",
