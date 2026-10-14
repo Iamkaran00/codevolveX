@@ -15,7 +15,7 @@ import fs from 'fs';
 You are an image moderation system for an educational website.
 Analyze this image and determine whether it is appropriate
 for use as a profile picture and can be use as thumbnailImage.
-
+you should allow also thumbnailImages right don't forget it!!
 REJECT the image if it contains:
 - nudity
 - pornography

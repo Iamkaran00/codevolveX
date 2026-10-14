@@ -62,14 +62,14 @@ const createCourse = async (req, res) => {
         message: "category details not found",
       });
     }
-    const moderatedImage = imageModeration(thumbnail); 
-     if (!moderatedImage.allowed) {
-            return res.status(400).json({
-                success: false,
-                message: "This image cannot be used as a profile picture.",
-                reason: moderatedImage.reason,
-            });
-        }
+    // const moderatedImage = imageModeration(thumbnail); 
+    //  if (!moderatedImage.allowed) {
+    //         return res.status(400).json({
+    //             success: false,
+    //             message: "This image cannot be used as a profile picture.",
+    //             reason: moderatedImage.reason,
+    //         });
+    //     }
     const thumbnailImage = await uploadOnCloudinary(thumbnail);
     const newCourse = await Course.create({
       courseName,

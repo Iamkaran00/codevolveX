@@ -16,10 +16,7 @@ const mono = "font-['JetBrains_Mono',ui-monospace,monospace]";
 
 const GRAIN = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")`;
 
-/* ------------------------------------------------------------------ */
-/*  States                                                             */
-/* ------------------------------------------------------------------ */
-
+ 
 function LoadingState() {
   return (
     <div className="relative overflow-hidden rounded-3xl border border-white/[0.08] bg-[#14130f] p-8 sm:p-10">
@@ -74,11 +71,7 @@ function NotFoundState({ onBack }) {
       </button>
     </motion.div>
   );
-}
-
-/* ------------------------------------------------------------------ */
-/*  Page                                                               */
-/* ------------------------------------------------------------------ */
+} 
 
 export default function EditCourse() {
   const dispatch = useDispatch();

@@ -5,7 +5,7 @@ import { TbBulb, TbShieldCheck } from "react-icons/tb";
 import RenderSteps from "./RenderSteps";
 import SpotlightCard from "../../../common/Spotlight";
 
-/* ---------- design tokens (shared with the hero) ---------- */
+ 
 const EASE = [0.23, 1, 0.32, 1];
 const display = "font-['Space_Grotesk',ui-sans-serif,system-ui,sans-serif]";
 const mono = "font-['JetBrains_Mono',ui-monospace,monospace]";

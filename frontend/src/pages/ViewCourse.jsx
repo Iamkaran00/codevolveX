@@ -21,25 +21,19 @@ const EASE = [0.23, 1, 0.32, 1];
 const display = "font-['Space_Grotesk',ui-sans-serif,system-ui,sans-serif]";
 
 const GRAIN = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")`;
-
-/* ------------------------------------------------------------------ */
-/*  Shell: dark stage + grain, content sits above it                   */
-/* ------------------------------------------------------------------ */
+ 
 
 const Shell = ({ children }) => (
-  <div className="relative mt-16 flex h-[calc(100vh-4rem)] overflow-hidden bg-[#100f0d]">
+  <div className="relative flex h-[100dvh] flex-col overflow-hidden bg-[#100f0d] pt-24">
     <div
       aria-hidden
       className="pointer-events-none absolute inset-0 z-0 opacity-[0.06] mix-blend-overlay"
       style={{ backgroundImage: GRAIN }}
     />
-    <div className="relative z-10 flex h-full w-full">{children}</div>
+    <div className="relative z-10 flex min-h-0 w-full flex-1">{children}</div>
   </div>
 );
-
-/* ------------------------------------------------------------------ */
-/*  Loading: mirrors the real layout so nothing jumps                  */
-/* ------------------------------------------------------------------ */
+ 
 
 function LoadingState() {
   return (
@@ -74,10 +68,7 @@ function LoadingState() {
     </Shell>
   );
 }
-
-/* ------------------------------------------------------------------ */
-/*  Error: says what happened and how to fix it                        */
-/* ------------------------------------------------------------------ */
+ 
 
 function ErrorState({ onRetry }) {
   return (
@@ -168,7 +159,6 @@ export default function ViewCourse() {
     };
   }, [courseId, token, dispatch, attempt]);
 
-  // 2. Pick the active lecture: the one in the URL, else the first one.
   useEffect(() => {
     if (loading || failed) return;
 

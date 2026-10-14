@@ -239,7 +239,7 @@ export default function VideoPlayer() {
             </motion.div>
           </AnimatePresence>
 
-          {/* prev / next */}
+       
           <div className="mt-14 grid grid-cols-1 gap-4 border-t border-white/[0.07] pt-8 sm:grid-cols-2">
             <NavCard lecture={prevLecture} direction="prev" onClick={() => goTo(prevLecture)} />
             <NavCard lecture={nextLecture} direction="next" onClick={() => goTo(nextLecture)} />

@@ -276,15 +276,7 @@ export const Footer = () => {
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-5 sm:gap-8">
-            <div className="flex items-center gap-2.5 rounded-full border border-white/10 px-3.5 py-1.5">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#ffb454] opacity-70" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-[#ffb454]" />
-              </span>
-              <span className={`text-[10px] uppercase tracking-[0.2em] text-zinc-400 ${mono}`}>
-                All systems operational
-              </span>
-            </div>
+            
 
             <p className="hidden text-[13px] text-zinc-600 sm:block">
               Built with <span className="text-[#ffb454]">♥</span> for developers.

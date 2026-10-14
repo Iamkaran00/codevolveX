@@ -379,7 +379,7 @@ export default function WriteReviewModal({
               <p
                 className={`${mono} mt-5 text-center text-[9px] uppercase tracking-[0.18em] text-zinc-700`}
               >
-                CODEVOLVEX · LEARN BY BUILDING
+                codevolveX · LEARN BY BUILDING
               </p>
             </form>
           </motion.div>

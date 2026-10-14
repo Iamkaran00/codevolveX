@@ -170,7 +170,7 @@ export default function MyCourses() {
         {/* controls */}
         <motion.div variants={item} className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="relative w-full max-w-lg">
-            <FiSearch className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-lg text-zinc-600" />
+            <FiSearch className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-lg text-zinc-600" />
             <input
               type="text"
               aria-label="Search courses"

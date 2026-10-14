@@ -62,3 +62,15 @@ input {
   padding : 1rem;
 }
  
+.Toastify__toast-theme--dark {
+  background: #14130f;
+  color: #f3ece0;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  font-family: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  font-size: 14px;
+}
+
+.Toastify__close-button {
+  color: #a1a1aa;
+}

@@ -50,7 +50,6 @@ export default function SpotlightCard({
       onMouseLeave={handleMouseLeave}
       className={`relative overflow-hidden ${className}`}
     >
-      {/* The actual Spotlight Gradient Node */}
       <div
         className="pointer-events-none absolute -inset-px transition duration-300 ease-in-out z-0"
         style={{

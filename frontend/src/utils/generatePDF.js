@@ -1,14 +1,10 @@
 import jsPDF from "jspdf"
-
 export function generateReceipt(order, user) {
   const doc = new jsPDF({ unit: "pt", format: "a4" })
-
   const indigo = [67, 56, 202]
   const slate = [100, 116, 139]
   const dark = [15, 23, 42]
-
   let y = 60
- 
   doc.setFont("helvetica", "bold")
   doc.setFontSize(22)
   doc.setTextColor(...dark)
@@ -23,9 +19,7 @@ export function generateReceipt(order, user) {
 
   doc.setDrawColor(226, 232, 240)
   doc.line(50, y + 35, 545, y + 35)
-
   y += 65
- 
   doc.setFontSize(10)
   doc.setTextColor(...slate)
   doc.text("Receipt Date", 50, y)
@@ -115,7 +109,7 @@ export function generateReceipt(order, user) {
     50,
     y
   )
-  doc.text("CodevolveX · support@codevolvex.com", 50, y + 14)
+  doc.text("codevolveX · support@codevolvex.com", 50, y + 14)
 
-  doc.save(`CodevolveX-Receipt-${order.razorpay_payment_id || order._id}.pdf`)
+  doc.save(`codevolveX-Receipt-${order.razorpay_payment_id || order._id}.pdf`)
 }

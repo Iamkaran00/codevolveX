@@ -20,7 +20,13 @@ createRoot(document.getElementById('root')).render(
     <GoogleOAuthProvider clientId = {import.meta.env.VITE_GOOGLE_CLIENT_ID}>
     <App />
      </GoogleOAuthProvider>
-    <ToastContainer autoClose = {1000} transition={Slide} hideProgressBar = {true} position='top-center'/>
+   <ToastContainer
+  autoClose={2500}
+  transition={Slide}
+  hideProgressBar={true}
+  position="top-center"
+  theme="dark"
+/>
     </BrowserRouter>
     </Provider>
   </StrictMode>,

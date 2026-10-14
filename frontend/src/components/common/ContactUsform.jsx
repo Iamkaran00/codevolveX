@@ -38,7 +38,7 @@ const ContactUsForm = () => {
   }, [reset, isSubmitSuccessful])
 
   const labelClasses = "text-[11px] font-bold uppercase tracking-[0.25em] text-slate-400 transition-colors duration-300 mb-2 block"
-  const inputClasses = "w-full text-white bg-transparent border-b-2 border-slate-200 py-3 text-lg font-medium placeholder:text-slate-300 focus:border-indigo-600 focus:outline-none transition-all duration-300 rounded-none px-0"
+  const inputClasses = "w-full text-white bg-transparent border-b-2 border-slate-200 py-3 text-lg font-medium placeholder:text-slate-300 focus:border-amber-600 focus:outline-none transition-all duration-300 rounded-none px-0"
   const errorClasses = "absolute -bottom-6 left-0 text-[10px] font-bold uppercase tracking-widest text-red-500"
 
   const ErrorMsg = ({ show, msg }) => (
@@ -60,7 +60,7 @@ const ContactUsForm = () => {
       {/* Name Row */}
       <div className="flex flex-col gap-10 md:flex-row md:gap-12">
         <div className="relative flex w-full flex-col md:w-1/2">
-          <label htmlFor="firstname" className={`${labelClasses} ${focusedField === 'firstname' ? 'text-indigo-600' : ''}`}>First Name</label>
+          <label htmlFor="firstname" className={`${labelClasses} ${focusedField === 'firstname' ? 'text-amber-500' : ''}`}>First Name</label>
           <input
             type="text" id="firstname" placeholder="Jane" className={inputClasses}
             onFocus={() => setFocusedField('firstname')} onBlur={() => setFocusedField(null)}
@@ -69,7 +69,7 @@ const ContactUsForm = () => {
           <ErrorMsg show={errors.firstname} msg="Required" />
         </div>
         <div className="relative flex w-full flex-col md:w-1/2">
-          <label htmlFor="lastname" className={`${labelClasses} ${focusedField === 'lastname' ? 'text-indigo-600' : ''}`}>Last Name</label>
+          <label htmlFor="lastname" className={`${labelClasses} ${focusedField === 'lastname' ? 'text-amber-500' : ''}`}>Last Name</label>
           <input
             type="text" id="lastname" placeholder="Doe" className={inputClasses}
             onFocus={() => setFocusedField('lastname')} onBlur={() => setFocusedField(null)}
@@ -80,7 +80,7 @@ const ContactUsForm = () => {
 
       {/* Email */}
       <div className="relative flex flex-col">
-        <label htmlFor="email" className={`${labelClasses} ${focusedField === 'email' ? 'text-indigo-600' : ''}`}>Email Address</label>
+        <label htmlFor="email" className={`${labelClasses} ${focusedField === 'email' ? 'text-amber-500' : ''}`}>Email Address</label>
         <input
           type="email" id="email" placeholder="hello@example.com" className={inputClasses}
           onFocus={() => setFocusedField('email')} onBlur={() => setFocusedField(null)}
@@ -91,7 +91,7 @@ const ContactUsForm = () => {
 
       {/* Phone */}
       <div className="relative flex flex-col">
-        <label htmlFor="phonenumber" className={`${labelClasses} ${focusedField === 'phone' ? 'text-indigo-600' : ''}`}>Phone Number</label>
+        <label htmlFor="phonenumber" className={`${labelClasses} ${focusedField === 'phone' ? 'text-amber-500' : ''}`}>Phone Number</label>
         <div className="flex gap-4">
           <div className="w-[110px] shrink-0 relative">
             <select
@@ -119,7 +119,7 @@ const ContactUsForm = () => {
 
       {/* Message */}
       <div className="relative flex flex-col">
-        <label htmlFor="message" className={`${labelClasses} ${focusedField === 'message' ? 'text-indigo-600' : ''}`}>Message</label>
+        <label htmlFor="message" className={`${labelClasses} ${focusedField === 'message' ? 'text-amber-600' : ''}`}>Message</label>
         <textarea
           id="message" rows="1" placeholder="How can we help you?"
           className={`${inputClasses} resize-none min-h-[60px]`}
