@@ -30,13 +30,14 @@ import { Footer } from "./components/common/Footer";
 import CourseDetails from "./pages/CourseDetails";
 import ViewCourse from "./pages/ViewCourse";
 import InstructorDashboard from "./pages/InstructorDashboard";
-
+import OfflineBanner from "./components/core/OfflineBanner";
 function App() {
   const { user } = useSelector((state) => state.profile);
 
   return (
     <div id="wrapper">
       <Navbar />
+      <OfflineBanner/>
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="signup" element={<Signup />} />
