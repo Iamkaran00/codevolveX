@@ -382,7 +382,6 @@ export const Navbar = () => {
 
   return (
     <>
-      {/* fixed = always visible. pointer-events-none so the gap between the two pills stays clickable-through */}
       <div className="pointer-events-none fixed left-0 top-4 z-50 flex w-full justify-center px-3">
         <div
           className={`flex w-full items-center justify-between gap-3 transition-[max-width] duration-700 ease-in-out ${
@@ -464,7 +463,7 @@ export const Navbar = () => {
               <span className="hidden md:inline">Jump</span>
             </button>
 
-            {showCart && (
+            {token &&user &&  showCart && (
               <Link
                 to="/dashboard/mycart"
                 aria-label="Cart"
@@ -488,7 +487,7 @@ export const Navbar = () => {
               </Link>
             )}
 
-            {token === null && (
+            {!user && (
               <div className="relative hidden items-center gap-x-2 md:flex">
                 <Link to="/login">
                   <button className={btnGhost}>Login</button>
@@ -502,7 +501,7 @@ export const Navbar = () => {
               </div>
             )}
 
-            {token != null && (
+            {token && (
               <div className="relative">
                 <ProfileDropdown />
               </div>

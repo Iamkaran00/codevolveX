@@ -6,11 +6,10 @@ import { Provider } from 'react-redux';
 import { Slide, ToastContainer } from 'react-toastify';
 import { configureStore } from '@reduxjs/toolkit';
   import rootReducer from './reducer/index.js';
+  import store from './utils/store.js';
 import {GoogleOAuthProvider} from '@react-oauth/google' ; 
   import React from 'react';
- const store = configureStore({
-     reducer : rootReducer,
- });
+
 import App from './App.jsx'
  
 createRoot(document.getElementById('root')).render(

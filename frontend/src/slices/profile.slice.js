@@ -1,8 +1,9 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { getStoredAuth } from "../utils/tokenUtils";
 
 const initialState = {
  loading : false,
- user : localStorage.getItem('user') ? JSON.parse(localStorage.getItem("user")) : null,
+ user : getStoredAuth().user , 
 enrolledCourses : [], 
 }
 const profileSlice = createSlice({

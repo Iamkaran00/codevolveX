@@ -21,14 +21,14 @@ const auth = async (req, res, next) => {
       req.user = decode;
     } catch (error) {
       //verification - issue
-      return res.status(400).json({
+      return res.status(401).json({
         success: false,
         message: "token is invalid",
       });
     }
     next();
   } catch (error) {
-    return res.status(400).json({
+    return res.status(500).json({
       success: false,
       message: "Someting went wrong while validating the tokenn ",
     });
@@ -39,7 +39,7 @@ const auth = async (req, res, next) => {
 const isStudent = async (req, res, next) => {
   try {
     if (req.user.accountType !== "Student")
-      return res.status(401).json({
+      return res.status(403).json({
         success: false,
         message: "This is a protected route for Students Only",
       });
@@ -56,7 +56,7 @@ const isStudent = async (req, res, next) => {
 const isInstructor = async (req, res, next) => {
   try {
     if (req.user.accountType !== "Instructor")
-      return res.status(401).json({
+      return res.status(403).json({
         success: false,
         message: "This is a protected route for Instructor Only",
       });
@@ -75,7 +75,7 @@ const isAdmin = async (req, res, next) => {
     console.log(req.user);
     console.log(req.user.accountType, "hi");
     if (req.user.accountType !== "Admin")
-      return res.status(401).json({
+      return res.status(403).json({
         success: false,
         message: "This is a protected route for Admin Only",
       });
