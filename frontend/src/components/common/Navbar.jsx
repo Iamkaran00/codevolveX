@@ -333,7 +333,6 @@ export const Navbar = () => {
     setIsMac(/mac/i.test(navigator.platform || ""));
   }, []);
 
-  // sticky: the bar never hides, it only tightens once you scroll
   useEffect(() => {
     let ticking = false;
     const onScroll = () => {
@@ -421,7 +420,7 @@ export const Navbar = () => {
                           <motion.span
                             layoutId="nav-lens"
                             transition={{ type: "spring", stiffness: 380, damping: 32 }}
-                            className="absolute inset-0 rounded-full border border-white/10 bg-white/[0.07]"
+                            className="absolute inset-0 rounded-full bg-transparent"
                           >
                             <span className="absolute bottom-[5px] left-1/2 h-[2px] w-4 -translate-x-1/2 rounded-full bg-[#ffb454] shadow-[0_0_8px_1px_rgba(255,180,84,0.7)]" />
                           </motion.span>

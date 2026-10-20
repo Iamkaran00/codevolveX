@@ -4,7 +4,7 @@ import { toast } from "react-hot-toast";
 import { motion } from "framer-motion";
 import { RxCross2 } from "react-icons/rx";
 import { useDispatch, useSelector } from "react-redux";
-
+import { getVideoDuration } from "../../../../../utils/getduration";
 import { createSubSection, updateSubSection } from "../../../../../services/operations/courseApi";
 import { setCourse } from "../../../../../slices/course.slice";
 import Upload from "../Upload";
@@ -79,6 +79,8 @@ export default function SubSectionModal({
       formData.append("description", currentValues.lectureDesc);
     }
     if (currentValues.lectureVideo !== modalData.videoUrl) {
+      const duration = await getVideoDuration(currentValues.lectureVideo) ; 
+      formData.append('duration' , duration) ; 
       formData.append("videoFile", currentValues.lectureVideo);
     }
 
@@ -112,8 +114,16 @@ export default function SubSectionModal({
     formData.append("sectionId", modalData);
     formData.append("title", data.lectureTitle);
     formData.append("description", data.lectureDesc);
-    formData.append("videoFile", data.lectureVideo);
-
+   
+    let duration = 0 ; 
+    try {
+      duration = await getVideoDuration(data.lectureVideo) ; 
+    } catch (error) {
+      toast.error('Could not read the video duration') ; 
+      return ; 
+    }
+    formData.append('duration' , duration); 
+    formData.append('videoFile' , data.lectureVideo) ; 
     setLoading(true);
     const result = await createSubSection(formData, token);
     if (result) {

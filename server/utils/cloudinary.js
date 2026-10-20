@@ -28,7 +28,7 @@ const uploadOnCloudinary = async (localFilePath) => {
     // Clean up the local file after successful upload
     await fs.unlink(localFilePath);
 
-    console.log("File uploaded successfully:", response.secure_url);
+ 
     return response; // Return the Cloudinary response object
   } catch (error) {
     console.error("Error during file upload:", error.message);

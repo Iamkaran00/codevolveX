@@ -59,7 +59,7 @@ const Strip = ({ flat, completed, activeId }) => {
 
   // too many lectures for ticks to stay legible: fall back to a single bar
   if (flat.length > 48) {
-    const pct = (completed.length / flat.length) * 100
+    const pct = Math.min(100, (completed.length / flat.length) * 100)
     return (
       <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/10">
         <motion.div
@@ -148,13 +148,20 @@ export default function VideoDetailsSidebar() {
     [courseSectionData]
   )
 
+  // FIX: count only completed IDs that still exist in the course.
+  // Deleted lectures leave stale IDs in the progress record, which caused "5 / 1 lectures = 500%".
+  const validCompleted = useMemo(() => {
+    const ids = new Set(flat.map((l) => l._id))
+    return (completedLectures ?? []).filter((id) => ids.has(id))
+  }, [flat, completedLectures])
+
   if (!courseEntireData) return null
 
   const total = flat.length
-  const doneCount = completedLectures.length
-  const pct = total ? Math.round((doneCount / total) * 100) : 0
+  const doneCount = validCompleted.length
+  const pct = total ? Math.min(100, Math.round((doneCount / total) * 100)) : 0
   const hasWatchedAny = doneCount > 0
-  const next = flat.find((l) => !completedLectures.includes(l._id))
+  const next = flat.find((l) => !validCompleted.includes(l._id))
 
   const toggleSection = (id) =>
     setOpenSections((prev) => ({ ...prev, [id]: !prev[id] }))
@@ -199,7 +206,7 @@ export default function VideoDetailsSidebar() {
         </div>
 
         <div className="mt-4">
-          <Strip flat={flat} completed={completedLectures} activeId={activeSubSectionId} />
+          <Strip flat={flat} completed={validCompleted} activeId={activeSubSectionId} />
         </div>
 
         {next && (
@@ -255,7 +262,7 @@ export default function VideoDetailsSidebar() {
           const subs = section.SubSection ?? []
           const isOpen = !!openSections[section._id]
           const doneInSection = subs.filter((s) =>
-            completedLectures.includes(s._id)
+            validCompleted.includes(s._id)
           ).length
           const sectionComplete = subs.length > 0 && doneInSection === subs.length
 
@@ -308,10 +315,10 @@ export default function VideoDetailsSidebar() {
                     <div className="py-1 pl-3">
                       {subs.map((sub, i) => {
                         const isActive = sub._id === activeSubSectionId
-                        const isDone = completedLectures.includes(sub._id)
+                        const isDone = validCompleted.includes(sub._id)
                         const nextDone =
                           i < subs.length - 1 &&
-                          completedLectures.includes(subs[i + 1]._id)
+                          validCompleted.includes(subs[i + 1]._id)
 
                         return (
                           <li key={sub._id} className="relative">

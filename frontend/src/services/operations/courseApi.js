@@ -1,3 +1,4 @@
+
 import { apiConnector } from "../apiconnector";
 import { course_endpoints } from "../apis";
 import {toast} from 'react-toastify'
@@ -25,6 +26,7 @@ const {
   GET_REVIEWS_FOR_COURSE_API,
   LECTURE_COMPLETION_API,
   GET_INSTRUCTOR_DASHBOARD,
+  GET_VIDEO_URL , 
 } = course_endpoints;
  
 export const addCourseDetails = async (data, token) => {
@@ -133,7 +135,7 @@ export const fetchCourseDetails = async (courseId) => {
 
 export const getFullDetailsOfCourse = async (courseId, token) => {
   const toastId = toast.loading("Loading...");
-  console.log(GET_FULL_COURSE_DETAILS_AUTHENTICATED);
+ 
   let result = null;
   try {
     const response = await apiConnector(
@@ -180,14 +182,14 @@ export const fetchInstructorCourses = async (token) => {
   return result;
 };
 export const createSection = async (data, token) => {
-  console.log(data,token,'here in create seciont');
+ 
   let result = null;
   const toastId = toast.loading("Adding section...");
   try {
     const response = await apiConnector("POST", CREATE_SECTION_API, data, null, {
       Authorization: `Bearer ${token}`,
     });
-    console.log("CREATE_SECTION_API RESPONSE", response);
+   
     if (!response?.data?.success) {
       throw new Error("Could not create section");
     }
@@ -209,7 +211,7 @@ export const updateSection = async (data, token) => {
     const response = await apiConnector("POST", UPDATE_SECTION_API, data, null,{
       Authorization: `Bearer ${token}`,
     });
-    console.log("UPDATE_SECTION_API RESPONSE", response);
+ 
     if (!response?.data?.success) {
       throw new Error("Could not update section");
     }
@@ -230,7 +232,6 @@ export const deleteSection = async (data, token) => {
     const response = await apiConnector("POST", DELETE_SECTION_API, data,null, {
       Authorization: `Bearer ${token}`,
     });
-    console.log("DELETE_SECTION_API RESPONSE", response);
     if (!response?.data?.success) {
       throw new Error("Could not delete section");
     }
@@ -253,7 +254,6 @@ export const createSubSection = async (data, token) => {
       
       Authorization: `Bearer ${token}`,
     });
-    console.log("CREATE_SUBSECTION_API RESPONSE", response);
     if (!response?.data?.success) {
       throw new Error("Could not add lecture");
     }
@@ -274,7 +274,6 @@ export const updateSubSection = async (data, token) => {
     const response = await apiConnector("POST", UPDATE_SUBSECTION_API, data,null, {
       Authorization: `Bearer ${token}`,
     });
-    console.log("UPDATE_SUBSECTION_API RESPONSE", response);
     if (!response?.data?.success) {
       throw new Error("Could not update lecture");
     }
@@ -295,7 +294,6 @@ export const deleteSubSection = async (data, token) => {
     const response = await apiConnector("POST", DELETE_SUBSECTION_API, data,null, {
       Authorization: `Bearer ${token}`,
     });
-    console.log("DELETE_SUBSECTION_API RESPONSE", response);
     if (!response?.data?.success) {
       throw new Error("Could not delete lecture");
     }
@@ -333,7 +331,6 @@ export const createCategory = async (data, token) => {
     const response = await apiConnector("POST", CREATE_CATEGORY_API, data,null, {
       Authorization: `Bearer ${token}`,
     });
-    console.log("CREATE_CATEGORY_API RESPONSE", response);
     if (!response?.data?.success) {
       throw new Error("Could not create category");
     }
@@ -356,7 +353,7 @@ export const getCategoryPageDetails = async (data) => {
       GET_CATEGORY_PAGE_DETAILS_API,
       data
     );
-    console.log("GET_CATEGORY_PAGE_DETAILS_API RESPONSE", response);
+ 
     if (!response?.data?.success) {
       throw new Error("Could not fetch category details");
     }
@@ -377,7 +374,7 @@ export const createRating = async (data, token) => {
     const response = await apiConnector("POST", CREATE_RATING_API, data,null, {
       Authorization: `Bearer ${token}`,
     });
-    console.log("CREATE_RATING_API RESPONSE", response);
+     
     if (!response?.data?.success) {
       throw new Error("Could not submit rating");
     }
@@ -394,13 +391,12 @@ export const createRating = async (data, token) => {
 
 export const getAverageRating = async (courseId) => {
   let result = 0;
-  console.log(courseId);
-  console.log(GET_AVERAGE_RATING_API);
+  
   try {
     const response = await apiConnector("GET", GET_AVERAGE_RATING_API,null,
       {courseId}
     );
-    console.log("GET_AVERAGE_RATING_API RESPONSE", response);
+   
     if (!response?.data?.success) {
       throw new Error("Could not fetch average rating");
     }
@@ -415,7 +411,7 @@ export const getAllReviews = async () => {
   let result = [];
   try {
     const response = await apiConnector("GET", GET_REVIEWS_API);
-    console.log("GET_REVIEWS_API RESPONSE", response);
+ 
     if (!response?.data?.success) {
       throw new Error("Could not fetch reviews");
     }
@@ -429,12 +425,12 @@ export const getAllReviews = async () => {
 
 export const getReviewsForCourse = async (courseId) => {
   let result = [];
-  console.log(courseId)
+   
   try {
     const response = await apiConnector("GET", GET_REVIEWS_FOR_COURSE_API,null, {
       courseId,
     });
-    console.log("GET_REVIEWS_FOR_COURSE_API RESPONSE", response);
+     
     if (!response?.data?.success) {
       throw new Error("Could not fetch course reviews");
     }
@@ -456,7 +452,7 @@ export const markLectureAsComplete = async (data, token) => {
       data, null,
       { Authorization: `Bearer ${token}` }
     );
-    console.log("LECTURE_COMPLETION_API RESPONSE", response);
+   
     if (!response?.data?.message) {
       throw new Error(response?.data?.error);
     }
@@ -474,7 +470,7 @@ export const markLectureAsComplete = async (data, token) => {
 
 export const getInstructorDashboardStats = async (token) => {
   let result = null;
-  console.log(GET_INSTRUCTOR_DASHBOARD ,'this is api');
+ 
   try {
     const response = await apiConnector("GET", GET_INSTRUCTOR_DASHBOARD, null, null, {
       Authorization: `Bearer ${token}`,
@@ -489,3 +485,13 @@ export const getInstructorDashboardStats = async (token) => {
   }
   return result;
 };
+
+export const getLectureVideoUrl = async (subSectionId , token) => {
+  try {
+    const response = await apiConnector('POST' , GET_VIDEO_URL ,{subSectionId} , null ,  {Authorization : `Bearer ${token}`}) ;
+    return response.data.url ; 
+  } catch (error) {
+    console.log('get video url error' , error) ; 
+    return null ;
+  }
+}

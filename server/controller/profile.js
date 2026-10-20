@@ -146,7 +146,6 @@ const updateDisplayPicture = async (req, res) => {
 
 const getEnrolledCourses = async (req, res) => {
   try {
-    console.log('hello in profile');
     const userId = req.user.id;
     let userDetails = await User.findOne({
       _id: userId,

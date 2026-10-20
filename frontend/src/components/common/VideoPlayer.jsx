@@ -1,9 +1,8 @@
-import React, { useRef, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion"
 import { ArrowLeft, ArrowRight, Check, Play } from "lucide-react"
-
-import { markLectureAsComplete } from "../../services/operations/courseApi"
+import { markLectureAsComplete,getLectureVideoUrl } from "../../services/operations/courseApi"
 import {
   setActiveLecture,
   removeCompletedLecture,
@@ -85,7 +84,9 @@ export default function VideoPlayer() {
   const dispatch = useDispatch()
   const reduce = useReducedMotion()
   const videoRef = useRef(null)
+  const resume = useRef({ time: 0, play: false })
   const [marking, setMarking] = useState(false)
+  const [videoSrc, setVideoSrc] = useState(null)
 
   const { token } = useSelector((state) => state.auth)
   const {
@@ -94,6 +95,37 @@ export default function VideoPlayer() {
     completedLectures,
     activeSubSectionId,
   } = useSelector((state) => state.viewCourse)
+
+  // Fetch a fresh signed link whenever the active lecture changes.
+  // (Hooks must stay above the early return below.)
+  useEffect(() => {
+    if (!activeSubSectionId) return
+    let cancelled = false
+    setVideoSrc(null)
+    getLectureVideoUrl(activeSubSectionId, token).then((url) => {
+      if (!cancelled) setVideoSrc(url)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [activeSubSectionId, token])
+
+  // If the link ever fails (expired), get a new one and continue from the same second.
+  const renewLink = async () => {
+    const v = videoRef.current
+    resume.current = { time: v?.currentTime || 0, play: v ? !v.paused : false }
+    const url = await getLectureVideoUrl(activeSubSectionId, token)
+    if (url) setVideoSrc(url)
+  }
+
+  const handleLoadedMetadata = () => {
+    const v = videoRef.current
+    if (v && resume.current.time > 0) {
+      v.currentTime = resume.current.time
+      if (resume.current.play) v.play().catch(() => {})
+      resume.current = { time: 0, play: false }
+    }
+  }
 
   if (!courseEntireData || !activeSubSectionId) {
     return (
@@ -169,10 +201,12 @@ export default function VideoPlayer() {
             <video
               ref={videoRef}
               key={currentLecture?._id}
-              src={currentLecture?.videoUrl}
+              src={videoSrc || undefined}
               controls
               playsInline
               onEnded={handleVideoEnd}
+              onError={renewLink}
+              onLoadedMetadata={handleLoadedMetadata}
               className="h-full w-full"
             />
           </div>
@@ -239,7 +273,6 @@ export default function VideoPlayer() {
             </motion.div>
           </AnimatePresence>
 
-       
           <div className="mt-14 grid grid-cols-1 gap-4 border-t border-white/[0.07] pt-8 sm:grid-cols-2">
             <NavCard lecture={prevLecture} direction="prev" onClick={() => goTo(prevLecture)} />
             <NavCard lecture={nextLecture} direction="next" onClick={() => goTo(nextLecture)} />

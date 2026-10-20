@@ -21,6 +21,7 @@ import {
   createSubSection,
   updateSubSection,
   deleteSubSection,
+  getLectureVideoUrl
 } from "../controller/subsection.js";
 
 // Rating Controllers Import
@@ -31,6 +32,7 @@ import {
 import {auth , isInstructor,isAdmin,isStudent} from "../middleware/auth.middleware.js";
 import { uploadVideo,uploadImage } from "../middleware/multer.middleware.js";
 import { slidingWindowLimiter } from "../middleware/rateLimiter.js";
+
 // Courses can Only be Created by Instructors
 router.post("/createCourse", auth, isInstructor,uploadImage.single("thumbnailImage"), createCourse);
 //Add a Section to a Course
@@ -45,6 +47,8 @@ router.post("/updateSubSection", auth, isInstructor, updateSubSection);
 router.post("/deleteSubSection", auth, isInstructor, deleteSubSection);
 // Add a Sub Section to a Section
 router.post("/addSubSection", auth, isInstructor,uploadVideo.single("videoFile"), createSubSection);
+//Get Video Url 
+router.post('/getLectureVideoUrl' , auth , getLectureVideoUrl) ; 
 // Get all Registered Courses
 router.get("/getAllCourses",  showAllCourses);
 // Get Details for a Specific Courses

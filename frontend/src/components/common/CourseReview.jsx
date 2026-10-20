@@ -17,12 +17,8 @@ const cardV = {
   hidden: { opacity: 0, y: 22 },
   show: { opacity: 1, y: 0, transition: { duration: 0.9, ease: EASE } },
 };
+ 
 
-/* ------------------------------------------------------------------ */
-/*  Pieces                                                             */
-/* ------------------------------------------------------------------ */
-
-// Five stars with exact partial fill (4.3 fills 4 stars and 30% of the fifth)
 const Stars = ({ value = 0, size = 16 }) => {
   const pct = Math.max(0, Math.min(5, value)) * 20;
   const row = (cls) => (
@@ -76,7 +72,6 @@ const ReviewCard = ({ r, reduce }) => (
     transition={{ duration: 0.6, ease: EASE }}
     className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-white/[0.07] bg-white/[0.02] p-6 transition-colors duration-500 hover:border-[#ffb454]/40 hover:bg-[#ffb454]/[0.04]"
   >
-    {/* oversized outlined quote mark */}
     <span
       aria-hidden
       className={`pointer-events-none absolute -top-2 right-4 select-none text-[7rem] font-semibold leading-none text-transparent transition-all duration-500 group-hover:[-webkit-text-stroke:1px_rgba(255,180,84,0.6)] ${display}`}
@@ -105,16 +100,13 @@ const ReviewCard = ({ r, reduce }) => (
   </motion.li>
 );
 
-/* ------------------------------------------------------------------ */
-/*  Section                                                            */
-/* ------------------------------------------------------------------ */
 
 export default function CourseReviews({ courseId }) {
   const reduce = useReducedMotion();
   const [reviews, setReviews] = useState([]);
   const [average, setAverage] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState(null); // star value or null
+  const [filter, setFilter] = useState(null);  
 
   useEffect(() => {
     let cancelled = false;
@@ -175,14 +167,12 @@ export default function CourseReviews({ courseId }) {
         className="pointer-events-none absolute inset-0 opacity-[0.06] mix-blend-overlay"
         style={{ backgroundImage: GRAIN }}
       />
-      {/* soft amber glow */}
       <div
         aria-hidden
         className="pointer-events-none absolute -left-24 -top-24 h-72 w-72 rounded-full bg-[#ffb454] opacity-[0.08] blur-3xl"
       />
 
       <div className="relative">
-        {/* header */}
         <div className="flex items-center gap-3">
           <motion.span
             initial={reduce ? false : { scaleX: 0 }}
@@ -280,7 +270,6 @@ export default function CourseReviews({ courseId }) {
               </div>
             </div>
 
-            {/* filter status */}
             <div className="mt-10 flex min-h-[40px] items-center justify-between gap-4 border-t border-white/[0.07] pt-6">
               <p className={`text-[11px] uppercase tracking-[0.2em] text-zinc-500 ${mono}`}>
                 {filter
@@ -299,7 +288,6 @@ export default function CourseReviews({ courseId }) {
               )}
             </div>
 
-            {/* reviews */}
             <motion.ul
               variants={gridV}
               initial={reduce ? false : "hidden"}

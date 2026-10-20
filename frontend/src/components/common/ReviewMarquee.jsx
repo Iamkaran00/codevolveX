@@ -12,21 +12,25 @@ const mono = "font-['JetBrains_Mono',ui-monospace,monospace]";
 
 const GRAIN = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")`;
 
-// how far each card drops from the wire, so the line feels organic
 const DROPS = [30, 54, 40, 66];
 const MAX_DROP = 66;
 const CARD_H = 280;
 
-// wire physics
-const TOP_PAD = 70; // headroom above the resting wire (room to pull it up)
-const PULL_UP = -70; // max px you can pull the wire up
-const PULL_DOWN = 150; // max px you can pull the wire down
-const BOTTOM_PAD = 140; // room below for the cards when the wire is pulled down
-const WAVE_SPEED = 1100; // px per second a ripple travels along the wire
-const K_REST = 14; // how hard the wire wants to return to its resting curve
-const K_PULL = 140; // how hard your hand pulls it
-const SIGMA = 110; // how wide your grip is (px)
+const TOP_PAD = 70;
+const PULL_UP = -70;
+const PULL_DOWN = 150;
+const BOTTOM_PAD = 140;
+const WAVE_SPEED = 1100;
+const K_REST = 14;
+const K_PULL = 140;
+const SIGMA = 110;
 const SUBSTEPS = 6;
+
+// page-scroll disturbance
+const SCROLL_KICK = 3.2; // how hard page scroll shakes the wire
+const SCROLL_VMAX = 520; // cap so fast flicks don't explode the wire
+const SCROLL_REACH = 1.5; // start reacting when the section is this many screen heights away
+const ENTER_KICK = 0.22; // extra punch when a fast scroll first brings the wire into view
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
@@ -41,7 +45,6 @@ const handleOf = (r) =>
   (r.user?.firstName || "student").toLowerCase().replace(/[^a-z0-9]/g, "") ||
   "student";
 
-// read a value off the wire at any x (linear interpolation between nodes)
 const sampleWire = (arr, sp, N, x) => {
   const f = clamp(x / sp, 0, N - 1);
   const i = Math.min(N - 2, Math.floor(f));
@@ -67,10 +70,6 @@ function Stars({ rating = 5, size = 12 }) {
     </div>
   );
 }
-
-/* ------------------------------------------------------------------ */
-/*  A card hanging from the wire                                       */
-/* ------------------------------------------------------------------ */
 
 function HangingCard({ r, i, width, setPos, setClip, setMag, onEnter, onMove, onLeave, onFlip }) {
   const drop = DROPS[i % DROPS.length];
@@ -102,7 +101,6 @@ function HangingCard({ r, i, width, setPos, setClip, setMag, onEnter, onMove, on
           <span className="absolute left-1/2 top-[5px] h-1 w-1 -translate-x-1/2 rounded-full bg-[#1d1a16]/50" />
         </span>
 
-        {/* V-shaped strings */}
         <svg
           aria-hidden
           className="relative z-10 block w-full"
@@ -113,7 +111,6 @@ function HangingCard({ r, i, width, setPos, setClip, setMag, onEnter, onMove, on
           <line x1="50%" y1="0" x2="86%" y2="100%" stroke="rgba(243,236,224,0.28)" strokeWidth="1" vectorEffect="non-scaling-stroke" />
         </svg>
 
-        {/* magnetic layer */}
         <div
           ref={(el) => setMag(i, el)}
           onMouseEnter={onEnter}
@@ -186,10 +183,6 @@ function HangingCard({ r, i, width, setPos, setClip, setMag, onEnter, onMove, on
   );
 }
 
-/* ------------------------------------------------------------------ */
-/*  Section                                                            */
-/* ------------------------------------------------------------------ */
-
 export default function ReviewsMarquee() {
   const reduce = useReducedMotion();
   const [reviews, setReviews] = useState([]);
@@ -203,13 +196,11 @@ export default function ReviewsMarquee() {
   const lean = useRef([]);
   const hovered = useRef(false);
 
-  // wire drawing targets (updated every frame, no React re-render)
   const wirePathEl = useRef(null);
   const glowPathEl = useRef(null);
   const sparkEl = useRef(null);
   const sparkGlowEl = useRef(null);
 
-  // shared motion state (read by the frame loop and the pointer handlers)
   const sc = useRef({
     scroll: 0,
     speed: 0,
@@ -219,8 +210,8 @@ export default function ReviewsMarquee() {
     lastX: 0,
     lastT: 0,
     startY: 0,
-    px: 0, // where your finger/mouse grips the wire (x, px)
-    pull: 0, // how far you've pulled it up/down (px)
+    px: 0,
+    pull: 0,
     pinned: 0,
     centers: [],
   });
@@ -247,7 +238,6 @@ export default function ReviewsMarquee() {
   const CARD_W = W && W < 640 ? 300 : 352;
   const SAG = W && W < 640 ? 34 : 64;
 
-  // enough cards (a clean multiple of the reviews) to fill the wire seamlessly
   const items = useMemo(() => {
     if (!reviews.length || !W) return [];
     const needed = Math.max(MIN_PER_ROW, Math.ceil((W + 2 * CARD_W) / CARD_W));
@@ -255,7 +245,6 @@ export default function ReviewsMarquee() {
     return Array.from({ length: reps }, () => reviews).flat();
   }, [reviews, W, CARD_W]);
 
-  // grab the wire: sideways scrubs the reviews, up/down pulls the wire itself
   useEffect(() => {
     const S = sc.current;
 
@@ -314,7 +303,6 @@ export default function ReviewsMarquee() {
     let last = performance.now();
     let raf;
 
-    /* ---- the wire: a row of springy points, each pulled toward its resting curve ---- */
     const N = clamp(Math.round(W / 30) + 1, 24, 64);
     const sp = W / (N - 1);
     const C = (WAVE_SPEED / sp) ** 2; // how strongly neighbours drag each other
@@ -327,6 +315,11 @@ export default function ReviewsMarquee() {
       y[i] = rest[i];
     }
     S.px = W / 2;
+
+    // remember where the page was, so we can tell how far it moved each frame
+    let lastScrollY = window.scrollY;
+    let scrollVel = 0; // smoothed page scroll speed, px per second
+    let wasVisible = false;
 
     const stepWire = (h) => {
       const active = S.dragging;
@@ -427,6 +420,34 @@ export default function ReviewsMarquee() {
       }
       S.scroll = ((S.scroll % total) + total) % total;
 
+      // page scroll disturbs the wire. It reacts while the section is still approaching,
+      // and gives one extra punch the moment a fast scroll brings it into view.
+      const scrollY = window.scrollY;
+      const dScroll = scrollY - lastScrollY;
+      lastScrollY = scrollY;
+      scrollVel += (dScroll / Math.max(dt, 0.001) - scrollVel) * Math.min(1, dt * 10);
+      if (!reduce && wrapRef.current) {
+        const r = wrapRef.current.getBoundingClientRect();
+        const vh = window.innerHeight;
+        const visible = r.bottom > 0 && r.top < vh;
+        const near = r.top < vh * (1 + SCROLL_REACH) && r.bottom > -vh * 0.5;
+
+        let kick = 0;
+        if (near && dScroll !== 0) kick += clamp(dScroll, -90, 90) * SCROLL_KICK;
+        if (visible && !wasVisible) kick += clamp(scrollVel * ENTER_KICK, -SCROLL_VMAX, SCROLL_VMAX);
+        wasVisible = visible;
+
+        if (kick !== 0) {
+          for (let i = 1; i < N - 1; i += 1) {
+            // middle of the wire moves most, the ends stay pinned
+            const shape = Math.sin((Math.PI * i) / (N - 1));
+            // uneven along its length, so it ripples instead of moving as one block
+            const ripple = 1 + 0.45 * Math.sin(i * 0.55 + now / 140);
+            v[i] = clamp(v[i] + kick * shape * ripple, -SCROLL_VMAX, SCROLL_VMAX);
+          }
+        }
+      }
+
       const h = dt / SUBSTEPS;
       for (let k = 0; k < SUBSTEPS; k += 1) stepWire(h);
 
@@ -470,7 +491,6 @@ export default function ReviewsMarquee() {
     s.tx = 0; s.ty = 0; s.trx = 0; s.try = 0; s.ts = 1;
   };
 
-  // tap to flip on touch screens (desktop flips on hover); a flipped card holds the wire still
   const onFlip = (e) => {
     const S = sc.current;
     if (S.moved > 6) return;
@@ -479,7 +499,6 @@ export default function ReviewsMarquee() {
     S.pinned = Math.max(0, S.pinned + (on ? 1 : -1));
   };
 
-  // pointer down anywhere on the wire area = you've grabbed it
   const onWrapDown = (e) => {
     if (e.pointerType === "mouse" && e.button !== 0) return;
     const S = sc.current;
@@ -492,7 +511,6 @@ export default function ReviewsMarquee() {
     S.px = rect ? e.clientX - rect.left : S.px;
   };
 
-  // moving the mouse across the wire gusts the cards nearby
   const onWrapMove = (e) => {
     const S = sc.current;
     if (S.down || reduce || e.pointerType !== "mouse") return;
@@ -596,8 +614,6 @@ export default function ReviewsMarquee() {
                 onFlip={onFlip}
               />
             ))}
-
-            
           </div>
         )}
       </div>

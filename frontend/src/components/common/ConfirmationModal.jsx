@@ -9,7 +9,6 @@ const display = "font-['Space_Grotesk',ui-sans-serif,system-ui,sans-serif]";
 export default function ConfirmationModal({ modalData }) {
   const isRed = modalData?.btn1Color === "red";
 
-  // Esc closes the modal the same way the secondary button does
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === "Escape") modalData?.btn2Handler?.();

@@ -9,6 +9,8 @@ import { SubSection } from "../models/SubSection.model.js";
 import { Order } from "../models/Payment.model.js";
 import { ratingsAndReview } from "../models/RatingAndReview.model.js";
 import mongoose from "mongoose";
+import s3 from "../config/S3Client.js";
+import { PutObjectCommand , GetObjectCommand } from "@aws-sdk/client-s3";
 import { getOrSetCache, invalidateCache, invalidateCacheByPattern } from "../utils/cache.js";
 import imageModeration from "../AI/imageModeration.js";
 const createCourse = async (req, res) => {
@@ -378,7 +380,7 @@ const getFullCourseDetails = async (req, res) => {
       userId: userId,
     });
 
-    console.log("courseProgressCount : ", courseProgressCount);
+    
 
     if (!courseDetails) {
       return res.status(400).json({

@@ -14,7 +14,6 @@ const worker = new Worker(
     limiter: { max: 10, duration: 1000 }, // at most 10 emails per second
   }
 );
-console.log('hellow there');
 worker.on("completed", (job) => {
   console.log(`[email] ${job.name} job ${job.id} sent`);
 });
