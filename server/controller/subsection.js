@@ -25,10 +25,10 @@ const createSubSection = async (req, res) => {
         message: "Video file is required",
       });
     }
-
-    
-    const videoKey = await uploadToB2(req.file) ; 
-   
+ 
+     console.log(Date.now(), 'date 1') ; 
+     const videoKey = await uploadToB2(req.file) ; 
+     console.log(Date.now() ,'date 2');
     const SubSectionDetails = await SubSection.create({
       title,
       description,

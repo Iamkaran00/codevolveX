@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
@@ -40,12 +40,25 @@ const EnrolledCourse = () => {
   const navigate = useNavigate();
   const reduce = useReducedMotion();
 
+  // `loading` from Redux is still false on the very first render, before the fetch starts.
+  // That made the empty state flash. This flag stays false until the first fetch finishes.
+  const [fetched, setFetched] = useState(false);
+
   useEffect(() => {
-    if (token) {
-      dispatch(getEnrolledCourse(token));
+    if (!token) {
+      setFetched(true);
+      return;
     }
+    let cancelled = false;
+    Promise.resolve(dispatch(getEnrolledCourse(token))).finally(() => {
+      if (!cancelled) setFetched(true);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [dispatch, token]);
 
+  const isLoading = loading || !fetched;
   const count = enrolledCourses?.length ?? 0;
 
   return (
@@ -69,7 +82,7 @@ const EnrolledCourse = () => {
           </p>
         </div>
 
-        {!loading && count > 0 && (
+        {!isLoading && count > 0 && (
           <div className="text-right">
             <p className={`text-4xl font-semibold tabular-nums text-[#ffb454] sm:text-5xl ${display}`}>
               {pad(count)}
@@ -81,7 +94,7 @@ const EnrolledCourse = () => {
         )}
       </div>
 
-      {loading ? (
+      {isLoading ? (
         <div className="flex flex-col gap-4" role="status" aria-label="Loading courses">
           {[1, 2, 3].map((index) => (
             <Skeleton key={index} />

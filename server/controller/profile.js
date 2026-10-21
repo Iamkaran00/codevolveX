@@ -108,15 +108,8 @@ const updateDisplayPicture = async (req, res) => {
   try {
     const displayPicture = req.file?.path;
     const userId = req.user.id;
-    const moderatedImage = await imageModeration(displayPicture) ;
-    console.log(moderatedImage.reason) ; 
-       if (!moderatedImage.allowed) {
-            return res.status(400).json({
-                success: false,
-                message: "This image cannot be used as a profile picture.",
-                reason: moderatedImage.reason,
-            });
-        }
+     
+      
     const image = await uploadOnCloudinary(displayPicture);
 
     if (!image || !image.secure_url) {

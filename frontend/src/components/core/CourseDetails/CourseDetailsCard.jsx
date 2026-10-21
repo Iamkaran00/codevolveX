@@ -14,6 +14,7 @@ import {
   HiTrophy,
   HiBookOpen,
   HiCheck,
+  HiStar,
 } from "react-icons/hi2";
 import { addToCart } from "../../../slices/cart.slice";
 import { buyCourse } from "../../../services/operations/paymentAPI";
@@ -36,7 +37,22 @@ const primaryBtn =
 const ghostBtn =
   "group flex w-full cursor-pointer items-center justify-center gap-2 rounded-full border border-white/15 px-8 py-4 text-sm text-zinc-300 transition-all duration-500 hover:border-[#ffb454]/60 hover:bg-[#ffb454]/10 hover:text-[#ffb454] active:scale-[0.98]";
 
-export default function CourseDetailsCard({ course, totalDuration, user }) {
+// IDs can be plain strings or populated objects, so normalise before comparing
+const idOf = (v) => (typeof v === "string" ? v : v?._id ?? String(v));
+
+/**
+ * Course details card.
+ *
+ * Props:
+ *  - course, totalDuration, user
+ *  - onEnroll (optional): if the parent passes it, it is used for "Enroll now".
+ *    Otherwise the card starts the Razorpay payment itself via buyCourse.
+ *
+ * It is exported both as default and as a named export, so either import style works:
+ *   import CourseDetailsCard from "...";
+ *   import { CourseDetailsCard } from "...";
+ */
+export function CourseDetailsCard({ course, totalDuration, user, onEnroll }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const reduce = useReducedMotion();
@@ -45,8 +61,19 @@ export default function CourseDetailsCard({ course, totalDuration, user }) {
   const { token } = useSelector((state) => state.auth);
 
   const enrolled = course.studentsEnrolled?.length ?? 0;
-  const isEnrolled = course.studentsEnrolled?.includes(user?._id);
-  const isCourseInCart = (cart ?? []).some((item) => item._id === course?._id);
+
+  // Enrolled if the user is in the course's student list OR the course is in the user's list
+  const isEnrolled =
+    !!user?._id &&
+    ((course.studentsEnrolled ?? []).some((s) => String(idOf(s)) === String(user._id)) ||
+      (user?.courses ?? []).some((c) => String(idOf(c)) === String(course._id)));
+
+  const isCourseInCart = (cart ?? []).some((item) => String(item._id) === String(course?._id));
+
+  // Average rating, only when the reviews actually carry numeric ratings
+  const reviews = course.ratingAndReviews ?? course.ratingsAndReview ?? [];
+  const rated = reviews.filter((r) => typeof r?.rating === "number");
+  const rating = rated.length ? rated.reduce((s, r) => s + r.rating, 0) / rated.length : 0;
 
   const handleAddToCart = () => {
     if (isCourseInCart) {
@@ -57,6 +84,10 @@ export default function CourseDetailsCard({ course, totalDuration, user }) {
   };
 
   const handleBuyCourse = () => {
+    if (onEnroll) {
+      onEnroll();
+      return;
+    }
     if (!token) {
       toast.error("Please login to enroll");
       navigate("/login");
@@ -114,32 +145,43 @@ export default function CourseDetailsCard({ course, totalDuration, user }) {
             Enrolled
           </span>
         )}
+
+        {rating > 0 && (
+          <span
+            className={`absolute right-4 top-4 inline-flex items-center gap-1.5 rounded-full border border-[#ffb454]/40 bg-[#100f0d]/70 px-3 py-1 text-[11px] tracking-widest text-[#ffb454] backdrop-blur-sm ${mono}`}
+          >
+            <HiStar size={12} />
+            <span className="tabular-nums">{rating.toFixed(1)}</span>
+          </span>
+        )}
       </div>
 
       <div className="relative z-20 space-y-7 p-6 sm:p-7">
-        {/* price */}
-        <div>
-          <div className="flex items-center gap-3">
-            <span className="h-px w-8 bg-[#ffb454]" />
-            <p className={`text-[11px] uppercase tracking-[0.25em] text-zinc-500 ${mono}`}>
-              One-time price
+        {/* price: hidden once the student owns the course */}
+        {!isEnrolled && (
+          <div>
+            <div className="flex items-center gap-3">
+              <span className="h-px w-8 bg-[#ffb454]" />
+              <p className={`text-[11px] uppercase tracking-[0.25em] text-zinc-500 ${mono}`}>
+                One-time price
+              </p>
+            </div>
+            <p
+              className={`mt-4 text-5xl font-semibold leading-none tracking-tight ${display} ${
+                course.price === 0 ? "text-[#ffb454]" : "text-[#f3ece0]"
+              }`}
+            >
+              {course.price === 0 ? (
+                "Free"
+              ) : (
+                <>
+                  ₹{course.price?.toLocaleString("en-IN")}
+                  <span className="text-[#ffb454]">.</span>
+                </>
+              )}
             </p>
           </div>
-          <p
-            className={`mt-4 text-5xl font-semibold leading-none tracking-tight ${display} ${
-              course.price === 0 ? "text-[#ffb454]" : "text-[#f3ece0]"
-            }`}
-          >
-            {course.price === 0 ? (
-              "Free"
-            ) : (
-              <>
-                ₹{course.price?.toLocaleString("en-IN")}
-                <span className="text-[#ffb454]">.</span>
-              </>
-            )}
-          </p>
-        </div>
+        )}
 
         {/* actions */}
         {user?.accountType?.toLowerCase() === "student" && (
@@ -162,26 +204,28 @@ export default function CourseDetailsCard({ course, totalDuration, user }) {
               </button>
             )}
 
-            {isCourseInCart ? (
-              <Link to="/dashboard/mycart" className={ghostBtn}>
-                Already in cart
-                <HiArrowRight className="h-4 w-4 transition-transform duration-500 group-hover:translate-x-1" />
-              </Link>
-            ) : (
-              !isEnrolled && (
+            {/* cart actions only make sense for a course the student doesn't own */}
+            {!isEnrolled &&
+              (isCourseInCart ? (
+                <Link to="/dashboard/mycart" className={ghostBtn}>
+                  Already in cart
+                  <HiArrowRight className="h-4 w-4 transition-transform duration-500 group-hover:translate-x-1" />
+                </Link>
+              ) : (
                 <button type="button" onClick={handleAddToCart} className={ghostBtn}>
                   <HiShoppingCart className="h-4 w-4" />
                   Add to cart
                 </button>
-              )
-            )}
+              ))}
 
-            <p
-              className={`mt-1 flex items-center justify-center gap-2 text-[11px] uppercase tracking-[0.15em] text-zinc-600 ${mono}`}
-            >
-              <HiArrowPath className="h-3 w-3" />
-              30-day money back guarantee
-            </p>
+            {!isEnrolled && (
+              <p
+                className={`mt-1 flex items-center justify-center gap-2 text-[11px] uppercase tracking-[0.15em] text-zinc-600 ${mono}`}
+              >
+                <HiArrowPath className="h-3 w-3" />
+                30-day money back guarantee
+              </p>
+            )}
           </div>
         )}
 
@@ -214,3 +258,5 @@ export default function CourseDetailsCard({ course, totalDuration, user }) {
     </motion.aside>
   );
 }
+
+export default CourseDetailsCard;

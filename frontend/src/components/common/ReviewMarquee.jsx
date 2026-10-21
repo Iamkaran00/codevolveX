@@ -16,6 +16,7 @@ const DROPS = [30, 54, 40, 66];
 const MAX_DROP = 66;
 const CARD_H = 280;
 
+/* ---------------- wire (1D wave equation) ---------------- */
 const TOP_PAD = 70;
 const PULL_UP = -70;
 const PULL_DOWN = 150;
@@ -26,11 +27,20 @@ const K_PULL = 140;
 const SIGMA = 110;
 const SUBSTEPS = 6;
 
-// page-scroll disturbance
-const SCROLL_KICK = 3.2; // how hard page scroll shakes the wire
-const SCROLL_VMAX = 520; // cap so fast flicks don't explode the wire
-const SCROLL_REACH = 1.5; // start reacting when the section is this many screen heights away
-const ENTER_KICK = 0.22; // extra punch when a fast scroll first brings the wire into view
+/* ---------------- page-scroll disturbance ---------------- */
+const SCROLL_KICK = 3.2;
+const SCROLL_VMAX = 520;
+const SCROLL_REACH = 1.5;
+const ENTER_KICK = 0.22;
+
+/* ---------------- pendulum + coupling physics ---------------- */
+const G = 1900; // gravity in px/s^2 (tuned so a card swings with a ~2s period)
+const DAMP = 0.42; // angular drag (underdamped: cards keep swinging a while)
+const PHI_MAX = 1.15; // rad, hard stop so cards never flip over the wire
+const CARD_LOAD = 95; // how hard a hanging card pulls the wire down
+const RESTITUTION = 0.55; // bounciness of card-to-card collisions
+const WIND = 34; // gentle ambient push, px/s^2
+const PN = 36; // spark pool size
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
@@ -73,9 +83,6 @@ function Stars({ rating = 5, size = 12 }) {
 
 function HangingCard({ r, i, width, setPos, setClip, setMag, onEnter, onMove, onLeave, onFlip }) {
   const drop = DROPS[i % DROPS.length];
-  const amp = 2.2 + (i % 3) * 0.9;
-  const dur = 3.4 + (i % 4) * 0.55;
-  const delay = -((i * 0.83) % dur);
 
   return (
     <div
@@ -83,14 +90,8 @@ function HangingCard({ r, i, width, setPos, setClip, setMag, onEnter, onMove, on
       className="absolute left-0 top-0 z-20 px-3"
       style={{ width, willChange: "transform", transformOrigin: "50% 0" }}
     >
-      <div
-        className="rv-swing relative"
-        style={{
-          "--amp": `${amp}deg`,
-          animationDuration: `${dur}s`,
-          animationDelay: `${delay}s`,
-        }}
-      >
+      {/* swing is now driven entirely by the physics loop (no CSS keyframes) */}
+      <div className="relative">
         {/* clip sitting on the wire */}
         <span
           ref={(el) => setClip(i, el)}
@@ -193,16 +194,18 @@ export default function ReviewsMarquee() {
   const clipEls = useRef([]);
   const magEls = useRef([]);
   const magState = useRef([]);
-  const lean = useRef([]);
+  const pend = useRef([]); // per-card pendulum state
   const hovered = useRef(false);
 
   const wirePathEl = useRef(null);
   const glowPathEl = useRef(null);
   const sparkEl = useRef(null);
   const sparkGlowEl = useRef(null);
+  const partEls = useRef([]);
 
   const sc = useRef({
     scroll: 0,
+    travel: 0, // unwrapped scroll, used to get true pivot acceleration
     speed: 0,
     down: false,
     dragging: false,
@@ -213,6 +216,7 @@ export default function ReviewsMarquee() {
     px: 0,
     pull: 0,
     pinned: 0,
+    snap: null,
     centers: [],
   });
 
@@ -267,6 +271,7 @@ export default function ReviewsMarquee() {
 
       if (S.dragging) {
         S.scroll -= dx;
+        S.travel -= dx;
         S.speed = clamp(S.speed * 0.6 + (-dx / dt) * 0.4, -2500, 2500);
         S.pull = clamp(dy, PULL_UP, PULL_DOWN);
       }
@@ -277,7 +282,9 @@ export default function ReviewsMarquee() {
     const up = () => {
       if (!S.down) return;
       S.down = false;
-      S.pull = 0; // let go: the wire snaps back and wobbles
+      // a hard pull that is released snaps back and throws sparks
+      if (S.dragging && Math.abs(S.pull) > 35) S.snap = { x: S.px, p: Math.abs(S.pull) };
+      S.pull = 0;
       if (S.dragging) {
         S.dragging = false;
         wrapRef.current?.classList.remove("rv-dragging");
@@ -294,21 +301,23 @@ export default function ReviewsMarquee() {
     };
   }, []);
 
-  // frame loop: marquee slide + wire physics + hanging cards
+  // frame loop: marquee slide + wire physics + pendulum cards + collisions + sparks
   useEffect(() => {
     if (!W || !items.length) return undefined;
 
     const S = sc.current;
-    const total = items.length * CARD_W;
+    const n = items.length;
+    const total = n * CARD_W;
     let last = performance.now();
     let raf;
 
     const N = clamp(Math.round(W / 30) + 1, 24, 64);
     const sp = W / (N - 1);
-    const C = (WAVE_SPEED / sp) ** 2; // how strongly neighbours drag each other
+    const C = (WAVE_SPEED / sp) ** 2;
     const y = new Float64Array(N);
     const v = new Float64Array(N);
     const rest = new Float64Array(N);
+    const load = new Float64Array(N); // downward force the cards put on the wire
     for (let i = 0; i < N; i += 1) {
       const u = (i * sp - W / 2) / (W / 2);
       rest[i] = TOP_PAD + 2 + SAG * (1 - u * u);
@@ -316,16 +325,57 @@ export default function ReviewsMarquee() {
     }
     S.px = W / 2;
 
-    // remember where the page was, so we can tell how far it moved each frame
+    // per-card scratch
+    const cxArr = new Float64Array(n);
+    const ywArr = new Float64Array(n);
+    const lpArr = new Float64Array(n); // pendulum length
+    const lcArr = new Float64Array(n); // collision lever (lower part of the card)
+    for (let i = 0; i < n; i += 1) {
+      const drop = DROPS[i % DROPS.length];
+      lpArr[i] = drop + CARD_H * 0.55;
+      lcArr[i] = drop + CARD_H * 0.75;
+      if (!pend.current[i]) pend.current[i] = { a: 0, w: 0, py: 0, ay: 0 };
+    }
+
+    // sparks
+    const pxs = new Float64Array(PN);
+    const pys = new Float64Array(PN);
+    const pvx = new Float64Array(PN);
+    const pvy = new Float64Array(PN);
+    const plife = new Float64Array(PN);
+    const emit = (x, yy, count, power) => {
+      if (reduce) return;
+      let made = 0;
+      for (let k = 0; k < PN && made < count; k += 1) {
+        if (plife[k] > 0) continue;
+        const ang = -Math.PI / 2 + (Math.random() - 0.5) * 2.4;
+        const sp2 = power * (0.35 + Math.random() * 0.75);
+        pxs[k] = x;
+        pys[k] = yy;
+        pvx[k] = Math.cos(ang) * sp2;
+        pvy[k] = Math.sin(ang) * sp2;
+        plife[k] = 0.6 + Math.random() * 0.7;
+        made += 1;
+      }
+    };
+
     let lastScrollY = window.scrollY;
-    let scrollVel = 0; // smoothed page scroll speed, px per second
+    let scrollVel = 0;
     let wasVisible = false;
+
+    // pivot kinematics
+    let lastTravel = S.travel;
+    let pvel = 0; // pivot (wire clip) horizontal velocity, px/s
+    let pacc = 0; // smoothed horizontal acceleration, px/s^2
 
     const stepWire = (h) => {
       const active = S.dragging;
       const damp = active ? 5 : 1.5;
       for (let i = 1; i < N - 1; i += 1) {
-        let a = K_REST * (rest[i] - y[i]) + C * (y[i - 1] + y[i + 1] - 2 * y[i]);
+        let a =
+          K_REST * (rest[i] - y[i]) +
+          C * (y[i - 1] + y[i + 1] - 2 * y[i]) -
+          load[i];
         if (active) {
           const q = (i * sp - S.px) / SIGMA;
           const w = Math.exp(-q * q);
@@ -337,7 +387,7 @@ export default function ReviewsMarquee() {
       for (let i = 1; i < N - 1; i += 1) y[i] += v[i] * h;
     };
 
-    const drawWire = (now) => {
+    const drawWire = (now, energy) => {
       let d = `M0 ${y[0].toFixed(1)}`;
       for (let i = 1; i < N - 1; i += 1) {
         const mx = (i * sp + (i + 1) * sp) / 2;
@@ -347,6 +397,15 @@ export default function ReviewsMarquee() {
       d += ` L${W} ${y[N - 1].toFixed(1)}`;
       wirePathEl.current?.setAttribute("d", d);
       glowPathEl.current?.setAttribute("d", d);
+
+      // the wire heats up when it is vibrating
+      const heat = clamp(energy / 220, 0, 1);
+      glowPathEl.current?.setAttribute("stroke", `rgba(255,180,84,${(0.1 + heat * 0.45).toFixed(3)})`);
+      glowPathEl.current?.setAttribute("stroke-width", (5 + heat * 7).toFixed(1));
+      wirePathEl.current?.setAttribute(
+        "stroke",
+        `rgba(${Math.round(161 + heat * 94)},${Math.round(161 + heat * 19)},${Math.round(170 - heat * 86)},${(0.55 + heat * 0.4).toFixed(3)})`
+      );
 
       // a spark that rides the wire
       if (sparkEl.current && sparkGlowEl.current) {
@@ -361,32 +420,115 @@ export default function ReviewsMarquee() {
     };
 
     /* ---- cards ---- */
-    const place = (dt) => {
-      for (let i = 0; i < items.length; i += 1) {
-        const el = posEls.current[i];
-        if (!el) continue;
+    const place = (dt, now, t) => {
+      load.fill(0);
+      const sub = 2;
+      const h = dt / sub;
 
+      // 1) integrate each card as a real damped pendulum hanging from a moving, bouncing pivot
+      for (let i = 0; i < n; i += 1) {
         const base = i * CARD_W - S.scroll;
         const x = (((base % total) + total) % total) - CARD_W;
         const cx = x + CARD_W / 2;
+        cxArr[i] = cx;
         S.centers[i] = cx;
 
-        // the card hangs wherever the wire is right now
         const yw = sampleWire(y, sp, N, cx);
+        ywArr[i] = yw;
+
+        const P = pend.current[i];
+        const Lp = lpArr[i];
+
+        // vertical acceleration of the wire at this card changes effective gravity
+        const wvy = sampleWire(v, sp, N, cx);
+        if (dt > 0) {
+          const ayRaw = clamp((wvy - P.py) / dt, -4000, 4000);
+          P.ay += (ayRaw - P.ay) * Math.min(1, dt * 25);
+        }
+        P.py = wvy;
+        const gEff = Math.max(G * 0.25, G - P.ay);
+
+        // ambient wind: each card gets its own slow gust
+        const wind = reduce ? 0 : WIND * (Math.sin(t * 0.7 + i * 1.7) + 0.6 * Math.sin(t * 1.9 + i * 0.9));
+
+        const ax = pacc + wind;
+
+        for (let s = 0; s < sub; s += 1) {
+          const acc =
+            -(gEff / Lp) * Math.sin(P.a) -
+            (ax / Lp) * Math.cos(P.a) -
+            DAMP * P.w -
+            0.05 * Math.abs(P.w) * P.w;
+          P.w += acc * h;
+          P.a += P.w * h;
+          if (P.a > PHI_MAX) {
+            P.a = PHI_MAX;
+            if (P.w > 0) P.w *= -0.3;
+          } else if (P.a < -PHI_MAX) {
+            P.a = -PHI_MAX;
+            if (P.w < 0) P.w *= -0.3;
+          }
+        }
+
+        // reaction: the card's weight and swing tension pull the wire down
+        if (cx > 0 && cx < W) {
+          const tension = CARD_LOAD * (Math.cos(P.a) + (Lp * P.w * P.w) / G);
+          const f = clamp(cx / sp, 0, N - 1.001);
+          const i0 = Math.floor(f);
+          const tt = f - i0;
+          load[i0] += tension * (1 - tt);
+          load[i0 + 1] += tension * tt;
+        }
+      }
+
+      // 2) card-to-card collisions (neighbours bump their lower edges together)
+      const minGap = CARD_W - 24 - 2;
+      for (let i = 0; i < n; i += 1) {
+        const j = (i + 1) % n;
+        if (j === i) continue;
+        const gapPivot = cxArr[j] - cxArr[i];
+        if (gapPivot < CARD_W * 0.5 || gapPivot > CARD_W * 1.5) continue;
+
+        const A = pend.current[i];
+        const B = pend.current[j];
+        const la = lcArr[i];
+        const lb = lcArr[j];
+        const bxA = cxArr[i] + la * Math.sin(A.a);
+        const bxB = cxArr[j] + lb * Math.sin(B.a);
+        const gap = bxB - bxA;
+
+        if (gap < minGap) {
+          const pen = minGap - gap;
+          // positional push-apart
+          A.a -= (pen * 0.5) / la;
+          B.a += (pen * 0.5) / lb;
+          // velocity of the contact points along x
+          const vA = la * Math.cos(A.a) * A.w;
+          const vB = lb * Math.cos(B.a) * B.w;
+          const rel = vA - vB; // > 0 means they are closing
+          if (rel > 0) {
+            const jImp = ((1 + RESTITUTION) * rel) / 2;
+            A.w -= jImp / la;
+            B.w += jImp / lb;
+            if (rel > 70 && cxArr[i] > 0 && cxArr[i] < W) {
+              const hitY = ywArr[i] + DROPS[i % DROPS.length] + CARD_H * 0.72;
+              emit((bxA + bxB) / 2 + CARD_W * 0.0, hitY, Math.min(8, Math.round(rel / 60)), clamp(rel * 0.9, 120, 520));
+            }
+          }
+        }
+      }
+
+      // 3) write transforms
+      for (let i = 0; i < n; i += 1) {
+        const el = posEls.current[i];
+        if (!el) continue;
+        const cx = cxArr[i];
+        const yw = ywArr[i];
         const slope = (sampleWire(y, sp, N, cx + 6) - sampleWire(y, sp, N, cx - 6)) / 12;
+        const P = pend.current[i];
 
-        // swing: leans against travel, and gets kicked when the wire twists under it
-        const L = lean.current[i] || (lean.current[i] = { a: 0, v: 0 });
-        const target = reduce ? 0 : clamp(-S.speed * 0.012 * (1 + (i % 3) * 0.15), -14, 14);
-        const twist =
-          (sampleWire(v, sp, N, cx + 6) - sampleWire(v, sp, N, cx - 6)) / 12; // how fast the wire tilts here
-        L.v -= twist * 57.3 * dt * 3;
-        L.v += ((target - L.a) * 80 - L.v * 8) * dt;
-        L.a += L.v * dt;
+        el.style.transform = `translate3d(${cx - CARD_W / 2}px, ${yw}px, 0) rotate(${(-P.a * 57.2958).toFixed(3)}deg)`;
 
-        el.style.transform = `translate3d(${x}px, ${yw}px, 0) rotate(${L.a}deg)`;
-
-        // clip follows the slope of the wire
         const clip = clipEls.current[i];
         if (clip) clip.style.transform = `translateX(-50%) rotate(${Math.atan(slope)}rad)`;
 
@@ -405,9 +547,33 @@ export default function ReviewsMarquee() {
       }
     };
 
+    const stepParticles = (dt) => {
+      for (let k = 0; k < PN; k += 1) {
+        const el = partEls.current[k];
+        if (!el) continue;
+        if (plife[k] <= 0) {
+          if (el.getAttribute("opacity") !== "0") el.setAttribute("opacity", "0");
+          continue;
+        }
+        pvy[k] += 1300 * dt;
+        pvx[k] *= 1 - Math.min(1, dt * 1.2);
+        pxs[k] += pvx[k] * dt;
+        pys[k] += pvy[k] * dt;
+        plife[k] -= dt * 1.5;
+        const a = clamp(plife[k], 0, 1);
+        el.setAttribute("cx", pxs[k].toFixed(1));
+        el.setAttribute("cy", pys[k].toFixed(1));
+        el.setAttribute("r", (1 + a * 2.2).toFixed(2));
+        el.setAttribute("opacity", a.toFixed(2));
+      }
+    };
+
+    let simT = 0;
+
     const tick = (now) => {
       const dt = Math.min(0.033, (now - last) / 1000);
       last = now;
+      simT += dt;
 
       if (S.dragging) {
         S.speed += (0 - S.speed) * Math.min(1, dt * 8);
@@ -417,11 +583,20 @@ export default function ReviewsMarquee() {
         const rate = Math.abs(S.speed) > BASE_SPEED * 1.5 ? 2 : 5;
         S.speed += (targetSpeed - S.speed) * Math.min(1, dt * rate);
         S.scroll += S.speed * dt;
+        S.travel += S.speed * dt;
       }
       S.scroll = ((S.scroll % total) + total) % total;
 
-      // page scroll disturbs the wire. It reacts while the section is still approaching,
-      // and gives one extra punch the moment a fast scroll brings it into view.
+      // true pivot kinematics: cards move opposite to the scroll direction
+      if (dt > 0) {
+        const newV = -(S.travel - lastTravel) / dt;
+        lastTravel = S.travel;
+        const accRaw = clamp((newV - pvel) / dt, -7000, 7000);
+        pvel = newV;
+        pacc += (accRaw - pacc) * Math.min(1, dt * 18);
+      }
+
+      // page scroll shakes the wire
       const scrollY = window.scrollY;
       const dScroll = scrollY - lastScrollY;
       lastScrollY = scrollY;
@@ -439,25 +614,38 @@ export default function ReviewsMarquee() {
 
         if (kick !== 0) {
           for (let i = 1; i < N - 1; i += 1) {
-            // middle of the wire moves most, the ends stay pinned
             const shape = Math.sin((Math.PI * i) / (N - 1));
-            // uneven along its length, so it ripples instead of moving as one block
             const ripple = 1 + 0.45 * Math.sin(i * 0.55 + now / 140);
             v[i] = clamp(v[i] + kick * shape * ripple, -SCROLL_VMAX, SCROLL_VMAX);
           }
         }
       }
 
+      // snap-back burst when a hard pull is released
+      if (S.snap) {
+        const { x, p } = S.snap;
+        S.snap = null;
+        for (let k = 0; k < 3; k += 1) {
+          const sx = clamp(x + (Math.random() - 0.5) * 120, 10, W - 10);
+          emit(sx, sampleWire(y, sp, N, sx), 4, clamp(p * 3.2, 160, 520));
+        }
+      }
+
       const h = dt / SUBSTEPS;
       for (let k = 0; k < SUBSTEPS; k += 1) stepWire(h);
 
-      place(dt);
-      drawWire(now);
+      let e2 = 0;
+      for (let i = 0; i < N; i += 1) e2 += v[i] * v[i];
+      const energy = Math.sqrt(e2 / N);
+
+      place(dt, now, simT);
+      stepParticles(dt);
+      drawWire(now, energy);
       raf = requestAnimationFrame(tick);
     };
 
-    place(0.016);
-    drawWire(0);
+    place(0, last, 0);
+    drawWire(0, 0);
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
   }, [W, items, CARD_W, SAG, reduce]);
@@ -511,6 +699,7 @@ export default function ReviewsMarquee() {
     S.px = rect ? e.clientX - rect.left : S.px;
   };
 
+  // moving the mouse across the wire brushes nearby cards (real angular impulse)
   const onWrapMove = (e) => {
     const S = sc.current;
     if (S.down || reduce || e.pointerType !== "mouse") return;
@@ -519,10 +708,10 @@ export default function ReviewsMarquee() {
     const px = e.clientX - wrapRef.current.getBoundingClientRect().left;
     for (let i = 0; i < S.centers.length; i += 1) {
       const c = S.centers[i];
-      const L = lean.current[i];
-      if (c == null || !L) continue;
+      const P = pend.current[i];
+      if (c == null || !P) continue;
       const d = Math.abs(c - px);
-      if (d < 220) L.v += dx * 1.1 * (1 - d / 220);
+      if (d < 220) P.w += dx * 0.014 * (1 - d / 220);
     }
   };
 
@@ -562,8 +751,8 @@ export default function ReviewsMarquee() {
           </h2>
         </div>
         <p className="max-w-md text-lg leading-relaxed text-zinc-400">
-          Real reviews from learners on CodevolveX. Grab the wire, pull it any
-          way you like, then let go.
+          Real reviews from learners on CodevolveX. Grab the wire, fling it,
+          pull it hard and let go. The cards swing, bump and throw sparks.
         </p>
       </motion.div>
 
@@ -614,20 +803,33 @@ export default function ReviewsMarquee() {
                 onFlip={onFlip}
               />
             ))}
+
+            {/* sparks sit above the cards */}
+            {!reduce && (
+              <svg
+                aria-hidden
+                className="pointer-events-none absolute left-0 top-0 z-30 overflow-visible"
+                width={W}
+                height={stageH}
+              >
+                {Array.from({ length: PN }).map((_, k) => (
+                  <circle
+                    key={k}
+                    ref={(el) => { partEls.current[k] = el; }}
+                    r="2"
+                    cx="0"
+                    cy="0"
+                    opacity="0"
+                    fill="#ffb454"
+                  />
+                ))}
+              </svg>
+            )}
           </div>
         )}
       </div>
 
       <style>{`
-        .rv-swing {
-          transform-origin: 50% 0;
-          animation: rvSwing ease-in-out infinite alternate;
-        }
-        @keyframes rvSwing {
-          from { transform: rotate(calc(var(--amp) * -1)); }
-          to   { transform: rotate(var(--amp)); }
-        }
-
         .rv-card { perspective: 1100px; }
         .rv-card:focus { outline: none; }
         .rv-inner {
@@ -643,15 +845,9 @@ export default function ReviewsMarquee() {
         .rv-card:focus-visible .rv-inner,
         .rv-card.is-flipped .rv-inner { transform: rotateY(180deg); }
 
-        .rv-swing:hover { animation-play-state: paused; }
-
         /* while dragging: grabbing cursor, cards ignore the pointer so nothing flips */
         .rv-wrap.rv-dragging { cursor: grabbing; }
         .rv-wrap.rv-dragging .rv-card { pointer-events: none; }
-
-        @media (prefers-reduced-motion: reduce) {
-          .rv-swing { animation: none !important; }
-        }
       `}</style>
     </section>
   );

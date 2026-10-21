@@ -1,25 +1,25 @@
-import React, { useEffect, useState, useRef, memo } from "react";
-import { Navigate, NavLink } from "react-router-dom";
+import React, { useEffect, useRef, useState } from "react";
+import { NavLink } from "react-router-dom";
 
 import {
   motion,
   AnimatePresence,
-  animate,
   useMotionValue,
   useSpring,
   useTransform,
   useInView,
   useAnimation,
+  useReducedMotion,
 } from "framer-motion";
 
-import { HiArrowRight, HiPlay, HiCheck, HiFire, HiAcademicCap } from "react-icons/hi2";
-import { SiReact, SiNodedotjs, SiMongodb, SiTailwindcss } from "react-icons/si";
+import { HiArrowRight, HiPlay } from "react-icons/hi2";
 import { useSelector } from "react-redux";
 
 const EASE = [0.23, 1, 0.32, 1];
 
 const display = "font-['Space_Grotesk',ui-sans-serif,system-ui,sans-serif]";
 const mono = "font-['JetBrains_Mono',ui-monospace,monospace]";
+const HAND = "font-['Caveat','Segoe_Script','Brush_Script_MT',cursive]";
 
 const GRAIN = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")`;
 
@@ -38,427 +38,444 @@ const FACTS = [
   ["Built by instructors", "Courses from people who ship for a living"],
 ];
 
-const LESSONS = [
-  "Project setup & routing",
-  "Socket.io real-time events",
-  "Auth with JWT",
-  "Deploy to production",
+const clampN = (v, a, b) => Math.max(a, Math.min(b, v));
+
+/* ------------------------------------------------------------------ */
+/*  BUILD DESK                                                         */
+/*                                                                     */
+/*  A messy desk: code is typed in the editor, and the chat app on the */
+/*  phone comes alive as each line lands. A sticky note gets ticked    */
+/*  off by hand. Everything can be picked up and thrown; it keeps its  */
+/*  momentum and bounces off the edges of the desk.                    */
+/* ------------------------------------------------------------------ */
+
+const TOK = { fn: "#ffb454", str: "#9bd8bd", v: "#f3ece0", p: "#71717a" };
+
+const CODE = [
+  [["io", "fn"], [".on(", "p"], ['"connection"', "str"], [", (", "p"], ["socket", "v"], [") => {", "p"]],
+  [["  socket", "v"], [".join(", "p"], ["room", "v"], [");", "p"]],
+  [["  socket", "v"], [".on(", "p"], ['"message"', "str"], [", (", "p"], ["msg", "v"], [") => {", "p"]],
+  [["    io", "fn"], [".to(", "p"], ["room", "v"], [").emit(", "p"], ['"message"', "str"], [", ", "p"], ["msg", "v"], [");", "p"]],
+  [["  });", "p"]],
+  [["});", "p"]],
 ];
 
-const PHASES = 8;
-const STEP_MS = 1500;
+const LINE_LEN = CODE.map((l) => l.reduce((a, [t]) => a + t.length, 0));
+const LINE_END = LINE_LEN.map((_, i) => LINE_LEN.slice(0, i + 1).reduce((a, b) => a + b, 0));
+const TOTAL = LINE_END[LINE_END.length - 1];
+const TYPING_TICKS = 32; // "typing..." before the last reply
+const HOLD_TICKS = 110; // let the finished scene breathe
+const LOOP = TOTAL + TYPING_TICKS + HOLD_TICKS;
+const TICK = 38; // ms per typed character
 
-const usePhase = () => {
-  const [p, setP] = useState(0);
-  useEffect(() => {
-    const id = setInterval(() => setP((n) => (n + 1) % PHASES), STEP_MS);
-    return () => clearInterval(id);
-  }, []);
-  return p;
+const NOTE_ITEMS = ["Project setup", "Socket events", "Chat UI", "Deploy"];
+
+const BUILD_CSS = `
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&display=swap');
+@keyframes cx-blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+.cx-caret { animation: cx-blink 1s steps(1) infinite; }
+`;
+
+const renderLine = (tokens, count) => {
+  let left = count;
+  return tokens.map(([t, c], k) => {
+    if (left <= 0) return null;
+    const part = t.slice(0, left);
+    left -= part.length;
+    return (
+      <span key={k} style={{ color: TOK[c] }}>
+        {part}
+      </span>
+    );
+  });
 };
 
-const Counter = ({ to }) => {
-  const mv = useMotionValue(0);
-  const [n, setN] = useState(0);
-  useEffect(() => {
-    const unsub = mv.on("change", (v) => setN(Math.round(v)));
-    const controls = animate(mv, to, { duration: 0.9, ease: EASE });
-    return () => {
-      unsub();
-      controls.stop();
-    };
-  }, [to, mv]);
-  return <>{n}</>;
-};
+/* ---------- a draggable, throwable thing on the desk ---------- */
 
-const RING_R = 25;
-const RING_C = 2 * Math.PI * RING_R;
-
-const PlayerCard = ({ pct, p }) => {
-  const complete = pct === 100;
+function Layer({ id, depth, rot, z, top, onGrab, mx, my, stageRef, reduce, float, className, children }) {
+  const px = useSpring(useTransform(mx, [-0.5, 0.5], [-depth, depth]), {
+    stiffness: 90,
+    damping: 18,
+    mass: 0.6,
+  });
+  const py = useSpring(useTransform(my, [-0.5, 0.5], [-depth * 0.7, depth * 0.7]), {
+    stiffness: 90,
+    damping: 18,
+    mass: 0.6,
+  });
+  const rv = useMotionValue(0);
+  const rs = useSpring(rv, { stiffness: 140, damping: 11, mass: 0.7 });
+  const rotate = useTransform(rs, (v) => v + rot);
 
   return (
-    <div className="relative w-[300px] rounded-[28px] border border-white/10 bg-[#14130f] p-3.5 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.95),0_0_0_1px_rgba(255,180,84,0.04)]">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 rounded-[28px] opacity-[0.06] mix-blend-overlay"
-        style={{ backgroundImage: GRAIN }}
-      />
+    <motion.div style={{ x: px, y: py, zIndex: top === id ? 60 : z }} className={`absolute ${className}`}>
+      <motion.div
+        animate={reduce ? undefined : { y: [0, -float, 0] }}
+        transition={{ duration: 5 + float * 0.35, repeat: Infinity, ease: "easeInOut" }}
+      >
+        <motion.div
+          drag
+          dragConstraints={stageRef}
+          dragElastic={0.2}
+          dragTransition={{ power: 0.28, timeConstant: 280, bounceStiffness: 260, bounceDamping: 16 }}
+          whileDrag={{ scale: 1.035 }}
+          onDragStart={() => onGrab(id)}
+          onDrag={(e, info) => {
+            if (!reduce) rv.set(clampN(info.velocity.x * 0.012, -16, 16));
+          }}
+          onDragEnd={() => rv.set(0)}
+          style={{ rotate, transformOrigin: "50% 15%", touchAction: "none" }}
+          className="cursor-grab active:cursor-grabbing"
+        >
+          {children}
+        </motion.div>
+      </motion.div>
+    </motion.div>
+  );
+}
 
-      {/* video area */}
-      <div className="relative h-[138px] overflow-hidden rounded-2xl bg-gradient-to-br from-[#2a1d0e] via-[#1b140c] to-[#100f0d]">
-        <div
-          aria-hidden
-          className="absolute inset-0 opacity-[0.15] mix-blend-overlay"
-          style={{ backgroundImage: GRAIN }}
-        />
-        <div
-          aria-hidden
-          className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-[#ffb454]/25 blur-3xl"
-        />
+/* ---------- editor ---------- */
 
-        {/* decorative code bars */}
-        <div className="absolute left-4 top-4 flex w-[55%] flex-col gap-2">
-          {[0.9, 0.6, 0.75, 0.45, 0.65].map((w, i) => (
-            <motion.span
-              key={i}
-              animate={{ width: [`${w * 60}%`, `${w * 100}%`, `${w * 60}%`] }}
-              transition={{ duration: 3 + i * 0.6, repeat: Infinity, ease: "easeInOut", delay: i * 0.2 }}
-              className={`block h-[5px] rounded-full ${i % 2 ? "bg-white/15" : "bg-[#ffb454]/50"}`}
-              style={{ marginLeft: i === 1 || i === 3 ? 14 : 0 }}
-            />
+function Editor({ n, L }) {
+  const cur = LINE_END.findIndex((e) => n < e);
+  const live = L >= 2;
+
+  return (
+    <div className="w-[360px] overflow-hidden rounded-2xl border border-white/10 bg-[#14130f] shadow-[0_40px_70px_-20px_rgba(0,0,0,0.95)]">
+      <div className="flex items-center gap-3 border-b border-white/[0.07] px-4 py-2.5">
+        <span className="flex gap-1.5">
+          {[0, 1, 2].map((i) => (
+            <span key={i} className="h-2.5 w-2.5 rounded-full bg-white/15" />
           ))}
+        </span>
+        <span className={`ml-2 flex items-center gap-2 text-[11px] text-zinc-400 ${mono}`}>
+          <span className="h-1.5 w-1.5 rounded-full bg-[#ffb454]" />
+          server.js
+        </span>
+        <span className={`ml-auto text-[10px] text-zinc-600 ${mono}`}>socket.io</span>
+      </div>
+
+      <div className={`px-4 py-4 text-[12.5px] leading-6 ${mono}`}>
+        {CODE.map((tokens, i) => {
+          const start = i ? LINE_END[i - 1] : 0;
+          const count = clampN(n - start, 0, LINE_LEN[i]);
+          const isCur = cur === i || (cur === -1 && i === CODE.length - 1);
+          return (
+            <div key={i} className="flex whitespace-pre">
+              <span className="mr-4 w-6 shrink-0 select-none text-right text-zinc-700">{i + 1}</span>
+              <span>
+                {renderLine(tokens, count)}
+                {isCur && (
+                  <span className="cx-caret ml-px inline-block h-[15px] w-[7px] translate-y-[3px] bg-[#ffb454]" />
+                )}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+
+      <div
+        className={`flex items-center justify-between border-t border-white/[0.07] px-4 py-2 text-[10px] text-zinc-600 ${mono}`}
+      >
+        <span>{L < CODE.length ? "writing server.js" : "saved"}</span>
+        <span className="flex items-center gap-1.5">
+          <span
+            className={`h-1.5 w-1.5 rounded-full transition-colors duration-500 ${
+              live ? "bg-[#ffb454]" : "bg-zinc-700"
+            }`}
+          />
+          {live ? "live · 3 clients" : "offline"}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- phone ---------- */
+
+function Pop({ className = "", children }) {
+  return (
+    <motion.div
+      layout
+      initial={{ opacity: 0, y: 14, scale: 0.92 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      transition={{ type: "spring", stiffness: 420, damping: 28 }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+function Phone({ L, n, after }) {
+  const joined = L >= 1;
+  const online = L >= 2;
+  const m1 = L >= 4;
+  const m2 = L >= 5;
+  const typing = n >= TOTAL && after < TYPING_TICKS;
+  const m3 = after >= TYPING_TICKS;
+
+  return (
+    <div className="h-[400px] w-[200px] rounded-[36px] border border-white/15 bg-[#0c0b09] p-[7px] shadow-[0_40px_70px_-20px_rgba(0,0,0,0.95)]">
+      <div className="flex h-full flex-col overflow-hidden rounded-[29px] bg-[#14130f]">
+        <div className="mx-auto mt-2 h-[18px] w-16 shrink-0 rounded-full bg-[#0c0b09]" />
+
+        <div className="flex items-center gap-2.5 border-b border-white/[0.07] px-4 pb-2.5 pt-2">
+          <span
+            className={`grid h-7 w-7 place-items-center rounded-full bg-[#ffb454] text-[12px] font-bold text-[#1d1a16] ${display}`}
+          >
+            #
+          </span>
+          <div className="min-w-0">
+            <p className={`text-[12.5px] font-semibold leading-none text-[#f3ece0] ${display}`}>
+              team-chat
+            </p>
+            <p className="mt-1 flex items-center gap-1.5 text-[9px] text-zinc-500">
+              <span
+                className={`h-1.5 w-1.5 rounded-full transition-colors duration-500 ${
+                  online ? "bg-[#8cc84b]" : "bg-zinc-600"
+                }`}
+              />
+              {online ? "3 online" : "connecting…"}
+            </p>
+          </div>
         </div>
 
-        {/* play button + progress ring */}
-        <div className="absolute bottom-3 right-3 flex h-[58px] w-[58px] items-center justify-center">
-          <svg viewBox="0 0 58 58" className="absolute inset-0 -rotate-90">
-            <circle cx="29" cy="29" r={RING_R} fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="3" />
-            <motion.circle
-              cx="29"
-              cy="29"
-              r={RING_R}
-              fill="none"
-              stroke="#ffb454"
-              strokeWidth="3"
-              strokeLinecap="round"
-              strokeDasharray={RING_C}
-              initial={false}
-              animate={{ strokeDashoffset: RING_C * (1 - pct / 100) }}
-              transition={{ duration: 0.9, ease: EASE }}
-            />
-          </svg>
-          <AnimatePresence mode="wait" initial={false}>
-            {complete ? (
-              <motion.span
-                key="done"
-                initial={{ scale: 0, rotate: -45 }}
-                animate={{ scale: 1, rotate: 0 }}
-                exit={{ scale: 0 }}
-                transition={{ type: "spring", stiffness: 300, damping: 14 }}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-[#ffb454] text-[#1d1a16]"
-              >
-                <HiCheck className="h-5 w-5" />
-              </motion.span>
-            ) : (
-              <motion.span
-                key="play"
-                initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.8, opacity: 0 }}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-[#100f0d]/80 text-[#ffb454]"
-              >
-                <HiPlay className="h-4 w-4 translate-x-px" />
-              </motion.span>
+        <div className="flex min-h-0 flex-1 flex-col justify-end gap-2 px-3 pb-3">
+          <AnimatePresence initial={false}>
+            {joined && (
+              <Pop key="join" className="self-center">
+                <span className="rounded-full border border-white/10 px-2.5 py-1 text-[9px] text-zinc-500">
+                  you joined #team-chat
+                </span>
+              </Pop>
+            )}
+            {m1 && (
+              <Pop key="m1" className="max-w-[80%] self-start">
+                <p className="mb-0.5 pl-1 text-[8.5px] text-zinc-600">maya</p>
+                <p className="rounded-2xl rounded-bl-md bg-white/[0.07] px-3 py-2 text-[11px] leading-snug text-zinc-200">
+                  is the room live yet?
+                </p>
+              </Pop>
+            )}
+            {m2 && (
+              <Pop key="m2" className="max-w-[80%] self-end">
+                <p className="rounded-2xl rounded-br-md bg-[#ffb454] px-3 py-2 text-[11px] leading-snug text-[#1d1a16]">
+                  yep. messages are flowing
+                </p>
+              </Pop>
+            )}
+            {typing && (
+              <Pop key="typing" className="self-start">
+                <div className="flex items-center gap-1 rounded-2xl rounded-bl-md bg-white/[0.07] px-3 py-2.5">
+                  {[0, 1, 2].map((i) => (
+                    <motion.span
+                      key={i}
+                      animate={{ y: [0, -3, 0] }}
+                      transition={{ duration: 0.8, repeat: Infinity, delay: i * 0.14 }}
+                      className="h-1.5 w-1.5 rounded-full bg-zinc-400"
+                    />
+                  ))}
+                </div>
+              </Pop>
+            )}
+            {m3 && (
+              <Pop key="m3" className="max-w-[80%] self-start">
+                <p className="mb-0.5 pl-1 text-[8.5px] text-zinc-600">maya</p>
+                <p className="rounded-2xl rounded-bl-md bg-white/[0.07] px-3 py-2 text-[11px] leading-snug text-zinc-200">
+                  ship it.
+                </p>
+              </Pop>
             )}
           </AnimatePresence>
         </div>
 
-        <span
-          className={`absolute bottom-3 left-4 rounded-full border border-white/10 bg-black/50 px-2.5 py-1 text-[9px] uppercase tracking-[0.18em] text-zinc-300 ${mono}`}
-        >
-          48 lessons · 12h
-        </span>
-      </div>
-
-      {/* title */}
-      <div className="relative mt-4 px-1">
-        <p className={`text-[17px] font-semibold tracking-tight text-[#f3ece0] ${display}`}>
-          Real-time Chat App
-        </p>
-        <p className={`mt-1 text-[11px] text-zinc-500 ${mono}`}>
-          <span className="text-[#ffb454]">★★★★★</span> 4.9 · MERN project
-        </p>
-      </div>
-
-      {/* lessons */}
-      <ul className="relative mt-4 space-y-1.5">
-        {LESSONS.map((l, i) => {
-          const done = p - 1 > i;
-          const active = p === i + 1;
-          return (
-            <li
-              key={l}
-              className={`flex items-center gap-3 rounded-xl px-2.5 py-2 transition-colors duration-500 ${
-                active ? "bg-[#ffb454]/[0.08]" : "bg-white/[0.025]"
-              }`}
-            >
-              <span className="relative flex h-5 w-5 shrink-0 items-center justify-center">
-                <span
-                  className={`absolute inset-0 rounded-full border transition-colors duration-500 ${
-                    done ? "border-[#ffb454] bg-[#ffb454]" : active ? "border-[#ffb454]/70" : "border-white/15"
-                  }`}
-                />
-                <AnimatePresence>
-                  {done && (
-                    <motion.span
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      exit={{ scale: 0 }}
-                      transition={{ type: "spring", stiffness: 400, damping: 18 }}
-                      className="relative text-[#1d1a16]"
-                    >
-                      <HiCheck className="h-3 w-3" />
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-                {active && (
-                  <motion.span
-                    animate={{ scale: [1, 1.6], opacity: [0.6, 0] }}
-                    transition={{ duration: 1.1, repeat: Infinity }}
-                    className="absolute inset-0 rounded-full border border-[#ffb454]"
-                  />
-                )}
-              </span>
-              <span
-                className={`text-[12px] transition-colors duration-500 ${
-                  done ? "text-zinc-500 line-through decoration-white/20" : active ? "text-[#f3ece0]" : "text-zinc-400"
-                }`}
-              >
-                {l}
-              </span>
-              <span className={`ml-auto text-[9px] text-zinc-600 ${mono}`}>0{i + 1}</span>
-            </li>
-          );
-        })}
-      </ul>
-
-      {/* progress */}
-      <div className="relative mt-4 px-1">
-        <div className={`flex justify-between text-[10px] uppercase tracking-[0.18em] text-zinc-500 ${mono}`}>
-          <span>Progress</span>
-          <span className="text-[#ffb454]">
-            <Counter to={pct} />%
+        <div className="mx-3 mb-3 flex shrink-0 items-center gap-2 rounded-full bg-white/[0.06] py-1.5 pl-3.5 pr-1.5">
+          <span className="flex-1 truncate text-[10px] text-zinc-600">Message #team-chat</span>
+          <span className="grid h-6 w-6 place-items-center rounded-full bg-[#ffb454] text-[#1d1a16]">
+            <HiArrowRight className="h-3 w-3 -rotate-45" />
           </span>
         </div>
-        <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-white/10">
-          <motion.div
-            initial={false}
-            animate={{ width: `${pct}%` }}
-            transition={{ duration: 0.9, ease: EASE }}
-            className="h-full rounded-full bg-gradient-to-r from-[#ff8a3d] to-[#ffb454]"
-          />
-        </div>
       </div>
     </div>
   );
-};
+}
 
-/* ------------------------------------------------------------------ */
-/*  ORBIT (smooth version: GPU-friendly CSS transform animations)      */
-/* ------------------------------------------------------------------ */
+/* ---------- sticky note ---------- */
 
-const ORBIT_SECONDS = 48;
-
-const ORBIT_CSS = `
-@keyframes orbit-cw  { to { transform: rotate(360deg); } }
-@keyframes orbit-ccw { to { transform: rotate(-360deg); } }
-@keyframes float-a { 0%,100% { transform: translate3d(0,0,0); } 50% { transform: translate3d(0,-8px,0); } }
-@keyframes float-b { 0%,100% { transform: translate3d(0,0,0); } 50% { transform: translate3d(0,7px,0); } }
-@keyframes float-c { 0%,100% { transform: translate3d(0,0,0); } 50% { transform: translate3d(0,-6px,0); } }
-@keyframes glow-pulse { 0%,100% { opacity: .08; } 50% { opacity: .2; } }
-`;
-
-const OrbitChip = ({ Icon, label, angle, duration, color }) => {
-  const R = 240;
-  const rad = (angle * Math.PI) / 180;
+function Note({ checks }) {
   return (
-    <div
-      className="absolute"
-      style={{
-        left: R + Math.cos(rad) * R,
-        top: R + Math.sin(rad) * R,
-        transform: "translate(-50%, -50%)",
-      }}
-    >
-      {/* same duration as the ring, so the chip stays perfectly upright */}
-      <div
-        className="orbit-anim flex items-center gap-2 rounded-full border border-white/10 bg-[#14130f] py-1.5 pl-2 pr-3.5 shadow-[0_12px_30px_-8px_rgba(0,0,0,0.8)]"
-        style={{ animation: `orbit-ccw ${duration}s linear infinite`, willChange: "transform" }}
-      >
-        <span
-          className="flex h-6 w-6 items-center justify-center rounded-full"
-          style={{ backgroundColor: `${color}22`, color }}
-        >
-          <Icon className="h-3.5 w-3.5" />
-        </span>
-        <span className={`text-[10px] uppercase tracking-[0.14em] text-zinc-300 ${mono}`}>{label}</span>
-      </div>
+    <div className="relative w-[176px] rounded-[3px] bg-[#f1eadc] px-5 pb-6 pt-7 text-[#1d1a16] shadow-[0_18px_30px_-12px_rgba(0,0,0,0.8)]">
+      <span className="absolute -top-3 left-1/2 h-6 w-16 -translate-x-1/2 -rotate-3 bg-[#ffb454]/70" />
+      <p className={`text-[24px] leading-none ${HAND}`} style={{ fontWeight: 600 }}>
+        this week:
+      </p>
+      <ul className="mt-3 space-y-2.5">
+        {NOTE_ITEMS.map((t, i) => (
+          <li key={t} className="relative flex items-center gap-2.5">
+            <span className="relative h-4 w-4 shrink-0 rounded-[3px] border-[1.5px] border-[#1d1a16]/70">
+              <svg viewBox="0 0 20 20" className="absolute -left-0.5 -top-1.5 h-5 w-5 overflow-visible">
+                <motion.path
+                  d="M3 10 L8 15 L18 3"
+                  fill="none"
+                  stroke="#b4561b"
+                  strokeWidth="2.6"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  initial={false}
+                  animate={{ pathLength: checks[i] ? 1 : 0, opacity: checks[i] ? 1 : 0 }}
+                  transition={{ duration: 0.4, ease: EASE }}
+                />
+              </svg>
+            </span>
+            <span className={`text-[20px] leading-none ${HAND}`} style={{ fontWeight: 500 }}>
+              {t}
+            </span>
+            <motion.span
+              aria-hidden
+              initial={false}
+              animate={{ scaleX: checks[i] ? 1 : 0 }}
+              transition={{ duration: 0.45, ease: EASE, delay: 0.1 }}
+              style={{ originX: 0 }}
+              className="absolute left-6 right-1 top-1/2 h-[2px] bg-[#1d1a16]/55"
+            />
+          </li>
+        ))}
+      </ul>
     </div>
   );
-};
+}
 
-// memoized: phase updates every 1.5s no longer touch the rings/chips
-const OrbitRings = memo(() => (
-  <div className="absolute inset-0">
-    <div className="absolute left-1/2 top-1/2 h-[370px] w-[370px] -translate-x-1/2 -translate-y-1/2">
-      <div
-        aria-hidden
-        className="orbit-anim h-full w-full rounded-full border border-white/[0.06]"
-        style={{ animation: "orbit-ccw 70s linear infinite", willChange: "transform" }}
-      >
-        <span className="absolute left-1/2 top-0 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#ffb454] shadow-[0_0_14px_3px_rgba(255,180,84,0.6)]" />
-      </div>
-    </div>
+/* ---------- the stage ---------- */
 
-    <div className="absolute left-1/2 top-1/2 h-[480px] w-[480px] -translate-x-1/2 -translate-y-1/2">
-      <div
-        className="orbit-anim relative h-full w-full"
-        style={{ animation: `orbit-cw ${ORBIT_SECONDS}s linear infinite`, willChange: "transform" }}
-      >
-        <div className="absolute inset-0 rounded-full border border-dashed border-white/[0.12]" />
-        <OrbitChip Icon={SiReact} label="React" angle={-90} duration={ORBIT_SECONDS} color="#61dafb" />
-        <OrbitChip Icon={SiNodedotjs} label="Node" angle={0} duration={ORBIT_SECONDS} color="#8cc84b" />
-        <OrbitChip Icon={SiMongodb} label="Mongo" angle={90} duration={ORBIT_SECONDS} color="#4db33d" />
-        <OrbitChip Icon={SiTailwindcss} label="Tailwind" angle={180} duration={ORBIT_SECONDS} color="#38bdf8" />
-      </div>
-    </div>
-  </div>
-));
+function BuildStage() {
+  const reduce = useReducedMotion();
+  const outerRef = useRef(null);
+  const stageRef = useRef(null);
+  const inView = useInView(outerRef, { margin: "100px" });
 
-const LearningOrbit = () => {
-  const p = usePhase();
-  const pct = Math.min(100, Math.max(0, (p - 1) * 25));
-  const complete = pct === 100;
-
-  // gentle 3D tilt that follows the pointer
+  const [n, setN] = useState(0);
+  const [top, setTop] = useState(null);
   const mx = useMotionValue(0);
   const my = useMotionValue(0);
-  const rotateX = useSpring(useTransform(my, [-0.5, 0.5], [5, -5]), { stiffness: 80, damping: 20, mass: 0.6 });
-  const rotateY = useSpring(useTransform(mx, [-0.5, 0.5], [-7, 7]), { stiffness: 80, damping: 20, mass: 0.6 });
+
+  useEffect(() => {
+    if (!inView) return undefined;
+    const id = setInterval(() => setN((v) => (v + 1) % LOOP), TICK);
+    return () => clearInterval(id);
+  }, [inView]);
+
+  const L = LINE_END.filter((e) => n >= e).length; // finished lines
+  const after = Math.max(0, n - TOTAL);
+  const checks = [L >= 1, L >= 4, L >= 5, after >= TYPING_TICKS];
 
   const onMove = (e) => {
-    const r = e.currentTarget.getBoundingClientRect();
-    mx.set((e.clientX - r.left) / r.width - 0.5);
-    my.set((e.clientY - r.top) / r.height - 0.5);
+    if (reduce) return;
+    const r = stageRef.current?.getBoundingClientRect();
+    if (!r) return;
+    mx.set(clampN((e.clientX - r.left) / r.width - 0.5, -0.5, 0.5));
+    my.set(clampN((e.clientY - r.top) / r.height - 0.5, -0.5, 0.5));
   };
   const onLeave = () => {
     mx.set(0);
     my.set(0);
   };
 
+  const shared = { mx, my, stageRef, reduce, top, onGrab: setTop };
+
   return (
     <div
-      className="relative mx-auto h-[400px] w-full max-w-[540px] sm:h-[540px]"
-      onMouseMove={onMove}
-      onMouseLeave={onLeave}
+      ref={outerRef}
+      className="relative mx-auto h-[360px] w-full max-w-[540px] min-[420px]:h-[410px] sm:h-[560px]"
     >
-      <style>{ORBIT_CSS}</style>
+      <style>{BUILD_CSS}</style>
 
       <div
-        className="absolute left-1/2 top-0 h-[540px] w-[540px] origin-top -translate-x-1/2 scale-[0.72] sm:scale-100"
-        style={{ perspective: 1200 }}
+        ref={stageRef}
+        onMouseMove={onMove}
+        onMouseLeave={onLeave}
+        className="absolute left-1/2 top-0 h-[560px] w-[540px] origin-top -translate-x-1/2 scale-[0.62] min-[420px]:scale-[0.72] sm:scale-100"
       >
-        <motion.div style={{ rotateX, rotateY, willChange: "transform" }} className="relative h-full w-full">
-          {/* ambient glow: soft gradient + opacity only (no blur filter) */}
-          <div className="pointer-events-none absolute left-1/2 top-1/2 h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/2">
-            <div
-              aria-hidden
-              className="orbit-anim h-full w-full rounded-full"
-              style={{
-                background: "radial-gradient(circle, rgba(255,180,84,1) 0%, rgba(255,180,84,0) 65%)",
-                animation: "glow-pulse 6s ease-in-out infinite",
-              }}
+        {/* faint dotted desk */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            backgroundImage: "radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px)",
+            backgroundSize: "22px 22px",
+            maskImage: "radial-gradient(ellipse at 50% 45%, black 15%, transparent 72%)",
+            WebkitMaskImage: "radial-gradient(ellipse at 50% 45%, black 15%, transparent 72%)",
+          }}
+        />
+
+        {/* hand-drawn annotation */}
+        <div aria-hidden className="pointer-events-none absolute left-[392px] top-[4px] z-[15] rotate-3">
+          <p className={`text-[24px] leading-[0.95] text-[#ffb454] ${HAND}`} style={{ fontWeight: 600 }}>
+            your code,
+            <br />
+            running live
+          </p>
+          <svg viewBox="0 0 70 64" className="-mt-0.5 ml-3 h-[64px] w-[70px] overflow-visible" fill="none">
+            <motion.path
+              d="M8 4 C 40 2, 62 22, 52 54"
+              stroke="#ffb454"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              initial={{ pathLength: 0 }}
+              animate={{ pathLength: 1 }}
+              transition={{ duration: 0.9, ease: EASE, delay: 1.3 }}
             />
+            <motion.path
+              d="M43 44 L52 57 L63 47"
+              stroke="#ffb454"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              initial={{ pathLength: 0 }}
+              animate={{ pathLength: 1 }}
+              transition={{ duration: 0.4, ease: EASE, delay: 2.1 }}
+            />
+          </svg>
+        </div>
+
+        <Layer id="editor" depth={8} rot={-3} z={10} float={5} className="left-0 top-[70px]" {...shared}>
+          <Editor n={n} L={L} />
+        </Layer>
+
+        <Layer id="phone" depth={16} rot={4} z={20} float={7} className="left-[322px] top-[128px]" {...shared}>
+          <Phone L={L} n={n} after={after} />
+        </Layer>
+
+        <Layer id="note" depth={24} rot={-6} z={30} float={6} className="left-[14px] top-[378px]" {...shared}>
+          <Note checks={checks} />
+        </Layer>
+
+        <Layer id="sticker" depth={30} rot={12} z={40} float={8} className="left-[462px] top-[104px]" {...shared}>
+          <div className="relative grid h-[80px] w-[80px] place-items-center rounded-full bg-[#ffb454] text-center text-[#1d1a16] shadow-[0_14px_24px_-8px_rgba(0,0,0,0.8)]">
+            <span aria-hidden className="absolute inset-1.5 rounded-full border border-dashed border-[#1d1a16]/40" />
+            <span className={`relative text-[13px] font-semibold leading-[1.05] ${display}`}>
+              48
+              <br />
+              lessons
+            </span>
           </div>
+        </Layer>
 
-          {/* dotted grid */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0"
-            style={{
-              backgroundImage: "radial-gradient(rgba(255,255,255,0.09) 1px, transparent 1px)",
-              backgroundSize: "22px 22px",
-              maskImage: "radial-gradient(circle at center, black 20%, transparent 68%)",
-              WebkitMaskImage: "radial-gradient(circle at center, black 20%, transparent 68%)",
-            }}
-          />
-
-          <OrbitRings />
-
-          {/* player card (wrapper centers, inner floats) */}
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-            <div className="orbit-anim" style={{ animation: "float-a 7s ease-in-out infinite", willChange: "transform" }}>
-              <PlayerCard pct={pct} p={p} />
-            </div>
-          </div>
-
-          {/* streak badge */}
-          <div className="absolute left-0 top-[68px]">
-            <div className="orbit-anim" style={{ animation: "float-b 5.5s ease-in-out infinite", willChange: "transform" }}>
-              <div className="flex items-center gap-2.5 rounded-2xl border border-white/10 bg-[#14130f] px-3.5 py-2.5 shadow-[0_20px_40px_-10px_rgba(0,0,0,0.9)]">
-                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#ff8a3d]/15 text-[#ff8a3d]">
-                  <HiFire className="h-4 w-4" />
-                </span>
-                <div>
-                  <p className={`text-[13px] font-semibold leading-none text-[#f3ece0] ${display}`}>12 day streak</p>
-                  <p className={`mt-1 text-[9px] uppercase tracking-[0.16em] text-zinc-600 ${mono}`}>keep going</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* certificate badge */}
-          <div className="absolute bottom-[56px] right-0">
-            <div className="orbit-anim" style={{ animation: "float-c 6.5s ease-in-out infinite", willChange: "transform" }}>
-              <motion.div
-                initial={false}
-                animate={{
-                  scale: complete ? 1 : 0.94,
-                  opacity: complete ? 1 : 0.55,
-                  borderColor: complete ? "rgba(255,180,84,0.55)" : "rgba(255,255,255,0.1)",
-                }}
-                transition={{ type: "spring", stiffness: 220, damping: 16 }}
-                className="flex items-center gap-2.5 rounded-2xl border bg-[#14130f] px-3.5 py-2.5 shadow-[0_20px_40px_-10px_rgba(0,0,0,0.9)]"
-              >
-                <span
-                  className={`flex h-8 w-8 items-center justify-center rounded-xl transition-colors duration-500 ${
-                    complete ? "bg-[#ffb454] text-[#1d1a16]" : "bg-white/[0.06] text-zinc-500"
-                  }`}
-                >
-                  <HiAcademicCap className="h-4 w-4" />
-                </span>
-                <div>
-                  <p className={`text-[13px] font-semibold leading-none text-[#f3ece0] ${display}`}>
-                    {complete ? "Certificate unlocked" : "Certificate"}
-                  </p>
-                  <p className={`mt-1 text-[9px] uppercase tracking-[0.16em] text-zinc-600 ${mono}`}>
-                    {complete ? "share it" : `${4 - Math.floor(pct / 25)} lessons to go`}
-                  </p>
-                </div>
-              </motion.div>
-            </div>
-          </div>
-
-          {/* confetti burst on completion */}
-          <AnimatePresence>
-            {p === 5 &&
-              Array.from({ length: 14 }, (_, i) => {
-                const a = (i / 14) * Math.PI * 2;
-                return (
-                  <motion.span
-                    key={i}
-                    aria-hidden
-                    initial={{ x: 0, y: 0, opacity: 1, scale: 1 }}
-                    animate={{
-                      x: Math.cos(a) * (150 + (i % 3) * 30),
-                      y: Math.sin(a) * (130 + (i % 3) * 24),
-                      opacity: 0,
-                      scale: 0.3,
-                    }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 1.2, ease: "easeOut" }}
-                    className="pointer-events-none absolute left-1/2 top-1/2 h-1.5 w-1.5 rounded-full bg-[#ffb454]"
-                  />
-                );
-              })}
-          </AnimatePresence>
-        </motion.div>
+        <p
+          aria-hidden
+          className={`pointer-events-none absolute bottom-[4px] right-4 -rotate-3 text-[20px] text-zinc-500 ${HAND}`}
+        >
+          psst, drag stuff around
+        </p>
       </div>
     </div>
   );
-};
- 
+}
+
+/* ------------------------------------------------------------------ */
+/*  Signature                                                          */
+/* ------------------------------------------------------------------ */
 
 const FONT_CSS =
   "@import url('https://fonts.googleapis.com/css2?family=Mrs+Saint+Delafield&display=swap');";
@@ -624,7 +641,8 @@ const Signature = () => {
       </motion.p>
     </div>
   );
-}; 
+};
+
 export default function HeroSection() {
   const { user } = useSelector((state) => state.profile);
 
@@ -713,14 +731,14 @@ export default function HeroSection() {
           </motion.dl>
         </motion.div>
 
-        {/* right: orbit (moved up) */}
+        {/* right: the build desk */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1.1, ease: EASE, delay: 0.4 }}
           className="px-2 -mt-4 lg:-mt-28"
         >
-          <LearningOrbit />
+          <BuildStage />
         </motion.div>
       </div>
 
