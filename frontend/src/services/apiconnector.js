@@ -4,8 +4,8 @@ import { setUser } from "../slices/profile.slice.js";
 import {toast} from 'react-toastify'
 import store from "../utils/store.js";
 export const axiosInstance = axios.create({
-  // baseURL : "https://codevolvex.onrender.com/api/v1/",
-   baseURL : 'https://localhost:5502/api/v1/'
+  baseURL : "https://codevolvex.onrender.com/api/v1/",
+  //  baseURL : 'https://localhost:5502/api/v1/'
 });
 
 // it handles token expire while the app is open 
