@@ -1,14 +1,18 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { FiUploadCloud } from "react-icons/fi";
-import { useSelector } from "react-redux";
+import { toast } from "react-hot-toast";
 
 import "video-react/dist/video-react.css";
 import { Player } from "video-react";
 
-/* ---------- design tokens (shared with the rest of the site) ---------- */
 const display = "font-['Space_Grotesk',ui-sans-serif,system-ui,sans-serif]";
 const mono = "font-['JetBrains_Mono',ui-monospace,monospace]";
+
+const MAX_VIDEO_SIZE = 500 * 1024 * 1024; // keep equal to MAX_SIZE on the backend
+
+// new lectures store a B2 key (not a URL), so it can't be played directly
+const isKey = (v) => typeof v === "string" && v !== "" && !v.startsWith("http");
 
 export default function Upload({
   name,
@@ -19,12 +23,27 @@ export default function Upload({
   video = false,
   viewData = null,
   editData = null,
+  signedUrl = null, // playable URL for an existing B2 video, resolved by the parent
 }) {
-  const { course } = useSelector((state) => state.course);
   const [selectedFile, setSelectedFile] = useState(null);
-  const [previewSource, setPreviewSource] = useState(
-    viewData ? viewData : editData ? editData : ""
-  );
+  const initial = viewData || editData || "";
+  const [previewSource, setPreviewSource] = useState(isKey(initial) ? "" : initial);
+  const objectUrlRef = useRef(null);
+
+  const revokeObjectUrl = () => {
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
+    }
+  };
+
+  // preview WITHOUT reading the file into memory (FileReader would load the whole video)
+  const previewFile = (file) => {
+    revokeObjectUrl();
+    const url = URL.createObjectURL(file);
+    objectUrlRef.current = url;
+    setPreviewSource(url);
+  };
 
   const onDrop = (acceptedFiles) => {
     const file = acceptedFiles[0];
@@ -38,17 +57,30 @@ export default function Upload({
     accept: !video
       ? { "image/*": [".jpeg", ".jpg", ".png"] }
       : { "video/*": [".mp4"] },
+    multiple: false,
+    maxSize: video ? MAX_VIDEO_SIZE : undefined,
     onDrop,
+    onDropRejected: (rejections) => {
+      const code = rejections[0]?.errors?.[0]?.code;
+      toast.error(
+        code === "file-too-large"
+          ? "Max video size is 500 MB"
+          : video
+          ? "Only MP4 videos are allowed"
+          : "Only JPG or PNG images are allowed"
+      );
+    },
     disabled: !!viewData, // view-only mode: no interaction
   });
 
-  const previewFile = (file) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onloadend = () => {
-      setPreviewSource(reader.result);
-    };
-  };
+  // an existing B2 video: show its signed URL once the parent has fetched it
+  // (functional update: never overwrites a file the user has already picked)
+  useEffect(() => {
+    if (signedUrl) setPreviewSource((current) => current || signedUrl);
+  }, [signedUrl]);
+
+  // free the object URL on unmount
+  useEffect(() => revokeObjectUrl, []);
 
   useEffect(() => {
     register(name, { required: true });
@@ -106,6 +138,7 @@ export default function Upload({
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation(); // don't reopen the file selector when clearing
+                  revokeObjectUrl();
                   setPreviewSource("");
                   setSelectedFile(null);
                   setValue(name, null);
@@ -130,7 +163,7 @@ export default function Upload({
             </p>
 
             <p className={`mt-6 w-11/12 max-w-sm border-t border-white/[0.07] pt-4 text-xs text-zinc-600 ${mono}`}>
-              16:9 ratio, up to 50 MB
+              16:9 ratio, up to {video ? "500 MB" : "50 MB"}
             </p>
           </div>
         )}

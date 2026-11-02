@@ -69,7 +69,6 @@ const UpdatePassword = () => {
       [e.target.name]: e.target.value,
     }));
   };
-
   const handleOnSubmit = (e) => {
     e.preventDefault();
     const token = location.pathname.split("/").at(-1);
@@ -102,7 +101,6 @@ const UpdatePassword = () => {
           className="relative w-full max-w-md overflow-hidden rounded-3xl border border-white/[0.08] bg-[#14130f] p-8 sm:p-10"
         >
           <Grain />
-
           <div className="relative">
             {/* brand */}
             <div className="flex items-center justify-center gap-3">

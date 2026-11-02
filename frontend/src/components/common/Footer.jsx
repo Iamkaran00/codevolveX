@@ -73,7 +73,7 @@ const Letters = () =>
     </span>
   ));
 
-export const Footer = () => {
+ export const Footer = () => {
   const year = new Date().getFullYear();
   const reduce = useReducedMotion();
 
@@ -81,8 +81,7 @@ export const Footer = () => {
   const wordWrapRef = useRef(null);
   const wordRef = useRef(null);
   const glowRef = useRef(null);
-
-  // scroll-linked parallax: letters rise at different speeds as the footer enters
+ 
   useEffect(() => {
     if (!wordRef.current) return undefined;
     const letters = wordRef.current.querySelectorAll("[data-l]");

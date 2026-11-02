@@ -1,18 +1,28 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useId, useRef, useState } from "react";
 import { NavLink } from "react-router-dom";
 
 import {
   motion,
   AnimatePresence,
+  animate,
   useMotionValue,
   useSpring,
   useTransform,
   useInView,
-  useAnimation,
   useReducedMotion,
 } from "framer-motion";
 
 import { HiArrowRight, HiPlay } from "react-icons/hi2";
+import {
+  SiReact,
+  SiNodedotjs,
+  SiMongodb,
+  SiTailwindcss,
+  SiExpress,
+  SiSocketdotio,
+  SiGit,
+  SiRedux,
+} from "react-icons/si";
 import { useSelector } from "react-redux";
 
 const EASE = [0.23, 1, 0.32, 1];
@@ -45,9 +55,13 @@ const clampN = (v, a, b) => Math.max(a, Math.min(b, v));
 /*                                                                     */
 /*  A messy desk: code is typed in the editor, and the chat app on the */
 /*  phone comes alive as each line lands. A sticky note gets ticked    */
-/*  off by hand. Everything can be picked up and thrown; it keeps its  */
-/*  momentum and bounces off the edges of the desk.                    */
+/*  off by hand. Everything can be picked up and thrown. A handful of  */
+/*  tech stickers rain onto the desk with real circle physics: they    */
+/*  collide, roll, stack, and can be grabbed and flung.                */
 /* ------------------------------------------------------------------ */
+
+const SW = 540; // stage width
+const SH = 620; // stage height
 
 const TOK = { fn: "#ffb454", str: "#9bd8bd", v: "#f3ece0", p: "#71717a" };
 
@@ -74,6 +88,8 @@ const BUILD_CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@500;600&display=swap');
 @keyframes cx-blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
 .cx-caret { animation: cx-blink 1s steps(1) infinite; }
+.cx-sticker { cursor: grab; touch-action: none; }
+.cx-sticker.is-grabbing { cursor: grabbing; }
 `;
 
 const renderLine = (tokens, count) => {
@@ -347,18 +363,250 @@ function Note({ checks }) {
   );
 }
 
+/* ---------- tech stickers: real circle physics ---------- */
+
+const STICKERS = [
+  { Icon: SiReact, label: "react", color: "#61dafb", r: 29 },
+  { Icon: SiNodedotjs, label: "node", color: "#8cc84b", r: 27 },
+  { Icon: SiMongodb, label: "mongo", color: "#4db33d", r: 28 },
+  { Icon: SiTailwindcss, label: "tailwind", color: "#38bdf8", r: 30 },
+  { Icon: SiExpress, label: "express", color: "#e6dfd3", r: 26 },
+  { Icon: SiSocketdotio, label: "socket", color: "#f3ece0", r: 28 },
+  { Icon: SiGit, label: "git", color: "#f05133", r: 25 },
+  { Icon: SiRedux, label: "redux", color: "#a78bfa", r: 27 },
+];
+
+const FLOOR = SH - 8;
+const PSTEP = 1 / 120;
+
+function StickerPile({ stageRef, visibleRef, reduce }) {
+  const els = useRef([]);
+  const api = useRef({});
+
+  useEffect(() => {
+    const stage = stageRef.current;
+    if (!stage) return undefined;
+
+    const n = STICKERS.length;
+    const R = STICKERS.map((s) => s.r);
+    const X = new Float64Array(n);
+    const Y = new Float64Array(n);
+    const PX = new Float64Array(n);
+    const PY = new Float64Array(n);
+    const A = new Float64Array(n); // roll angle
+
+    let seed = 11;
+    const rnd = () => {
+      seed = (seed * 16807) % 2147483647;
+      return seed / 2147483647;
+    };
+
+    for (let i = 0; i < n; i += 1) {
+      if (reduce) {
+        X[i] = 44 + (i * (SW - 88)) / (n - 1);
+        Y[i] = FLOOR - R[i];
+      } else {
+        X[i] = 50 + rnd() * (SW - 100);
+        Y[i] = -60 - i * 95 - rnd() * 40; // rain in one after another
+      }
+      PX[i] = X[i];
+      PY[i] = Y[i];
+      A[i] = rnd() * 6;
+    }
+
+    const drag = { i: -1, ox: 0, oy: 0, tx: 0, ty: 0 };
+
+    const step = () => {
+      const g = 2600 * PSTEP * PSTEP;
+
+      for (let i = 0; i < n; i += 1) {
+        if (drag.i === i) continue;
+        const vx = (X[i] - PX[i]) * 0.9992;
+        const vy = (Y[i] - PY[i]) * 0.9992;
+        A[i] += vx / R[i];
+        PX[i] = X[i];
+        PY[i] = Y[i];
+        X[i] += vx;
+        Y[i] += vy + g;
+      }
+
+      if (drag.i >= 0) {
+        const i = drag.i;
+        PX[i] = X[i];
+        PY[i] = Y[i];
+        X[i] += (drag.tx - X[i]) * 0.35;
+        Y[i] += (drag.ty - Y[i]) * 0.35;
+      }
+
+      for (let it = 0; it < 6; it += 1) {
+        for (let i = 0; i < n; i += 1) {
+          for (let j = i + 1; j < n; j += 1) {
+            const dx = X[j] - X[i];
+            const dy = Y[j] - Y[i];
+            const m = R[i] + R[j];
+            if (Math.abs(dx) > m || Math.abs(dy) > m) continue;
+            const d = Math.hypot(dx, dy) || 1e-6;
+            if (d >= m) continue;
+            const c = (m - d) / d;
+            const wi = drag.i === i ? 0 : 1;
+            const wj = drag.i === j ? 0 : 1;
+            const ws = wi + wj;
+            if (ws === 0) continue;
+            X[i] -= (dx * c * wi) / ws;
+            Y[i] -= (dy * c * wi) / ws;
+            X[j] += (dx * c * wj) / ws;
+            Y[j] += (dy * c * wj) / ws;
+          }
+        }
+      }
+
+      for (let i = 0; i < n; i += 1) {
+        if (drag.i === i) continue;
+        if (X[i] < R[i]) {
+          const v = X[i] - PX[i];
+          X[i] = R[i];
+          PX[i] = X[i] + v * 0.4;
+        } else if (X[i] > SW - R[i]) {
+          const v = X[i] - PX[i];
+          X[i] = SW - R[i];
+          PX[i] = X[i] + v * 0.4;
+        }
+        if (Y[i] > FLOOR - R[i]) {
+          const v = Y[i] - PY[i];
+          Y[i] = FLOOR - R[i];
+          PY[i] = Y[i] + v * 0.32;
+          PX[i] += (X[i] - PX[i]) * 0.1; // floor friction
+        }
+      }
+    };
+
+    const draw = () => {
+      for (let i = 0; i < n; i += 1) {
+        const el = els.current[i];
+        if (!el) continue;
+        el.style.transform = `translate3d(${(X[i] - R[i]).toFixed(2)}px, ${(Y[i] - R[i]).toFixed(2)}px, 0) rotate(${A[i].toFixed(3)}rad)`;
+      }
+    };
+
+    const local = (e) => {
+      const r = stage.getBoundingClientRect();
+      const s = r.width / SW;
+      return [(e.clientX - r.left) / s, (e.clientY - r.top) / s];
+    };
+
+    api.current.down = (i, e) => {
+      if (e.pointerType === "mouse" && e.button !== 0) return;
+      const [px, py] = local(e);
+      drag.i = i;
+      drag.ox = px - X[i];
+      drag.oy = py - Y[i];
+      drag.tx = X[i];
+      drag.ty = Y[i];
+      try {
+        e.currentTarget.setPointerCapture(e.pointerId);
+      } catch (err) {
+        /* ignore */
+      }
+      e.currentTarget.classList.add("is-grabbing");
+      e.currentTarget.style.zIndex = "70";
+    };
+
+    api.current.move = (i, e) => {
+      if (drag.i !== i) return;
+      const [px, py] = local(e);
+      drag.tx = clampN(px - drag.ox, R[i], SW - R[i]);
+      drag.ty = clampN(py - drag.oy, -40, FLOOR - R[i]);
+    };
+
+    api.current.up = (i, e) => {
+      if (drag.i !== i) return;
+      drag.i = -1;
+      e.currentTarget.classList.remove("is-grabbing");
+      e.currentTarget.style.zIndex = "45";
+      try {
+        e.currentTarget.releasePointerCapture(e.pointerId);
+      } catch (err) {
+        /* ignore */
+      }
+    };
+
+    let raf;
+    let last = performance.now();
+    const t0 = last;
+    let acc = 0;
+    const tick = (now) => {
+      const dt = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      if (visibleRef.current && now - t0 > 900) {
+        acc += dt;
+        let k = 0;
+        while (acc >= PSTEP && k < 6) {
+          step();
+          acc -= PSTEP;
+          k += 1;
+        }
+        if (k === 6) acc = 0;
+      }
+      draw();
+      raf = requestAnimationFrame(tick);
+    };
+    draw();
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [stageRef, visibleRef, reduce]);
+
+  return (
+    <>
+      {STICKERS.map(({ Icon, label, color, r }, i) => (
+        <div
+          key={label}
+          ref={(el) => {
+            els.current[i] = el;
+          }}
+          className="cx-sticker absolute left-0 top-0 select-none"
+          style={{
+            width: r * 2,
+            height: r * 2,
+            zIndex: 45,
+            willChange: "transform",
+            transform: `translate3d(0, ${-200}px, 0)`,
+          }}
+          onPointerDown={(e) => api.current.down?.(i, e)}
+          onPointerMove={(e) => api.current.move?.(i, e)}
+          onPointerUp={(e) => api.current.up?.(i, e)}
+          onPointerCancel={(e) => api.current.up?.(i, e)}
+        >
+          <div className="relative h-full w-full rounded-full bg-[#f1eadc] shadow-[0_10px_18px_-6px_rgba(0,0,0,0.8)]">
+            <div className="absolute inset-[3px] flex flex-col items-center justify-center rounded-full bg-[#14130f]">
+              <Icon className="h-[40%] w-[40%]" style={{ color }} />
+              <span className={`mt-0.5 text-[7px] uppercase tracking-wider text-zinc-400 ${mono}`}>
+                {label}
+              </span>
+            </div>
+          </div>
+        </div>
+      ))}
+    </>
+  );
+}
+
 /* ---------- the stage ---------- */
 
 function BuildStage() {
   const reduce = useReducedMotion();
   const outerRef = useRef(null);
   const stageRef = useRef(null);
+  const visibleRef = useRef(true);
   const inView = useInView(outerRef, { margin: "100px" });
 
   const [n, setN] = useState(0);
   const [top, setTop] = useState(null);
   const mx = useMotionValue(0);
   const my = useMotionValue(0);
+
+  useEffect(() => {
+    visibleRef.current = inView;
+  }, [inView]);
 
   useEffect(() => {
     if (!inView) return undefined;
@@ -387,7 +635,7 @@ function BuildStage() {
   return (
     <div
       ref={outerRef}
-      className="relative mx-auto h-[360px] w-full max-w-[540px] min-[420px]:h-[410px] sm:h-[560px]"
+      className="relative mx-auto h-[388px] w-full max-w-[540px] min-[420px]:h-[446px] sm:h-[620px]"
     >
       <style>{BUILD_CSS}</style>
 
@@ -395,7 +643,7 @@ function BuildStage() {
         ref={stageRef}
         onMouseMove={onMove}
         onMouseLeave={onLeave}
-        className="absolute left-1/2 top-0 h-[560px] w-[540px] origin-top -translate-x-1/2 scale-[0.62] min-[420px]:scale-[0.72] sm:scale-100"
+        className="absolute left-1/2 top-0 h-[620px] w-[540px] origin-top -translate-x-1/2 scale-[0.62] min-[420px]:scale-[0.72] sm:scale-100"
       >
         {/* faint dotted desk */}
         <div
@@ -439,6 +687,14 @@ function BuildStage() {
           </svg>
         </div>
 
+        <p
+          aria-hidden
+          className={`pointer-events-none absolute left-3 top-2 -rotate-4 text-[20px] text-zinc-500 ${HAND}`}
+          style={{ transform: "rotate(-4deg)" }}
+        >
+          psst, drag stuff around
+        </p>
+
         <Layer id="editor" depth={8} rot={-3} z={10} float={5} className="left-0 top-[70px]" {...shared}>
           <Editor n={n} L={L} />
         </Layer>
@@ -447,7 +703,7 @@ function BuildStage() {
           <Phone L={L} n={n} after={after} />
         </Layer>
 
-        <Layer id="note" depth={24} rot={-6} z={30} float={6} className="left-[14px] top-[378px]" {...shared}>
+        <Layer id="note" depth={24} rot={-6} z={30} float={6} className="left-[14px] top-[332px]" {...shared}>
           <Note checks={checks} />
         </Layer>
 
@@ -462,12 +718,8 @@ function BuildStage() {
           </div>
         </Layer>
 
-        <p
-          aria-hidden
-          className={`pointer-events-none absolute bottom-[4px] right-4 -rotate-3 text-[20px] text-zinc-500 ${HAND}`}
-        >
-          psst, drag stuff around
-        </p>
+        {/* tech stickers raining onto the desk */}
+        <StickerPile stageRef={stageRef} visibleRef={visibleRef} reduce={reduce} />
       </div>
     </div>
   );
@@ -475,166 +727,220 @@ function BuildStage() {
 
 /* ------------------------------------------------------------------ */
 /*  Signature                                                          */
+/*                                                                     */
+/*  Written with a pen stroke, once. The name is revealed by a         */
+/*  scribbling mask that sweeps across it, then an underline flourish  */
+/*  is drawn. It plays the first time you scroll it into view and      */
+/*  never again.                                                       */
 /* ------------------------------------------------------------------ */
 
 const FONT_CSS =
   "@import url('https://fonts.googleapis.com/css2?family=Mrs+Saint+Delafield&display=swap');";
-const script =
-  "font-['Mrs_Saint_Delafield','Segoe_Script','Brush_Script_MT',cursive]";
-
-const WRITE_EASE = [0.65, 0, 0.35, 1];
+const SIG_FONT = "'Mrs Saint Delafield','Segoe Script','Brush Script MT',cursive";
 
 const Signature = () => {
-  const signatureRef = useRef(null);
+  const reduce = useReducedMotion();
+  const wrapRef = useRef(null);
+  const measureRef = useRef(null);
+  const maskPathRef = useRef(null);
+  const flourishRef = useRef(null);
+  const doneRef = useRef(false);
+  const [box, setBox] = useState(null);
+  const [credit, setCredit] = useState(false);
+  const uid = useId().replace(/:/g, "");
 
-  // Trigger when the signature enters the viewport.
-  const inView = useInView(signatureRef, {
-    amount: 0.5,
-    once: false,
-  });
+  // once: true means this flips to true the first time it is seen and stays true
+  const inView = useInView(wrapRef, { once: true, amount: 0.6 });
 
-  const controls = useAnimation();
-
+  // measure the text once the handwriting font has loaded
   useEffect(() => {
-    if (inView) {
-      controls.start("visible");
-    } else {
-      controls.start("hidden");
+    let dead = false;
+    const measure = () => {
+      const t = measureRef.current;
+      if (dead || !t || doneRef.current) return;
+      const b = t.getBBox();
+      if (b.width > 0) setBox({ x: b.x, y: b.y, w: b.width, h: b.height });
+    };
+    const fonts = typeof document !== "undefined" ? document.fonts : null;
+    const timer = setTimeout(measure, 1800);
+    if (fonts?.load) {
+      Promise.race([
+        fonts.load("100px 'Mrs Saint Delafield'"),
+        new Promise((r) => setTimeout(r, 1500)),
+      ])
+        .then(() => setTimeout(measure, 60))
+        .catch(measure);
+      fonts.addEventListener?.("loadingdone", measure);
     }
-  }, [inView, controls]);
+    return () => {
+      dead = true;
+      clearTimeout(timer);
+      fonts?.removeEventListener?.("loadingdone", measure);
+    };
+  }, []);
 
-  const nameVariants = {
-    hidden: {
-      opacity: 0,
-      clipPath: "inset(0 100% 0 0)",
-    },
-    visible: {
-      opacity: 1,
-      clipPath: "inset(0 0% 0 0)",
-      transition: {
-        duration: 2.8,
-        ease: WRITE_EASE,
-        delay: 0.3,
-      },
-    },
-  };
+  // geometry for the scribble mask + underline
+  let maskD = "";
+  let flourishD = "";
+  let vb = "0 0 400 140";
+  if (box) {
+    const N = 18;
+    const top = box.y + box.h * 0.08;
+    const bot = box.y + box.h * 0.92;
+    const mid = box.y + box.h * 0.5;
+    maskD = `M${(box.x - 6).toFixed(1)} ${mid.toFixed(1)}`;
+    for (let i = 0; i < N; i += 1) {
+      const x = box.x + ((i + 0.5) / N) * box.w;
+      maskD += ` L${x.toFixed(1)} ${(i % 2 === 0 ? top : bot).toFixed(1)}`;
+    }
+    maskD += ` L${(box.x + box.w + 6).toFixed(1)} ${mid.toFixed(1)}`;
 
-  const underlineVariants = {
-    hidden: {
-      pathLength: 0,
-      opacity: 0,
-    },
-    visible: {
-      pathLength: 1,
-      opacity: 1,
-      transition: {
-        duration: 1.2,
-        ease: EASE,
-        delay: 3.0,
-      },
-    },
-  };
+    const yb = box.y + box.h * 1.04;
+    const x0 = box.x + box.w * 0.04;
+    flourishD = `M${x0.toFixed(1)} ${yb.toFixed(1)} C ${(x0 + box.w * 0.25).toFixed(1)} ${(yb - box.h * 0.14).toFixed(1)}, ${(x0 + box.w * 0.5).toFixed(1)} ${(yb + box.h * 0.12).toFixed(1)}, ${(x0 + box.w * 0.72).toFixed(1)} ${(yb + box.h * 0.02).toFixed(1)} S ${(x0 + box.w * 0.92).toFixed(1)} ${(yb - box.h * 0.08).toFixed(1)}, ${(x0 + box.w * 0.96).toFixed(1)} ${(yb + box.h * 0.03).toFixed(1)}`;
+    vb = `${(box.x - 8).toFixed(1)} ${(box.y - 6).toFixed(1)} ${(box.w + 16).toFixed(1)} ${(box.h * 1.5).toFixed(1)}`;
+  }
 
-  const creditVariants = {
-    hidden: {
-      opacity: 0,
-      y: 8,
-    },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.7,
-        delay: 4.0,
+  // play once
+  useEffect(() => {
+    if (!inView || !box || doneRef.current) return undefined;
+    const mp = maskPathRef.current;
+    const fp = flourishRef.current;
+    if (!mp || !fp) return undefined;
+
+    const ml = mp.getTotalLength();
+    const fl = fp.getTotalLength();
+    mp.style.strokeDasharray = `${ml}`;
+    fp.style.strokeDasharray = `${fl}`;
+
+    if (reduce) {
+      mp.style.strokeDashoffset = "0";
+      fp.style.strokeDashoffset = "0";
+      doneRef.current = true;
+      setCredit(true);
+      return undefined;
+    }
+
+    mp.style.strokeDashoffset = `${ml}`;
+    fp.style.strokeDashoffset = `${fl}`;
+
+    let second;
+    const first = animate(0, 1, {
+      duration: 2.8,
+      ease: [0.45, 0, 0.25, 1],
+      onUpdate: (v) => {
+        mp.style.strokeDashoffset = `${ml * (1 - v)}`;
       },
-    },
-  };
+      onComplete: () => {
+        setCredit(true);
+        second = animate(0, 1, {
+          duration: 0.9,
+          ease: EASE,
+          onUpdate: (v) => {
+            fp.style.strokeDashoffset = `${fl * (1 - v)}`;
+          },
+          onComplete: () => {
+            doneRef.current = true;
+          },
+        });
+      },
+    });
+
+    return () => {
+      first.stop();
+      second?.stop();
+    };
+  }, [inView, box, reduce]);
 
   return (
     <div
-      ref={signatureRef}
+      ref={wrapRef}
       className="pointer-events-none absolute bottom-6 right-6 z-10 select-none text-right sm:bottom-10 sm:right-10"
     >
       <style>{FONT_CSS}</style>
 
-      {/* Intro text */}
       <motion.p
-        initial="hidden"
-        animate={controls}
-        variants={{
-          hidden: { opacity: 0, y: 6 },
-          visible: {
-            opacity: 1,
-            y: 0,
-            transition: { duration: 0.6 },
-          },
-        }}
+        initial={{ opacity: 0, y: 6 }}
+        animate={inView ? { opacity: 1, y: 0 } : undefined}
+        transition={{ duration: 0.6 }}
         className={`text-[11px] tracking-wide text-zinc-600 ${mono}`}
       >
         Designed &amp; built by
       </motion.p>
 
-      <div className="relative mt-1 inline-block">
-     
-        <motion.span
-          initial="hidden"
-          animate={controls}
-          variants={nameVariants}
-          className={`block -rotate-3 whitespace-nowrap px-1 pb-2 text-6xl leading-none text-[#f3ece0] sm:text-7xl ${script}`}
-        >
-          Karan Sahu
-        </motion.span>
-
-       
-        <motion.span
-          aria-hidden="true"
-          initial={{ left: "0%", opacity: 0 }}
-          animate={
-            inView
-              ? {
-                  left: ["0%", "100%"],
-                  opacity: [0, 1, 1, 0],
-                }
-              : { opacity: 0 }
-          }
-          transition={{
-            left: {
-              duration: 2.8,
-              ease: WRITE_EASE,
-              delay: 0.3,
-            },
-            opacity: {
-              duration: 2.8,
-              times: [0, 0.06, 0.94, 1],
-              delay: 0.3,
-            },
-          }}
-          className="absolute top-[52%] h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-[#ffb454]"
-        />
- 
+      <div className="mt-1 h-[96px] w-[300px] -rotate-3 sm:h-[124px] sm:w-[380px]">
         <svg
-          viewBox="0 0 260 20"
-          preserveAspectRatio="none"
-          className="-mt-1 block h-4 w-full"
+          viewBox={vb}
+          preserveAspectRatio="xMaxYMid meet"
+          className="h-full w-full overflow-visible"
           fill="none"
-          aria-hidden="true"
+          role="img"
+          aria-label="Karan Sahu"
         >
-          <motion.path
-            d="M4 14 C52 2 96 20 146 10 S226 4 256 12"
-            stroke="#ffb454"
-            strokeWidth="1.6"
-            strokeLinecap="round"
-            initial="hidden"
-            animate={controls}
-            variants={underlineVariants}
-          />
+          {/* invisible copy, only used to measure the real text size */}
+          <text
+            ref={measureRef}
+            x="0"
+            y="100"
+            fontSize="100"
+            visibility="hidden"
+            style={{ fontFamily: SIG_FONT }}
+          >
+            Karan Sahu
+          </text>
+
+          {box && (
+            <>
+              <defs>
+                <mask
+                  id={`sigmask${uid}`}
+                  maskUnits="userSpaceOnUse"
+                  x={box.x - 40}
+                  y={box.y - 40}
+                  width={box.w + 80}
+                  height={box.h + 80}
+                >
+                  <path
+                    ref={maskPathRef}
+                    d={maskD}
+                    fill="none"
+                    stroke="#fff"
+                    strokeWidth={box.h * 0.4}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    style={{ strokeDasharray: 99999, strokeDashoffset: 99999 }}
+                  />
+                </mask>
+              </defs>
+
+              <text
+                x="0"
+                y="100"
+                fontSize="100"
+                fill="#f3ece0"
+                mask={`url(#sigmask${uid})`}
+                style={{ fontFamily: SIG_FONT }}
+              >
+                Karan Sahu
+              </text>
+
+              <path
+                ref={flourishRef}
+                d={flourishD}
+                stroke="#ffb454"
+                strokeWidth="2.6"
+                strokeLinecap="round"
+                style={{ strokeDasharray: 99999, strokeDashoffset: 99999 }}
+              />
+            </>
+          )}
         </svg>
       </div>
 
       <motion.p
-        initial="hidden"
-        animate={controls}
-        variants={creditVariants}
+        initial={{ opacity: 0, y: 8 }}
+        animate={credit ? { opacity: 1, y: 0 } : undefined}
+        transition={{ duration: 0.7 }}
         className={`mt-1 text-[10px] tracking-[0.2em] text-zinc-700 ${mono}`}
       >
         codevolve <span className="text-amber-400">X</span> · 2026

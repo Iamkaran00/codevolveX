@@ -59,6 +59,7 @@ const googleAuth = async (req ,res) => {
         additionalDetails :profileDetails._id , 
         image : picture || `https://api.dicebear.com/5.x/initials/svg?seed=${firstName}`,
       }) ; 
+      
       user = await User.findById(created._id).populate('additionalDetails') ; 
     } else if(!user.googleId) {
       // existing email / password acount : link it to google 
@@ -262,8 +263,8 @@ const login = async (req, res) => {
       return res.status(401).json({ success: false, message: "Password is incorrect" });
     }
 
-    const payload = { email: user.email, id: user.id, accountType: user.accountType };
-    const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "24h" });
+const payload = { email: user.email, id: user.id, accountType: user.accountType };
+const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "24h" });
 
     user.token = token;
     user.password = undefined;

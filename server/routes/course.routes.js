@@ -21,7 +21,11 @@ import {
   createSubSection,
   updateSubSection,
   deleteSubSection,
-  getLectureVideoUrl
+  getLectureVideoUrl,
+  initSubSectionUpload,
+  completeSubSectionUpload,
+  refreshPartUrls,
+  abortSubSectionUpload
 } from "../controller/subsection.js";
 
 // Rating Controllers Import
@@ -49,6 +53,10 @@ router.post("/deleteSubSection", auth, isInstructor, deleteSubSection);
 router.post("/addSubSection", auth, isInstructor,uploadVideo.single("videoFile"), createSubSection);
 //Get Video Url 
 router.post('/getLectureVideoUrl' , auth , getLectureVideoUrl) ; 
+router.post('/init-upload' , auth , isInstructor , initSubSectionUpload) ; 
+router.post('/complete-upload' , auth ,isInstructor , completeSubSectionUpload) ; 
+router.post('/refresh-urls' , auth , isInstructor , refreshPartUrls) ; 
+router.post('/abort-upload' , auth , isInstructor ,abortSubSectionUpload) ; 
 // Get all Registered Courses
 router.get("/getAllCourses",  showAllCourses);
 // Get Details for a Specific Courses

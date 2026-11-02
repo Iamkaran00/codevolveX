@@ -113,7 +113,7 @@ export function googleLogin(credential , accountType , navigate) {
       if(!response.data.success) {
         throw new Error(response.data.message) ; 
       }
- console.log(response , 'hi from authapi') ; 
+ 
 
       toast.success('Logged In Successfully') ; 
       dispatch(setToken(response.data.token)) ; 

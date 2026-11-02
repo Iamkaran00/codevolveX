@@ -3,14 +3,7 @@ import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { motion, animate, useReducedMotion, useInView } from "framer-motion";
 import { FcGoogle } from "react-icons/fc";
-
-/* ------------------------------------------------------------------ */
-/*  Config                                                             */
-/* ------------------------------------------------------------------ */
-
-// The heatmap needs real per-day activity from your backend.
-// Until that exists, a stable placeholder pattern is generated from the
-// user's id. Set this to false (and pass real data) once it's available.
+ 
 const USE_DEMO_ACTIVITY = true;
 
 const EASE = [0.23, 1, 0.32, 1];
@@ -35,10 +28,7 @@ const LEVEL_CLASS = [
 const LEVEL_LABEL = ["No activity", "Light", "Moderate", "Busy", "Deep focus"];
 
 const GRAIN = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")`;
-
-/* ------------------------------------------------------------------ */
-/*  Helpers                                                            */
-/* ------------------------------------------------------------------ */
+ 
 
 const clampN = (v, a, b) => Math.max(a, Math.min(b, v));
 
@@ -88,7 +78,7 @@ const calcStreaks = (days) => {
     }
   });
   let i = days.length - 1;
-  if (days[i].level === 0) i--; // today may not be done yet
+  if (days[i].level === 0) i--; 
   let current = 0;
   while (i >= 0 && days[i].level > 0) {
     current++;
@@ -114,12 +104,7 @@ const greetingFor = (hour) => {
   if (hour < 17) return "Good afternoon";
   if (hour < 21) return "Good evening";
   return "Good night";
-};
-
-/* ------------------------------------------------------------------ */
-/*  Small pieces                                                       */
-/* ------------------------------------------------------------------ */
-
+}; 
 const CountUp = ({ to, reduce }) => {
   const [n, setN] = useState(reduce ? to : 0);
   useEffect(() => {
@@ -159,17 +144,12 @@ const Row = ({ label, value }) => (
       )}
     </dd>
   </div>
-);
-
-/* ------------------------------------------------------------------ */
-/*  LANYARD: a verlet rope with a real pendulum card on the end.       */
-/*  Grab it, throw it, bump it with the cursor, tap to flip.           */
-/* ------------------------------------------------------------------ */
+); 
 
 const CW = 280; // card width
 const CH = 410; // card height
 const HOLE = 26; // card top -> lanyard hole
-const NR = 15; // rope points (0 is the fixed anchor, NR-1 is the hole)
+const NR = 15; 
 const NP = NR + 1; // + the card's centre of mass
 const STEP = 1 / 120;
 const GRAV = 1800; // px/s^2
@@ -229,7 +209,7 @@ function LanyardBadge({ color, front, back, flipped, onFlip }) {
     const inv = new Float64Array(NP);
     for (let i = 0; i < NP; i += 1) inv[i] = i === 0 ? 0 : i < NR ? 1 / 0.6 : 1 / 7;
 
-    // start swung to one side so the entrance is a real swing
+    
     const a0 = reduce ? 0 : 0.7;
     for (let i = 0; i < NR; i += 1) {
       X[i] = W / 2 + Math.sin(a0) * seg * i;
@@ -293,7 +273,6 @@ function LanyardBadge({ color, front, back, flipped, onFlip }) {
         }
       }
 
-      // soft walls (the card may overhang its box a little, then bounces back)
       if (!drag.on) {
         const minX = CW / 2 - 50;
         const maxX = W - CW / 2 + 50;

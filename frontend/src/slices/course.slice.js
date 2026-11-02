@@ -28,6 +28,10 @@ const courseSlice = createSlice({
       state.course = null
       state.editCourse = false
     },
+    replaceSection : (state , {payload}) => {
+      if(!state.course?.courseContent) return ; 
+      state.course.courseContent = state.course.courseContent.map(s => s._id === payload._id ? payload : s)
+    }
   },
 })
 
@@ -37,6 +41,7 @@ export const {
   setEditCourse,
   setPaymentLoading,
   resetCourseState,
+  replaceSection
 } = courseSlice.actions
 
 export default courseSlice.reducer

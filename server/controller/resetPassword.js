@@ -14,7 +14,6 @@ const resetPasswordToken = async (req, res) => {
         message: "User is Not registered",
       });
     }
- 
     const token = crypto.randomUUID();
     const updatedDetails = await User.findOneAndUpdate(
       { email },
@@ -23,7 +22,7 @@ const resetPasswordToken = async (req, res) => {
         new: true,
       }
     );
-    //createurl
+    
     const url = `https://codevolvx.vercel.app/update-password/${token}`;
     //send mail
     await mailSender(

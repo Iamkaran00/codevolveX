@@ -31,6 +31,7 @@ import CourseDetails from "./pages/CourseDetails";
 import ViewCourse from "./pages/ViewCourse";
 import InstructorDashboard from "./pages/InstructorDashboard";
 import OfflineBanner from "./components/core/OfflineBanner";
+import UploadTray from "./components/common/UploadTray";
 function App() {
   const { user } = useSelector((state) => state.profile);
 
@@ -117,6 +118,8 @@ function App() {
          }
         <Route path="*" element={<NotFound />} />
       </Routes>
+        <UploadTray/>
+
       <Footer/>
     </div>
   );

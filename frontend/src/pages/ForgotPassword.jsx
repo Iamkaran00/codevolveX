@@ -23,7 +23,7 @@ const Grain = ({ opacity = "opacity-[0.06]" }) => (
   />
 );
 
-/* envelope that gains a tick once the email is sent */
+ 
 const MailBadge = ({ sent, reduce }) => (
   <div className="relative mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-white/15">
     <motion.span

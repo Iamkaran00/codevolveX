@@ -153,7 +153,7 @@ export default function CourseAccordion({ course }) {
           </motion.ul>
         </div>
 
-        {/* unlock banner */}
+        
         <motion.div
           initial={reduce ? false : { opacity: 0, y: 12 }}
           whileInView={{ opacity: 1, y: 0 }}
