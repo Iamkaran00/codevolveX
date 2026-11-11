@@ -8,7 +8,7 @@ export const axiosInstance = axios.create({
   //  baseURL : 'https://localhost:5502/api/v1/'
 });
 
-// it handles token expire while the app is open 
+
 axiosInstance.interceptors.response.use(
   res => res , 
   err => {
